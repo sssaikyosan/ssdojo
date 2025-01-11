@@ -7,11 +7,13 @@ const LINEWIDTH = 2;
 
 let pieceImages = {};
 let canvas = null;
+/** @type {CanvasRenderingContext2D} */
 let ctx = null;
 let socket = null;
 let gameState = "waiting";
 let ui = null;
 let board = null;
+let waitPlayerCount = 0;
 
 // 初期化関数
 function init() {
@@ -93,6 +95,11 @@ function onMouseUp(event) {
 }
 
 function setupSocket(){
+  // 待機人数の更新
+  socket.on('changeWaitngPlayers', (data) => {
+    waitPlayerCount = data.count;
+  })
+
   // マッチングが成立したときの処理
   socket.on('matchFound', (data) => {
     console.log('matchFound',data.time);

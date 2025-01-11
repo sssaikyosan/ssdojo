@@ -30,8 +30,12 @@ const io = new Server(server);
 // 静的ファイルを配信
 app.use(express.static(path.join(__dirname, 'public')));
 
-// マッチメイキング用の待機プレイヤーリスト
-const waitingPlayers = [];  // Socketオブジェクトを格納
+/**
+ * マッチメイキング用の待機プレイヤーリスト\
+ * Socketオブジェクトを格納
+ * @type {import('socket.io').Socket[]}
+ */
+const waitingPlayers = [];
 
 // 5秒ごとにマッチメイキングを実行
 setInterval(() => {
@@ -63,6 +67,8 @@ setInterval(() => {
 
       console.log(`Matched players: ${player1.id} (先手) vs ${player2.id} (後手)`);
     }
+
+    sendChangeCount();
   }
   console.log('waitingPlayers:', waitingPlayers.length);
 }, 3000); // 3秒ごとに実行
@@ -72,7 +78,9 @@ io.on('connection', (socket) => {
 
   // プレイヤーがマッチングを要求
   socket.on('requestMatch', () => {
-    if (!waitingPlayers.some(x => x.id === socket.id)) waitingPlayers.push(socket);
+    if (waitingPlayers.some(x => x.id === socket.id)) return; // 早期リターン
+    waitingPlayers.push(socket);
+    sendChangeCount();
   });
 
   // socket.on('resign', (data) => {
@@ -99,9 +107,19 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('A player disconnected:', socket.id);
     const index = waitingPlayers.findIndex(x => x.id === socket.id);
-    if(index != -1) waitingPlayers.splice(index, 1);
+    if(index != -1) {
+      waitingPlayers.splice(index, 1);
+      sendChangeCount();
+    }
   });
 });
+
+//#region 関数
+function sendChangeCount() {
+  const count = waitingPlayers.length;
+  io.emit('changeWaitngPlayers', { count });
+}
+//#endregion 関数
 
 
 

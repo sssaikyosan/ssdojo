@@ -47,7 +47,7 @@ class UI {
     ctx.fillStyle = "#FFFFFF";
     ctx.font = `${canvas.height * this.matchingTextSize}px Arial`;
     ctx.textAlign = "center";
-    ctx.fillText("マッチング中...", canvas.width / 2, canvas.height / 2.2);
+    ctx.fillText(`マッチング中... 待機${waitPlayerCount}人`, canvas.width / 2, canvas.height / 2.2);
 
     // ぐるぐるアニメーションを描画
     const radius = 30;
@@ -100,6 +100,8 @@ class UI {
       "#000000", 
       "#ffffff", 
       canvas.height * this.titleTextSize * 0.1);
+
+    ctx.fillText(`待機人数: ${waitPlayerCount}人`, canvas.width / 2, canvas.height / 1.5);
   }
 
   drawWinUI(){
