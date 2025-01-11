@@ -10,17 +10,17 @@ MOUSE_HIGHLIGHT_COLOR = '#afb61e';
 LINEWIDTH = 2;
 
 class Board {
-  constructor(teban,roomId,time) {
+  constructor(teban, roomId, time) {
     this.roomId = roomId;
-    this.map = [[null,null,null,null,null,null,null,null,null],
-    [null,null,null,null,null,null,null,null,null],
-    [null,null,null,null,null,null,null,null,null],
-    [null,null,null,null,null,null,null,null,null],
-    [null,null,null,null,null,null,null,null,null],
-    [null,null,null,null,null,null,null,null,null],
-    [null,null,null,null,null,null,null,null,null],
-    [null,null,null,null,null,null,null,null,null],
-    [null,null,null,null,null,null,null,null,null]];
+    this.map = [[null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null]];
     this.pieces = []; // すべての駒を保持する配列
     this.hoveredCell = null; // マウスオーバー中のセル
     this.cellSize = 0; // セルのサイズ
@@ -36,8 +36,10 @@ class Board {
     this.starttime = time;
     this.time = time;
     this.ptime = performance.now();
-    this.komadaiPieces = { sente: {'pawn':0, 'lance':0, 'knight':0, 'silver':0, 'gold':0, 'bishop':0, 'rook':0, 'king':0, 'king2':0},
-      gote: {'pawn':0, 'lance':0, 'knight':0, 'silver':0, 'gold':0, 'bishop':0, 'rook':0, 'king':0, 'king2':0} };
+    this.komadaiPieces = {
+      sente: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 },
+      gote: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 }
+    };
   }
 
   // 盤面の初期化
@@ -47,61 +49,63 @@ class Board {
     this.draggingPieceX = 0;
     this.draggingPieceY = 0;
     this.currentMove = 0;
-    this.komadaiPieces = { sente: {'pawn':0, 'lance':0, 'knight':0, 'silver':0, 'gold':0, 'bishop':0, 'rook':0, 'king':0, 'king2':0},
-      gote: {'pawn':0, 'lance':0, 'knight':0, 'silver':0, 'gold':0, 'bishop':0, 'rook':0, 'king':0, 'king2':0} };
+    this.komadaiPieces = {
+      sente: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 },
+      gote: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 }
+    };
     this.pieces = [
       // 1段目（後手）
       new Piece('lance', 0, 0, -1, this.starttime, this.ptime),
       new Piece('knight', 1, 0, -1, this.starttime, this.ptime),
       new Piece('silver', 2, 0, -1, this.starttime, this.ptime),
-      new Piece('gold', 3, 0, -1,this.starttime, this.ptime),
-      new Piece('king2', 4, 0, -1,this.starttime, this.ptime),  // 後手の玉
-      new Piece('gold', 5, 0, -1,this.starttime, this.ptime),
-      new Piece('silver', 6, 0, -1,this.starttime, this.ptime),
-      new Piece('knight', 7, 0, -1,this.starttime, this.ptime ),
-      new Piece('lance', 8, 0, -1,this.starttime, this.ptime),
+      new Piece('gold', 3, 0, -1, this.starttime, this.ptime),
+      new Piece('king2', 4, 0, -1, this.starttime, this.ptime),  // 後手の玉
+      new Piece('gold', 5, 0, -1, this.starttime, this.ptime),
+      new Piece('silver', 6, 0, -1, this.starttime, this.ptime),
+      new Piece('knight', 7, 0, -1, this.starttime, this.ptime),
+      new Piece('lance', 8, 0, -1, this.starttime, this.ptime),
       // 2段目（後手）
-      new Piece('bishop', 7, 1, -1,this.starttime, this.ptime),
-      new Piece('rook', 1, 1, -1,this.starttime, this.ptime),
+      new Piece('bishop', 7, 1, -1, this.starttime, this.ptime),
+      new Piece('rook', 1, 1, -1, this.starttime, this.ptime),
       // 3段目（後手）
-      new Piece('pawn', 0, 2, -1,this.starttime, this.ptime),
-      new Piece('pawn', 1, 2, -1,this.starttime, this.ptime),
-      new Piece('pawn', 2, 2, -1,this.starttime, this.ptime),
-      new Piece('pawn', 3, 2, -1,this.starttime, this.ptime),
-      new Piece('pawn', 4, 2, -1,this.starttime, this.ptime),
-      new Piece('pawn', 5, 2, -1,this.starttime, this.ptime),
-      new Piece('pawn', 6, 2, -1,this.starttime, this.ptime),
-      new Piece('pawn', 7, 2, -1,this.starttime, this.ptime),
-      new Piece('pawn', 8, 2, -1,this.starttime, this.ptime),
+      new Piece('pawn', 0, 2, -1, this.starttime, this.ptime),
+      new Piece('pawn', 1, 2, -1, this.starttime, this.ptime),
+      new Piece('pawn', 2, 2, -1, this.starttime, this.ptime),
+      new Piece('pawn', 3, 2, -1, this.starttime, this.ptime),
+      new Piece('pawn', 4, 2, -1, this.starttime, this.ptime),
+      new Piece('pawn', 5, 2, -1, this.starttime, this.ptime),
+      new Piece('pawn', 6, 2, -1, this.starttime, this.ptime),
+      new Piece('pawn', 7, 2, -1, this.starttime, this.ptime),
+      new Piece('pawn', 8, 2, -1, this.starttime, this.ptime),
       // 1段目（先手）
-      new Piece('lance', 0, 8, 1,this.starttime, this.ptime),
-      new Piece('knight', 1, 8, 1,this.starttime, this.ptime),
-      new Piece('silver', 2, 8, 1,this.starttime, this.ptime),
-      new Piece('gold', 3, 8, 1,this.starttime, this.ptime),
-      new Piece('king', 4, 8, 1,this.starttime, this.ptime),  // 先手の玉
-      new Piece('gold', 5, 8, 1,this.starttime, this.ptime),
-      new Piece('silver', 6, 8, 1,this.starttime, this.ptime),
-      new Piece('knight', 7, 8, 1,this.starttime, this.ptime),
-      new Piece('lance', 8, 8, 1,this.starttime, this.ptime),
+      new Piece('lance', 0, 8, 1, this.starttime, this.ptime),
+      new Piece('knight', 1, 8, 1, this.starttime, this.ptime),
+      new Piece('silver', 2, 8, 1, this.starttime, this.ptime),
+      new Piece('gold', 3, 8, 1, this.starttime, this.ptime),
+      new Piece('king', 4, 8, 1, this.starttime, this.ptime),  // 先手の玉
+      new Piece('gold', 5, 8, 1, this.starttime, this.ptime),
+      new Piece('silver', 6, 8, 1, this.starttime, this.ptime),
+      new Piece('knight', 7, 8, 1, this.starttime, this.ptime),
+      new Piece('lance', 8, 8, 1, this.starttime, this.ptime),
       // 2段目（先手）
-      new Piece('rook', 7, 7, 1,this.starttime, this.ptime),
-      new Piece('bishop', 1, 7, 1,this.starttime, this.ptime),
+      new Piece('rook', 7, 7, 1, this.starttime, this.ptime),
+      new Piece('bishop', 1, 7, 1, this.starttime, this.ptime),
       // 3段目（先手）
-      new Piece('pawn', 0, 6, 1,this.starttime, this.ptime),
-      new Piece('pawn', 1, 6, 1,this.starttime, this.ptime),
-      new Piece('pawn', 2, 6, 1,this.starttime, this.ptime),
-      new Piece('pawn', 3, 6, 1,this.starttime, this.ptime),
-      new Piece('pawn', 4, 6, 1,this.starttime, this.ptime),
-      new Piece('pawn', 5, 6, 1,this.starttime, this.ptime),
-      new Piece('pawn', 6, 6, 1,this.starttime, this.ptime),
-      new Piece('pawn', 7, 6, 1,this.starttime, this.ptime),
-      new Piece('pawn', 8, 6, 1,this.starttime, this.ptime),
+      new Piece('pawn', 0, 6, 1, this.starttime, this.ptime),
+      new Piece('pawn', 1, 6, 1, this.starttime, this.ptime),
+      new Piece('pawn', 2, 6, 1, this.starttime, this.ptime),
+      new Piece('pawn', 3, 6, 1, this.starttime, this.ptime),
+      new Piece('pawn', 4, 6, 1, this.starttime, this.ptime),
+      new Piece('pawn', 5, 6, 1, this.starttime, this.ptime),
+      new Piece('pawn', 6, 6, 1, this.starttime, this.ptime),
+      new Piece('pawn', 7, 6, 1, this.starttime, this.ptime),
+      new Piece('pawn', 8, 6, 1, this.starttime, this.ptime),
     ];
     this.pieceToMap();
   }
 
-  pieceToMap(){
-    for(let i = 0; i < this.pieces.length; i++){
+  pieceToMap() {
+    for (let i = 0; i < this.pieces.length; i++) {
       this.map[this.pieces[i].x][this.pieces[i].y] = this.pieces[i];
     }
   }
@@ -121,7 +125,7 @@ class Board {
     ctx.fillStyle = BOARD_COLOR; // 駒台の色
     ctx.strokeStyle = LINE_COLOR;
 
-    for(let i = 0; i < 2; i++){
+    for (let i = 0; i < 2; i++) {
       ctx.fillRect(komadaiX, komadaiY, this.komadaiWidth, this.komadaiHeight);
       ctx.strokeRect(komadaiX, komadaiY, this.komadaiWidth, this.komadaiHeight);
       ctx.translate(this.offsetX + 9 * this.cellSize / 2, this.offsetY + 9 * this.cellSize / 2);
@@ -139,12 +143,12 @@ class Board {
     const pieceSize = this.cellSize * 0.8;
     const padding = this.cellSize * 0.1;
     let kx = x;
-    for(let i = 0; i < komadai[type]; i++){
+    for (let i = 0; i < komadai[type]; i++) {
       ctx.drawImage(img, kx + (komadai[type] - i - 1) * padding, y, pieceSize, pieceSize);
     }
   }
-  
-  drawKomadaiPieces(x, y, komadai, teban){
+
+  drawKomadaiPieces(x, y, komadai, teban) {
     const komadaiOffsetX = x + this.cellSize * 0.1;
     const komadaiOffsetY = y + this.cellSize * 0.1;
     const pieceSize = this.cellSize * 0.8; // 駒のサイズ
@@ -155,34 +159,34 @@ class Board {
       ctx.rotate(Math.PI);
       ctx.translate(-this.offsetX - 9 * this.cellSize / 2, -this.offsetY - 9 * this.cellSize / 2);
     }
-    if(komadai['pawn'] > 0) {
+    if (komadai['pawn'] > 0) {
       this.drawKomadaiPiece(komadaiOffsetX, komadaiOffsetY, 'pawn', komadai);
     }
-    if(komadai['lance'] > 0) {
+    if (komadai['lance'] > 0) {
       this.drawKomadaiPiece(komadaiOffsetX, komadaiOffsetY + this.cellSize, 'lance', komadai);
     }
-    if(komadai['knight'] > 0) {
+    if (komadai['knight'] > 0) {
       this.drawKomadaiPiece(komadaiOffsetX + this.cellSize, komadaiOffsetY + this.cellSize, 'knight', komadai);
     }
-    if(komadai['silver'] > 0) {
+    if (komadai['silver'] > 0) {
       this.drawKomadaiPiece(komadaiOffsetX, komadaiOffsetY + 2 * this.cellSize, 'silver', komadai);
     }
-    if(komadai['gold'] > 0) {
+    if (komadai['gold'] > 0) {
       this.drawKomadaiPiece(komadaiOffsetX + this.cellSize, komadaiOffsetY + 2 * this.cellSize, 'gold', komadai);
-    } 
-    if(komadai['bishop'] > 0) {
+    }
+    if (komadai['bishop'] > 0) {
       this.drawKomadaiPiece(komadaiOffsetX, komadaiOffsetY + 3 * this.cellSize, 'bishop', komadai);
     }
-    if(komadai['rook'] > 0) {
+    if (komadai['rook'] > 0) {
       this.drawKomadaiPiece(komadaiOffsetX + this.cellSize, komadaiOffsetY + 3 * this.cellSize, 'rook', komadai);
     }
-    if(komadai['king2'] > 0) {
+    if (komadai['king2'] > 0) {
       this.drawKomadaiPiece(komadaiOffsetX + this.cellSize * 2, komadaiOffsetY + 3 * this.cellSize, 'king2', komadai);
     }
-    if(komadai['king'] > 0) {
+    if (komadai['king'] > 0) {
       this.drawKomadaiPiece(komadaiOffsetX + this.cellSize * 2, komadaiOffsetY + 2 * this.cellSize, 'king', komadai);
     }
-    
+
     ctx.restore();
   }
 
@@ -248,8 +252,8 @@ class Board {
     if (this.hoveredCell) {
       ctx.fillStyle = MOUSE_HIGHLIGHT_COLOR; // 半透明の黄色
       ctx.fillRect(
-        this.offsetX + this.hoveredCell.x * this.cellSize + LINEWIDTH/2,
-        this.offsetY + this.hoveredCell.y * this.cellSize + LINEWIDTH/2,
+        this.offsetX + this.hoveredCell.x * this.cellSize + LINEWIDTH / 2,
+        this.offsetY + this.hoveredCell.y * this.cellSize + LINEWIDTH / 2,
         this.cellSize - LINEWIDTH,
         this.cellSize - LINEWIDTH
       );
@@ -303,7 +307,7 @@ class Board {
 
     return null; // クリック位置に駒がない場合はnullを返す
   }
-  
+
   // マウスの位置から盤面の位置を取得
   getBoardPosition(mouseX, mouseY) {
     const x = Math.floor((mouseX - this.offsetX) / this.cellSize);
@@ -320,8 +324,8 @@ class Board {
   }
 
   onMouseDown(pos) {
-    const {x,y} = this.getBoardPosition(pos.x, pos.y);
-    if(x == -3 || y == -3) {
+    const { x, y } = this.getBoardPosition(pos.x, pos.y);
+    if (x == -3 || y == -3) {
       const komadaiPiece = this.getKomadaiPieceAt(pos.x, pos.y);
       if (komadaiPiece) {
         this.draggingPieceX = pos.x;
@@ -332,8 +336,8 @@ class Board {
     };
     // クリックされた駒を探す
     for (let i = 0; i < this.pieces.length; i++) {
-      if(this.pieces[i].teban != this.teban) continue;
-      if(this.pieces[i].x == x && this.pieces[i].y == y){
+      if (this.pieces[i].teban != this.teban) continue;
+      if (this.pieces[i].x == x && this.pieces[i].y == y) {
         this.draggingPiece = this.pieces[i];
         this.draggingPieceX = pos.x;
         this.draggingPieceY = pos.y;
@@ -343,7 +347,7 @@ class Board {
   }
 
   onMouseMove(pos) {
-    if(this.draggingPiece){
+    if (this.draggingPiece) {
       this.draggingPieceX = pos.x;
       this.draggingPieceY = pos.y;
     }
@@ -356,7 +360,7 @@ class Board {
     }
   }
 
-  onMouseUp(pos,isRightClick) {
+  onMouseUp(pos, isRightClick) {
     if (!this.draggingPiece) return;
     const { x, y } = this.getBoardPosition(pos.x, pos.y);
 
@@ -368,24 +372,24 @@ class Board {
     };
 
     if (x === -3 || y === -3) {
-      if(this.draggingPiece.x === -3 && this.draggingPiece.y === -3) returnToKomadai();
+      if (this.draggingPiece.x === -3 && this.draggingPiece.y === -3) returnToKomadai();
       this.draggingPiece = null;
       return;
     };
 
-    if(this.draggingPiece.x === -3 && this.draggingPiece.y === -3){
+    if (this.draggingPiece.x === -3 && this.draggingPiece.y === -3) {
 
-      if(this.map[x][y]) returnToKomadai();
-      if(this.draggingPiece.type === 'pawn'||this.draggingPiece.type === 'lance'){
-        if(this.teban === 1&&y === 0 || this.teban === -1&&y === 8) returnToKomadai();
+      if (this.map[x][y]) returnToKomadai();
+      if (this.draggingPiece.type === 'pawn' || this.draggingPiece.type === 'lance') {
+        if (this.teban === 1 && y === 0 || this.teban === -1 && y === 8) returnToKomadai();
       }
-      if(this.draggingPiece.type === 'knight'){
-        if(this.teban === 1&&y <= 1 || this.teban === -1&&y >= 7) returnToKomadai();
+      if (this.draggingPiece.type === 'knight') {
+        if (this.teban === 1 && y <= 1 || this.teban === -1 && y >= 7) returnToKomadai();
       }
       //二歩の判定
-      if(this.draggingPiece.type === 'pawn'){
-        for(let i = 0; i < BOARD_SIZE; i++){
-          if(this.map[x][i] && this.map[x][i].type === 'pawn' && this.map[x][i].teban === this.teban) returnToKomadai();
+      if (this.draggingPiece.type === 'pawn') {
+        for (let i = 0; i < BOARD_SIZE; i++) {
+          if (this.map[x][i] && this.map[x][i].type === 'pawn' && this.map[x][i].teban === this.teban) returnToKomadai();
         }
       }
       socket.emit('putPiece', {
@@ -396,8 +400,8 @@ class Board {
         roomId: this.roomId
       });
       returnToKomadai();
-    }else{
-      if(!this.draggingPiece.canMove(x,y,this.teban,this.map)){
+    } else {
+      if (!this.draggingPiece.canMove(x, y, this.teban, this.map)) {
         this.draggingPiece = null;
         return
       };
@@ -412,29 +416,29 @@ class Board {
         teban: this.teban,
         roomId: this.roomId
       };
-  
+
       this.draggingPiece = null;
       socket.emit('movePiece', moveData);
     }
   }
 
-  newPut(data){
+  newPut(data) {
     const { x, y, type, teban, roomId, currentMove: moveNumber } = data;
-    if(this.map[x][y]) return;
-    if(this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type] <= 0) return;
+    if (this.map[x][y]) return;
+    if (this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type] <= 0) return;
     //最上段の判定
-    if(type === 'pawn'||type === 'lance'){
-      if(teban === 1&&y === 0) return;
-      if(teban === -1&&y === 8) return;
+    if (type === 'pawn' || type === 'lance') {
+      if (teban === 1 && y === 0) return;
+      if (teban === -1 && y === 8) return;
     }
-    if(type === 'knight'){
-      if(teban === 1&&y <= 1) return;
-      if(teban === -1&&y >= 7) return;
+    if (type === 'knight') {
+      if (teban === 1 && y <= 1) return;
+      if (teban === -1 && y >= 7) return;
     }
     //二歩の判定
-    if(type === 'pawn'){
-      for(let i = 0; i < BOARD_SIZE; i++){
-        if(this.map[x][i] && this.map[x][i].type === 'pawn' && this.map[x][i].teban === teban){
+    if (type === 'pawn') {
+      for (let i = 0; i < BOARD_SIZE; i++) {
+        if (this.map[x][i] && this.map[x][i].type === 'pawn' && this.map[x][i].teban === teban) {
           return;
         }
       }
@@ -448,24 +452,26 @@ class Board {
     playSound('sound');
   }
 
-  newMove(data){
+  newMove(data) {
     const { x, y, nx, ny, narazu, teban, roomId, time: time } = data;
     let piece = null;
     let npiece = null;
-    if(this.map[x][y]){
+    if (this.map[x][y]) {
       piece = this.map[x][y];
-    }else{
+    } else {
       return;
     }
-    if(piece.teban !== teban) return;
-    if(getTimeDiff(piece.lastMoveTime, time)[0] < SERVER_MOVETYME) return;
-    if (piece.canMove(nx,ny,teban, this.map, narazu)) {
-      if(this.map[nx][ny]){
+    if (piece.teban !== teban) return;
+    if (getTimeDiff(piece.lastMoveTime, time)[0] < SERVER_MOVETYME) return;
+    if (piece.canMove(nx, ny, teban, this.map, narazu)) {
+      if (this.map[nx][ny]) {
         npiece = this.map[nx][ny];
         this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][npiece.getUnPromotedType()]++;
         this.pieces = this.pieces.filter(p => p !== npiece);
-        if(npiece.type === 'king'||npiece.type === 'king2'){
-          gameState = teban === this.teban ? "win" : "lose";
+        if (npiece.type === 'king' || npiece.type === 'king2') {
+          const result = teban === this.teban ? "win" : "lose";
+          gameState = result;
+          scene = new ResultScene(result);
           // socket.emit('resign', { roomId: roomId, winner: teban });
         }
       }
@@ -485,7 +491,7 @@ class Board {
     }
   }
 
-  
+
 
   // 駒が相手陣に入ったかどうかを判定
   isInEnemyTerritory(piece, y) {

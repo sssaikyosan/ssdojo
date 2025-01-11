@@ -17,7 +17,7 @@ class Button {
     const height = this.height * canvas.height;
     const radius = height * 0.1;
     const line = height * 0.05;
-    
+
     // ボタンの背景を描画
     this.drawRoundedButton(x, y, width, height, radius, this.colors[this.state], darkenColor(this.colors[this.state], 0.6), line);
 
@@ -33,7 +33,7 @@ class Button {
 
   mouseMove(pos) {
     if (this.isHovered(pos)) {
-      if(this.state == "normal"){
+      if (this.state == "normal") {
         this.state = 'hover';
       }
     } else {
@@ -44,7 +44,7 @@ class Button {
 
   mouseUp(pos) {
     if (this.isHovered(pos)) {
-      if(this.state == "down"){
+      if (this.state == "down") {
         this.onClick();
       }
       this.state = 'hover';
@@ -60,12 +60,12 @@ class Button {
     let x = this.x * canvas.width - width / 2;
     let y = this.y * canvas.height - height / 2;
     return pos.x >= x && pos.x <= x + width &&
-           pos.y >= y && pos.y <= y + height;
+      pos.y >= y && pos.y <= y + height;
   }
 
   drawRoundedButton(x, y, width, height, radius, fillColor, strokeColor, strokeWidth) {
     ctx.save(); // 現在の状態を保存
-  
+
     // 角丸四角形のパスを作成
     ctx.beginPath();
     ctx.moveTo(x + radius, y - height / 2);
@@ -74,16 +74,16 @@ class Button {
     ctx.arcTo(x - width / 2, y + height / 2, x - width / 2, y - height / 2, radius);
     ctx.arcTo(x - width / 2, y - height / 2, x + width / 2, y - height / 2, radius);
     ctx.closePath();
-  
+
     // ボタンの塗りつぶし
     ctx.fillStyle = fillColor;
     ctx.fill();
-  
+
     // ボタンの縁取り
     ctx.strokeStyle = strokeColor;
     ctx.lineWidth = strokeWidth;
     ctx.stroke();
-  
+
     ctx.restore(); // 状態を復元
   }
 } 

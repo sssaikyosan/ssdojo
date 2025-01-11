@@ -1,35 +1,45 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>リアルタイム将棋</title>
   <style>
     /* スクロールを防ぐためのスタイル */
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
-      overflow: hidden;  /* スクロールを無効化 */
-      height: 100%;      /* 画面全体を占める */
+      overflow: hidden;
+      /* スクロールを無効化 */
+      height: 100%;
+      /* 画面全体を占める */
     }
 
     /* canvasを全画面表示 */
     #shogiCanvas {
-      display: block;    /* インライン要素の隙間をなくす */
-      width: 100vw;      /* ビューポートの幅に合わせる */
-      height: 100vh;     /* ビューポートの高さに合わせる */
-      background-color: #222222;  /* 背景色（オプション） */
+      display: block;
+      /* インライン要素の隙間をなくす */
+      width: 100vw;
+      /* ビューポートの幅に合わせる */
+      height: 100vh;
+      /* ビューポートの高さに合わせる */
+      background-color: #222222;
+      /* 背景色（オプション） */
     }
   </style>
 </head>
+
 <body>
   <canvas id="shogiCanvas"></canvas>
   <script src="/globalfunc.js"></script>
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-  <script src="/ui.js"></script>
   <script src="/button.js"></script>
   <script src="/piece.js"></script>
   <script src="/board.js"></script>
+  <script src="/scene.js"></script>
   <script src="/main.js" defer></script>
 </body>
-</html> 
+
+</html>

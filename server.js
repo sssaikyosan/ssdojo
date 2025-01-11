@@ -13,15 +13,15 @@ const app = express();
 // 環境変数に応じて設定を切り替え
 const isProduction = process.env.NODE_ENV === 'production';
 
-if(isProduction){
+if (isProduction) {
   // SSL証明書の読み込み
   const options = {
     key: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/privkey.pem'),
     cert: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/fullchain.pem')
   };
   var server = https.createServer(options, app);
-  
-}else{
+
+} else {
   var server = http.createServer(app);
 }
 
@@ -107,7 +107,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('A player disconnected:', socket.id);
     const index = waitingPlayers.findIndex(x => x.id === socket.id);
-    if(index != -1) {
+    if (index != -1) {
       waitingPlayers.splice(index, 1);
       sendChangeCount();
     }
@@ -117,10 +117,8 @@ io.on('connection', (socket) => {
 //#region 関数
 function sendChangeCount() {
   const count = waitingPlayers.length;
-  io.emit('changeWaitngPlayers', { count });
+  io.emit('changeWaitingPlayers', { count });
 }
-//#endregion 関数
-
 
 
 // HTTPSサーバーを起動
@@ -131,7 +129,7 @@ server.listen(HTTPS_PORT, () => {
 
 
 //本番環境の場合はHTTPサーバーを起動
-if(isProduction){
+if (isProduction) {
   const httpServer = http.createServer((req, res) => {
     const host = req.headers.host;
     res.writeHead(301, { "Location": `https://${host}${req.url}` });
