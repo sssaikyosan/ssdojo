@@ -13,16 +13,19 @@ const app = express();
 // 環境変数に応じて設定を切り替え
 const isProduction = process.env.NODE_ENV === 'production';
 
+/**@type {import('http').Server} */
+let server;
+
 if (isProduction) {
   // SSL証明書の読み込み
   const options = {
     key: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/privkey.pem'),
     cert: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/fullchain.pem')
   };
-  var server = https.createServer(options, app);
+  server = https.createServer(options, app);
 
 } else {
-  var server = http.createServer(app);
+  server = http.createServer(app);
 }
 
 const io = new Server(server);

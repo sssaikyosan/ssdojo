@@ -43,7 +43,7 @@ class TitleScene extends Scene {
       "#c2a34f",
       "#000000",
       "#ffffff",
-      canvas.height * this.titleTextSize * 0.1);
+    );
 
     ctx.fillText(`待機人数: ${waitPlayerCount}人`, canvas.width / 2, canvas.height / 1.5);
     this.playButton.draw();
@@ -147,7 +147,7 @@ class ResultScene extends Scene {
         "#ff6739",
         "#30140b",
         "#ffffff",
-        canvas.height * this.winloseTextSize * 0.1);
+      );
     } else if (this.result == "lose") {
       ctx.fillStyle = "#00000066";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -160,7 +160,7 @@ class ResultScene extends Scene {
         "#b639ff",
         "#270b36",
         "#ffffff",
-        canvas.height * this.winloseTextSize * 0.1);
+      );
     }
     this.backButton.draw();
   }

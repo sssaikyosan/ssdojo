@@ -1,9 +1,6 @@
 // グローバル変数
 const CELL_SIZE_RATIO = 0.09;
-const KOMADAI_WIDTH_RATIO = 3;  // 駒台の幅の比率
-const KOMADAI_HEIGHT_RATIO = 4;  // 駒台の高さの比率
 const KOMADAI_PIECE_OFFSET = 0.8;  // 駒台の駒の比率
-const LINEWIDTH = 2;
 
 let pieceImages = {};
 let canvas = null;
@@ -11,6 +8,7 @@ let canvas = null;
 let ctx = null;
 let socket = null;
 let gameState = "title";
+/**@type {Scene} */
 let scene = new TitleScene();
 let board = null;
 let waitPlayerCount = 0;
@@ -19,9 +17,11 @@ let waitPlayerCount = 0;
 function init() {
   // キャンバスの初期化
   canvas = document.getElementById('shogiCanvas');
+  //@ts-ignore
   ctx = canvas.getContext('2d');
 
   // Socket.IOの初期化
+  //@ts-ignore
   socket = io();
   setupSocket();
 

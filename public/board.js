@@ -1,13 +1,13 @@
-SERVER_MOVETYME = 5;
-BOARD_SIZE = 9;
-KOMADAI_WIDTH_RATIO = 3;
-KOMADAI_HEIGHT_RATIO = 4;
-KOMADAI_OFFSET_RATIO = 0.1;
-BOARD_COLOR = '#af6b1e';
-LINE_COLOR = '#000000';
-MOUSE_HIGHLIGHT_COLOR = '#afb61e';
+const SERVER_MOVETYME = 5;
+const BOARD_SIZE = 9;
+const KOMADAI_WIDTH_RATIO = 3;
+const KOMADAI_HEIGHT_RATIO = 4;
+const KOMADAI_OFFSET_RATIO = 0.1;
+const BOARD_COLOR = '#af6b1e';
+const LINE_COLOR = '#000000';
+const MOUSE_HIGHLIGHT_COLOR = '#afb61e';
 
-LINEWIDTH = 2;
+const LINEWIDTH = 2;
 
 class Board {
   constructor(teban, roomId, time) {
