@@ -111,7 +111,7 @@ class Board {
   }
 
   resize() {
-    this.cellSize = Math.min(canvas.width - this.komadaiWidth, canvas.height) * CELL_SIZE_RATIO;
+    this.cellSize = Math.max(0, Math.min(canvas.width - this.komadaiWidth, canvas.height) * CELL_SIZE_RATIO);
     this.offsetX = (canvas.width - BOARD_SIZE * this.cellSize) / 2;
     this.offsetY = (canvas.height - BOARD_SIZE * this.cellSize) / 2;
     this.komadaiWidth = this.cellSize * KOMADAI_WIDTH_RATIO;

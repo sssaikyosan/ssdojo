@@ -269,7 +269,7 @@ class Piece {
 
   // ドーナツ型のタイマーを描画する関数
   drawTimer(board, ptimeDiff) {
-    const radius = board.cellSize * TIMER_RADIUS;
+    const radius = Math.max(0, board.cellSize * TIMER_RADIUS);
     const lineWidth = board.cellSize * TIMER_LINEWIDTH;
     const borderWidth = board.cellSize * TIMER_BORDER_WIDTH;
     const progress = ptimeDiff / MOVETIME;
@@ -310,34 +310,40 @@ class Piece {
   }
 
   drawDragTimer(board, ptimeDiff) {
-    const radius = board.cellSize * TIMER_RADIUS; // タイマーの半径
-    const lineWidth = board.cellSize * TIMER_LINEWIDTH; // ドーナツの太さ
+    const radius = Math.max(0, board.cellSize * TIMER_RADIUS);
+    const lineWidth = board.cellSize * TIMER_LINEWIDTH;
     const borderWidth = board.cellSize * TIMER_BORDER_WIDTH;
-    const progress = ptimeDiff / MOVETIME; // 3秒を3000ミリ秒として計算
+    const progress = ptimeDiff / MOVETIME;
 
     // タイマーの背景（灰色の円）
     ctx.beginPath();
-    ctx.arc(board.draggingPieceX + TIMER_OFFSET_X * board.cellSize,
+    ctx.arc(
+      board.draggingPieceX + TIMER_OFFSET_X * board.cellSize,
       board.draggingPieceY + TIMER_OFFSET_Y * board.cellSize,
-      radius, 0, Math.PI * 2, false);
+      radius, 0, Math.PI * 2, false
+    );
     ctx.strokeStyle = TIMER_BGCOLOR;
     ctx.lineWidth = lineWidth;
     ctx.stroke();
 
     // タイマーの進捗（青い円弧）
     ctx.beginPath();
-    ctx.arc(board.draggingPieceX + TIMER_OFFSET_X * board.cellSize,
+    ctx.arc(
+      board.draggingPieceX + TIMER_OFFSET_X * board.cellSize,
       board.draggingPieceY + TIMER_OFFSET_Y * board.cellSize,
-      radius, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * progress, false);
+      radius, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * progress, false
+    );
     ctx.strokeStyle = TIMER_COLOR;
     ctx.lineWidth = lineWidth;
     ctx.stroke();
 
     // 縁取りを描画
     ctx.beginPath();
-    ctx.arc(board.draggingPieceX + TIMER_OFFSET_X * board.cellSize,
+    ctx.arc(
+      board.draggingPieceX + TIMER_OFFSET_X * board.cellSize,
       board.draggingPieceY + TIMER_OFFSET_Y * board.cellSize,
-      radius + lineWidth / 2, 0, Math.PI * 2, false);
+      radius + lineWidth / 2, 0, Math.PI * 2, false
+    );
     ctx.strokeStyle = TIMER_COLOR;
     ctx.lineWidth = borderWidth;
     ctx.stroke();
