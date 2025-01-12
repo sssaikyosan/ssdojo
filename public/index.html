@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>リアルタイム将棋</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     /* スクロールを防ぐためのスタイル */
     html,
@@ -28,11 +29,61 @@
       background-color: #222222;
       /* 背景色（オプション） */
     }
+
+    #nameInputOverlay {
+      background-color: #222222;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    #inputContainer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #nameInput {
+      flex: 1;
+      pointer-events: auto;
+      z-index: 1;
+      background-color: #f0f0f0;
+      color: #000000;
+      border: none;
+      border-radius: 5px;
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 0;
+    }
+
+    #submitNameButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #3241c9;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      /* ボタンのサイズが縮まないように */
+    }
+
+    #nameInputOverlay.visible {
+      display: block;
+    }
   </style>
 </head>
 
 <body>
   <canvas id="shogiCanvas"></canvas>
+  <div id="nameInputOverlay"
+    style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    <div id="inputContainer">
+      <input type="text" id="nameInput" placeholder="名前" maxlength="20">
+      <button id="submitNameButton">プレイ</button>
+    </div>
+  </div>
   <script src="/globalfunc.js"></script>
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="/button.js"></script>

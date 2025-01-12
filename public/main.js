@@ -10,8 +10,10 @@ let socket = null;
 let gameState = "title";
 /**@type {Scene} */
 let scene = new TitleScene();
+/**@type {Board} */
 let board = null;
 let waitPlayerCount = 0;
+let playerName = "";
 
 // 初期化関数
 function init() {
@@ -94,7 +96,7 @@ function setupSocket() {
     board.init();
     board.resize();
     gameState = "playing";
-    scene = new PlayScene();
+    scene = new PlayScene(playerName, data.name);
   });
 
   socket.on('resign', (data) => {

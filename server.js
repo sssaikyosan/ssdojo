@@ -33,57 +33,50 @@ const io = new Server(server);
 // 静的ファイルを配信
 app.use(express.static(path.join(__dirname, 'public')));
 
-/**
- * マッチメイキング用の待機プレイヤーリスト\
- * Socketオブジェクトを格納
- * @type {import('socket.io').Socket[]}
- */
-const waitingPlayers = [];
 
-// 5秒ごとにマッチメイキングを実行
-setInterval(() => {
-  if (waitingPlayers.length >= 2) {
+class ServerState {
+  players = {};
+  /**@type {Player[]} マッチメイキング用の待機プレイヤーリスト*/
+  matchMakingPlayers = [];
+}
 
-    // マッチング処理
-    while (waitingPlayers.length >= 2) {
-      const player1 = waitingPlayers.shift();
-      const player2 = waitingPlayers.shift();
+class Player {
+  /**@type {string} プレイヤー名*/
+  name = "";
+  /**@type {string} ルームID*/
+  roomId = "";
+  /**@type {number} 先手:1 後手:-1*/
+  teban = 0;
 
-      const roomId = uuid();  // ルームIDを生成
+  /**@type {import('socket.io').Socket} */
+  socket = null;
 
-      player1.join(roomId);  // ルームに参加
-      player2.join(roomId);  // ルームに参加
-
-      let time = process.hrtime();
-
-      // 両プレイヤーにマッチング完了を通知
-      io.to(player1.id).emit('matchFound', {
-        roomId: roomId,
-        teban: 1,
-        time: time
-      });
-      io.to(player2.id).emit('matchFound', {
-        roomId: roomId,
-        teban: -1,
-        time: time
-      });
-
-      console.log(`Matched players: ${player1.id} (先手) vs ${player2.id} (後手)`);
-    }
-
-    sendChangeCount();
+  /**@type {typeof socket} */
+  constructor(socket) {
+    this.socket = socket;
   }
-  console.log('waitingPlayers:', waitingPlayers.length);
-}, 3000); // 3秒ごとに実行
+}
+
+const serverState = new ServerState();
+// 1秒ごとにマッチメイキングを実行
+setInterval(() => {
+  matchMaking();
+  sendChangeCount();
+
+  console.log('matchMakingPlayers:', serverState.matchMakingPlayers.length);
+}, 1000); // 1秒ごとに実行
 
 io.on('connection', (socket) => {
   console.log('A player connected:', socket.id);
+  serverState.players[socket.id] = new Player(socket);
 
   // プレイヤーがマッチングを要求
-  socket.on('requestMatch', () => {
-    if (waitingPlayers.some(x => x.id === socket.id)) return; // 早期リターン
-    waitingPlayers.push(socket);
-    sendChangeCount();
+  socket.on('requestMatch', (data) => {
+    if (serverState.matchMakingPlayers.some(x => x.socket.id === socket.id)) return; // 早期リターン
+    let player = serverState.players[socket.id];
+    player.name = data.name;
+    serverState.matchMakingPlayers.push(player);
+    console.log(`Player name set: ${data.name}`);
   });
 
   // socket.on('resign', (data) => {
@@ -109,17 +102,50 @@ io.on('connection', (socket) => {
   // 切断時の処理
   socket.on('disconnect', () => {
     console.log('A player disconnected:', socket.id);
-    const index = waitingPlayers.findIndex(x => x.id === socket.id);
+    const index = serverState.matchMakingPlayers.findIndex(x => x.socket.id === socket.id);
     if (index != -1) {
-      waitingPlayers.splice(index, 1);
-      sendChangeCount();
+      serverState.matchMakingPlayers.splice(index, 1);
     }
   });
 });
 
+function matchMaking() {
+  if (serverState.matchMakingPlayers.length >= 2) {
+
+    // マッチング処理
+    while (serverState.matchMakingPlayers.length >= 2) {
+      const player1 = serverState.matchMakingPlayers.shift();
+      const player2 = serverState.matchMakingPlayers.shift();
+
+      const roomId = uuid();  // ルームIDを生成
+
+      player1.socket.join(roomId);  // ルームに参加
+      player2.socket.join(roomId);  // ルームに参加
+
+      let time = process.hrtime();
+
+      // 両プレイヤーにマッチング完了を通知
+      io.to(player1.socket.id).emit('matchFound', {
+        roomId: roomId,
+        teban: 1,
+        time: time,
+        name: player2.name
+      });
+      io.to(player2.socket.id).emit('matchFound', {
+        roomId: roomId,
+        teban: -1,
+        time: time,
+        name: player1.name
+      });
+
+      console.log(`Matched players: ${player1.socket.id} (先手) vs ${player2.socket.id} (後手)`);
+    }
+  }
+}
+
 //#region 関数
 function sendChangeCount() {
-  const count = waitingPlayers.length;
+  const count = serverState.matchMakingPlayers.length;
   io.emit('changeWaitingPlayers', { count });
 }
 

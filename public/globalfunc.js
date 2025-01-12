@@ -21,6 +21,24 @@ function playSound(filename) {
   });
 }
 
+/**
+ * テキストを描画する
+ * @param {string} text - 表示するテキスト
+ * @param {number} x - X座標
+ * @param {number} y - Y座標
+ * @param {number} fontSize - フォントサイズ
+ * @param {string} color - テキストの色
+ * @param {CanvasTextAlign} [position='center'] - テキストの配置（'left', 'right', 'center'など）
+ * @param {CanvasTextBaseline} [textBaseline='middle'] - テキストのベースライン（'top', 'middle', 'bottom'など）
+ */
+function drawText(text, x, y, fontSize, color = "#FFFFFF", position = 'center', textBaseline = 'middle') {
+  ctx.font = `${fontSize}px Arial`;
+  ctx.textBaseline = textBaseline; // CanvasTextBaseline型として扱われる
+  ctx.textAlign = position; // CanvasTextAlign型として扱われる
+  ctx.fillStyle = color;
+  ctx.fillText(text, x, y);
+}
+
 function drawTextWithDoubleOutline(text, x, y, fontSize, fillColor, innerOutlineColor, outerOutlineColor) {
   ctx.font = `${fontSize}px Arial`;
   ctx.textBaseline = 'middle';
