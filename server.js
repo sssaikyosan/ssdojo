@@ -61,9 +61,7 @@ const serverState = new ServerState();
 // 1秒ごとにマッチメイキングを実行
 setInterval(() => {
   matchMaking();
-  sendChangeCount();
-
-  console.log('matchMakingPlayers:', serverState.matchMakingPlayers.length);
+  sendServerStatus();
 }, 1000); // 1秒ごとに実行
 
 io.on('connection', (socket) => {
@@ -78,12 +76,6 @@ io.on('connection', (socket) => {
     serverState.matchMakingPlayers.push(player);
     console.log(`Player name set: ${data.name}`);
   });
-
-  // socket.on('resign', (data) => {
-  //   const time = process.hrtime();
-  //   console.log('resign',data);
-  //   io.to(data.roomId).emit('resign', { ...data, time: time });
-  // });
 
   // 駒の配置を転送
   socket.on('putPiece', (data) => {
@@ -102,6 +94,7 @@ io.on('connection', (socket) => {
   // 切断時の処理
   socket.on('disconnect', () => {
     console.log('A player disconnected:', socket.id);
+    delete serverState.players[socket.id];
     const index = serverState.matchMakingPlayers.findIndex(x => x.socket.id === socket.id);
     if (index != -1) {
       serverState.matchMakingPlayers.splice(index, 1);
@@ -138,15 +131,17 @@ function matchMaking() {
         name: player1.name
       });
 
-      console.log(`Matched players: ${player1.socket.id} (先手) vs ${player2.socket.id} (後手)`);
+      console.log(`Matched players: (先手:${player1.name}) vs (後手:${player2.name})`);
     }
   }
 }
 
 //#region 関数
-function sendChangeCount() {
-  const count = serverState.matchMakingPlayers.length;
-  io.emit('changeWaitingPlayers', { count });
+function sendServerStatus() {
+  const online = Object.keys(serverState.players).length;
+  const matching = serverState.matchMakingPlayers.length;
+  console.log('online:', online, 'matching:', matching);
+  io.emit('serverStatus', { online: online, matching: matching });
 }
 
 

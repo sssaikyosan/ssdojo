@@ -1,129 +1,7 @@
-const TIMER_RADIUS = 0.1;
-const TIMER_LINEWIDTH = 0.1;
-const TIMER_OFFSET_X = 0.2;
-const TIMER_OFFSET_Y = - 0.2;
-const TIMER_BORDER_WIDTH = 0.04;
-const TIMER_BGCOLOR = 'rgb(223, 223, 223)';
-const TIMER_COLOR = 'rgb(31, 63, 221)';
-
-const MOVE_COLOR = '#cf8b1e'
-
-const MOVETIME = 5000;
-
-const pieceMoves = {
-  pawn: [
-    { dx: 0, dy: -1 } // 先手の場合、1マス前
-  ],
-  prom_pawn: [ // 成り駒（と金）
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: -1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 0 },
-    { dx: -1, dy: 0 },
-    { dx: 0, dy: 1 }
-  ],
-  lance: [
-    { dx: 0, dy: -1, recursive: true } // 先手の場合、前方に無限
-  ],
-  prom_lance: [ // 成り駒（成香）
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: -1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 0 },
-    { dx: -1, dy: 0 },
-    { dx: 0, dy: 1 }
-  ],
-  knight: [
-    { dx: 1, dy: -2 },
-    { dx: -1, dy: -2 }
-  ],
-  prom_knight: [ // 成り駒（成桂）
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: -1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 0 },
-    { dx: -1, dy: 0 },
-    { dx: 0, dy: 1 }
-  ],
-  silver: [
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: -1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 1 },
-    { dx: -1, dy: 1 }
-  ],
-  prom_silver: [ // 成り駒（成銀）
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: -1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 0 },
-    { dx: -1, dy: 0 },
-    { dx: 0, dy: 1 }
-  ],
-  gold: [
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: -1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 0 },
-    { dx: -1, dy: 0 },
-    { dx: 0, dy: 1 }
-  ],
-  bishop: [
-    { dx: 1, dy: -1, recursive: true }, // 右上
-    { dx: -1, dy: -1, recursive: true },// 左上
-    { dx: 1, dy: 1, recursive: true },  // 右下
-    { dx: -1, dy: 1, recursive: true }  // 左下
-  ],
-  horse: [ // 成り駒（馬）
-    { dx: 1, dy: -1, recursive: true }, // 右上
-    { dx: -1, dy: -1, recursive: true },// 左上
-    { dx: 1, dy: 1, recursive: true },  // 右下
-    { dx: -1, dy: 1, recursive: true }, // 左下
-    { dx: 0, dy: -1 }, // 上
-    { dx: 0, dy: 1 },  // 下
-    { dx: 1, dy: 0 },  // 右
-    { dx: -1, dy: 0 }  // 左
-  ],
-  rook: [
-    { dx: 0, dy: -1, recursive: true }, // 上
-    { dx: 0, dy: 1, recursive: true },  // 下
-    { dx: 1, dy: 0, recursive: true },  // 右
-    { dx: -1, dy: 0, recursive: true }  // 左
-  ],
-  dragon: [ // 成り駒（龍）
-    { dx: 0, dy: -1, recursive: true }, // 上
-    { dx: 0, dy: 1, recursive: true },  // 下
-    { dx: 1, dy: 0, recursive: true },  // 右
-    { dx: -1, dy: 0, recursive: true }, // 左
-    { dx: 1, dy: -1 }, // 右上
-    { dx: -1, dy: -1 },// 左上
-    { dx: 1, dy: 1 },  // 右下
-    { dx: -1, dy: 1 }  // 左下
-  ],
-  king: [
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: -1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 0 },
-    { dx: -1, dy: 0 },
-    { dx: 0, dy: 1 },
-    { dx: 1, dy: 1 },
-    { dx: -1, dy: 1 }
-  ],
-  king2: [ // 相手の王将
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: -1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 0 },
-    { dx: -1, dy: 0 },
-    { dx: 0, dy: 1 },
-    { dx: 1, dy: 1 },
-    { dx: -1, dy: 1 }
-  ]
-};
 
 class Piece {
-  constructor(type, x, y, teban, lastMoveTime, ptime) {
+  constructor(board, type, x, y, teban, lastMoveTime, ptime) {
+    this.board = board;
     this.type = type;
     this.teban = teban;
     this.promoted = false;
@@ -133,37 +11,34 @@ class Piece {
     this.lastMovepTime = ptime;
   }
 
-  draw(board) {
-    if (this.x == -1 || this.y == -1) return;
+  draw(ctx, scale) {
+    if (this.x === -3) return;
+    ctx.save();
+    ctx.translate(CELL_SIZE * (this.x - 4) * scale, CELL_SIZE * (this.y - 4) * scale);
+    if (this.teban == -1) {
+      ctx.rotate(Math.PI);
+    }
+    this.drawSelf(ctx, scale);
+    ctx.restore();
+  }
+
+  drawSelf(ctx, scale) {
     const img = pieceImages[this.type];
     if (img) {
-      ctx.save();
-
-      ctx.translate(board.offsetX + this.x * board.cellSize, board.offsetY + this.y * board.cellSize);
-      if (this.teban == -1) {
-        ctx.rotate(Math.PI);
-        ctx.translate(-board.cellSize, -board.cellSize);
-      }
-      ctx.drawImage(img, 0, 0, board.cellSize, board.cellSize);
-      ctx.restore();
+      ctx.drawImage(img, -CELL_SIZE * scale / 2, -CELL_SIZE * scale / 2, CELL_SIZE * scale, CELL_SIZE * scale);
     }
     let ptimeDiff = board.ptime - this.lastMovepTime;
     if (ptimeDiff < MOVETIME) {
-      this.drawTimer(board, ptimeDiff);
+      this.drawTimer(ctx, scale, board, ptimeDiff);
     }
   }
 
-  drawDragging(board) {
-    const img = pieceImages[this.type];
-    if (img) {
-      ctx.drawImage(img, board.draggingPieceX - board.cellSize / 2, board.draggingPieceY - board.cellSize / 2, board.cellSize, board.cellSize);
-      let ptimeDiff = board.ptime - this.lastMovepTime;
-      if (ptimeDiff < MOVETIME) {
-        this.drawDragTimer(board, ptimeDiff);
-      }
-    }
+  drawDragging(ctx, scale, boardui) {
+    ctx.save();
+    ctx.translate(boardui.draggingPiecePos.x * scale, boardui.draggingPiecePos.y * scale);
+    this.drawSelf(ctx, scale);
+    ctx.restore();
   }
-
 
   // 成り駒の種類を返す
   getPromotedType() {
@@ -196,7 +71,6 @@ class Piece {
     const dy = ny - this.y;
 
     function checkMyPiece(xx, yy, teban, type) {
-      console.log(xx, yy, type);
       if (map[xx][yy] && map[xx][yy].teban === nteban) return false;
       if (!narazu) return true;
       if (type === 'pawn' || type === 'lance') {
@@ -235,8 +109,8 @@ class Piece {
     return false;
   }
 
-  drawMove(board) {
-
+  // 移動可能なマスの描画
+  drawMove(ctx, scale, board) {
     ctx.fillStyle = MOVE_COLOR;
     for (let move of pieceMoves[this.type]) {
       let moveX = this.x;
@@ -248,15 +122,13 @@ class Piece {
         if (board.map[moveX][moveY] && board.map[moveX][moveY].teban == this.teban) break;
         ctx.save();
         if (this.teban == -1) {
-          ctx.translate(canvas.width / 2, canvas.height / 2);
           ctx.rotate(Math.PI);
-          ctx.translate(-canvas.width / 2, -canvas.height / 2);
         }
         ctx.fillRect(
-          board.offsetX + moveX * board.cellSize + LINEWIDTH / 2,
-          board.offsetY + moveY * board.cellSize + LINEWIDTH / 2,
-          board.cellSize - LINEWIDTH,
-          board.cellSize - LINEWIDTH
+          moveX * CELL_SIZE * scale - CELL_SIZE * scale * 9 / 2 + LINEWIDTH / 2,
+          moveY * CELL_SIZE * scale - CELL_SIZE * scale * 9 / 2 + LINEWIDTH / 2,
+          CELL_SIZE * scale - LINEWIDTH,
+          CELL_SIZE * scale - LINEWIDTH
         );
         ctx.restore();
         if (!move.recursive) break;
@@ -268,17 +140,17 @@ class Piece {
   }
 
   // ドーナツ型のタイマーを描画する関数
-  drawTimer(board, ptimeDiff) {
-    const radius = Math.max(0, board.cellSize * TIMER_RADIUS);
-    const lineWidth = board.cellSize * TIMER_LINEWIDTH;
-    const borderWidth = board.cellSize * TIMER_BORDER_WIDTH;
+  drawTimer(ctx, scale, board, ptimeDiff) {
+    const radius = Math.max(0, CELL_SIZE * TIMER_RADIUS * scale);
+    const lineWidth = CELL_SIZE * TIMER_LINEWIDTH * scale;
+    const borderWidth = CELL_SIZE * TIMER_BORDER_WIDTH * scale;
     const progress = ptimeDiff / MOVETIME;
 
     // タイマーの背景（灰色の円）
     ctx.beginPath();
     ctx.arc(
-      board.offsetX + this.x * board.cellSize + board.cellSize * 1 / 2 + this.teban * TIMER_OFFSET_X * board.cellSize,
-      board.offsetY + this.y * board.cellSize + board.cellSize * 1 / 2 + this.teban * TIMER_OFFSET_Y * board.cellSize,
+      TIMER_OFFSET_X * CELL_SIZE * scale,
+      TIMER_OFFSET_Y * CELL_SIZE * scale,
       radius, 0, Math.PI * 2, false
     );
     ctx.strokeStyle = TIMER_BGCOLOR;
@@ -288,49 +160,8 @@ class Piece {
     // タイマーの進捗（青い円弧）
     ctx.beginPath();
     ctx.arc(
-      board.offsetX + this.x * board.cellSize + board.cellSize * 1 / 2 + this.teban * TIMER_OFFSET_X * board.cellSize,
-      board.offsetY + this.y * board.cellSize + board.cellSize * 1 / 2 + this.teban * TIMER_OFFSET_Y * board.cellSize,
-      radius, -board.teban * Math.PI / 2, -board.teban * Math.PI / 2 + Math.PI * 2 * progress, false
-    );
-    ctx.strokeStyle = TIMER_COLOR;
-    ctx.lineWidth = lineWidth;
-    ctx.stroke();
-
-    // 縁取りを描画
-    ctx.beginPath();
-    ctx.arc(
-      board.offsetX + this.x * board.cellSize + board.cellSize * 1 / 2 + this.teban * TIMER_OFFSET_X * board.cellSize,
-      board.offsetY + this.y * board.cellSize + board.cellSize * 1 / 2 + this.teban * TIMER_OFFSET_Y * board.cellSize,
-      radius + lineWidth / 2, 0, Math.PI * 2, false
-    );
-    ctx.strokeStyle = TIMER_COLOR;
-    ctx.lineWidth = borderWidth;
-    ctx.stroke();
-
-  }
-
-  drawDragTimer(board, ptimeDiff) {
-    const radius = Math.max(0, board.cellSize * TIMER_RADIUS);
-    const lineWidth = board.cellSize * TIMER_LINEWIDTH;
-    const borderWidth = board.cellSize * TIMER_BORDER_WIDTH;
-    const progress = ptimeDiff / MOVETIME;
-
-    // タイマーの背景（灰色の円）
-    ctx.beginPath();
-    ctx.arc(
-      board.draggingPieceX + TIMER_OFFSET_X * board.cellSize,
-      board.draggingPieceY + TIMER_OFFSET_Y * board.cellSize,
-      radius, 0, Math.PI * 2, false
-    );
-    ctx.strokeStyle = TIMER_BGCOLOR;
-    ctx.lineWidth = lineWidth;
-    ctx.stroke();
-
-    // タイマーの進捗（青い円弧）
-    ctx.beginPath();
-    ctx.arc(
-      board.draggingPieceX + TIMER_OFFSET_X * board.cellSize,
-      board.draggingPieceY + TIMER_OFFSET_Y * board.cellSize,
+      TIMER_OFFSET_X * CELL_SIZE * scale,
+      TIMER_OFFSET_Y * CELL_SIZE * scale,
       radius, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * progress, false
     );
     ctx.strokeStyle = TIMER_COLOR;
@@ -340,12 +171,13 @@ class Piece {
     // 縁取りを描画
     ctx.beginPath();
     ctx.arc(
-      board.draggingPieceX + TIMER_OFFSET_X * board.cellSize,
-      board.draggingPieceY + TIMER_OFFSET_Y * board.cellSize,
+      TIMER_OFFSET_X * CELL_SIZE * scale,
+      TIMER_OFFSET_Y * CELL_SIZE * scale,
       radius + lineWidth / 2, 0, Math.PI * 2, false
     );
     ctx.strokeStyle = TIMER_COLOR;
     ctx.lineWidth = borderWidth;
     ctx.stroke();
+
   }
 }

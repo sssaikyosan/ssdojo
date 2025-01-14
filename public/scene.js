@@ -1,53 +1,73 @@
 class Scene {
-  init() { }
-  draw() { }
-  /**
-   * 
-   * @param {{x: number, y: number}} pos 
-   */
-  onMouseDown(pos) { }
-  /**
-   * 
-   * @param {{x: number, y: number}} pos 
-   */
-  onMouseMove(pos) { }
-  /**
-   * 
-   * @param {{x: number, y: number}} pos 
-   */
-  onMouseUp(pos) { }
-  update() { }
-}
+  scale = 0;
+  aspect = 3 / 4;
+  offsetX = 0;
+  offsetY = 0;
+  htmls = [];
+  ui_lists = [];
+  lastFrameTime = performance.now();
 
-class TitleScene extends Scene {
-  constructor() {
-    super();
-    this.titleTextSize = 0.08;
-    this.messageTextSize = 0.035;
-    this.nameInputOverlay = document.getElementById('nameInputOverlay');
-    this.nameInput = /**@type {HTMLInputElement}*/(document.getElementById('nameInput'));
-    this.submitNameButton = document.getElementById('submitNameButton');
-    this.submitNameButton.addEventListener('click', () => {
-      this.handleNameSubmit();
-    });
+  init() {
 
-    // 入力欄のイベントリスナーを追加
-    this.nameInput.addEventListener('input', () => {
-      this.limitInputLength();
-    });
-
-    // LocalStorageから名前を取得
-    const savedName = localStorage.getItem('playerName');
-    if (savedName) {
-      this.nameInput.value = savedName;
-    }
-    this.showNameInput();
   }
 
+  draw(ctx) {
+    this.resize();
+    ctx.fillStyle = '#101010';
+    ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+    ctx.save();
+    ctx.translate((window.innerWidth * 0.5), window.innerHeight * 0.5)
+    this.ui_lists.forEach(ui => ui.draw(ctx, this.scale, this.aspect));
+    ctx.restore();
+  }
+
+  add(ui) {
+    this.ui_lists.push(ui);
+  }
+
+  remove(ui) {
+    this.ui_lists = this.ui_lists.filter(u => u !== ui);
+  }
+
+  getGamePosition(event) {
+    const rect = canvas.getBoundingClientRect();
+    const x = (event.clientX - rect.left - window.innerWidth * 0.5) / this.scale;
+    const y = (event.clientY - rect.top - window.innerHeight * 0.5) / this.scale;
+    return { x: x, y: y }
+  }
+
+  touchCheck(event, str) {
+    const pos = this.getGamePosition(event);
+    this.ui_lists.forEach(ui => {
+      ui.touchCheck(pos, str);
+    });
+  }
+
+  resize() {
+    this.scale = Math.max(0, Math.min(window.innerWidth * this.aspect, window.innerHeight));
+    this.offsetX = Math.max(0, window.innerWidth * this.aspect - window.innerHeight) * 0.5 / this.aspect;
+    this.offsetY = Math.max(0, window.innerHeight - window.innerWidth * this.aspect) * 0.5;
+  }
+
+  update() {
+    const p = performance.now();
+    this.ui_lists.forEach(ui => ui.eventlist['update'](p - this.lastFrameTime));
+    this.lastFrameTime = p;
+    requestAnimationFrame(this.update);
+  }
+}
+
+
+
+
+
+
+//タイトルシーン
+function createTitleScene() {
   // 入力欄の文字数を制限するメソッド
-  limitInputLength() {
+  function limitInputLength(nameInput) {
     const MAX_LENGTH = 20; // 最大文字数（全角10文字分）
-    let currentText = this.nameInput.value;
+    let currentText = nameInput.value;
     let newText = '';
     let currentLength = 0;
 
@@ -65,200 +85,186 @@ class TitleScene extends Scene {
 
     // 制限を超えた部分を削除
     if (currentText !== newText) {
-      this.nameInput.value = newText;
+      nameInput.value = newText;
     }
   }
 
-  draw() {
-    ctx.fillStyle = "#00000088";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    drawTextWithDoubleOutline(
-      "リアルタイム将棋",
-      canvas.width / 2,
-      canvas.height / 3,
-      canvas.height * this.titleTextSize,
-      "#c2a34f",
-      "#000000",
-      "#ffffff",
-    );
-
-    drawText(
-      `オンライン: ${waitPlayerCount}人`,
-      canvas.width / 2,
-      canvas.height * 0.6,
-      canvas.height * this.messageTextSize,
-      "#ffffff",
-    );
-    drawText(
-      `待機人数: ${waitPlayerCount}人`,
-      canvas.width / 2,
-      canvas.height * 0.65,
-      canvas.height * this.messageTextSize,
-      "#ffffff",
-    );
-  }
-
-  showNameInput() {
-    this.nameInputOverlay.style.display = 'block';
-  }
-
-  hideNameInput() {
-    this.nameInputOverlay.style.display = 'none';
-  }
-
-  handleNameSubmit() {
-    playerName = this.nameInput.value.trim();
+  //名前入力オーバーレイ
+  function handleNameSubmit(nameInputOverlay, nameInput) {
+    playerName = nameInput.value.trim();
     localStorage.setItem('playerName', playerName);
     if (playerName == "") playerName = "名無しの棋士";
     // マッチングを開始
     socket.emit('requestMatch', { name: playerName });
-    this.hideNameInput();
+    nameInputOverlay.style.display = 'none';
     gameState = "matching";
-    scene = new MatchingScene();
+    scene = createMatchingScene();
   }
+
+  let titleScene = new Scene();
+  let title = new TextUI({
+    text: () => {
+      return "リアルタイム将棋";
+    },
+    x: 0,
+    y: -0.25,
+    size: 0.12,
+    colors: ["#c2a34f", "#000000", "#ffffff"]
+  });
+  let onlineText = new TextUI({
+    text: () => {
+      return `オンライン: ${serverStatus['online']}人`;
+    },
+    x: 0,
+    y: 0.15,
+    size: 0.035,
+    colors: ["#ffffff"]
+  });
+  let matchingText = new TextUI({
+    text: () => {
+      return `待機人数: ${serverStatus['matching']}人`;
+    },
+    x: 0,
+    y: 0.2,
+    size: 0.035,
+    colors: ["#ffffff"]
+  });
+
+  let nameInputOverlay = document.getElementById('nameInputOverlay');
+  let nameInput = /**@type {HTMLInputElement}*/(document.getElementById('nameInput'));
+  let submitNameButton = document.getElementById('submitNameButton');
+  nameInput.addEventListener('input', () => { limitInputLength(nameInput); });
+  submitNameButton.addEventListener('click', () => { handleNameSubmit(nameInputOverlay, nameInput); });
+
+
+  titleScene.add(title);
+  titleScene.add(onlineText);
+  titleScene.add(matchingText);
+
+  const savedName = localStorage.getItem('playerName');
+  if (savedName) nameInput.value = savedName;
+  nameInputOverlay.style.display = 'block';
+  return titleScene;
 }
 
-class MatchingScene extends Scene {
-  constructor() {
-    super();
-    this.loadingAngle = 0;
-    this.matchingTextSize = 0.05;
-  }
-  draw() {
-    // テキストを描画
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = `${canvas.height * this.matchingTextSize}px Arial`;
-    ctx.textAlign = "center";
-    ctx.fillText(`マッチング中... 待機${waitPlayerCount}人`, canvas.width / 2, canvas.height / 2.2);
-
-    // ぐるぐるアニメーションを描画
-    const radius = 30;
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2 + 50;
-
-    ctx.strokeStyle = "#FFFFFF";
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, this.loadingAngle, this.loadingAngle + Math.PI / 2);
-    ctx.stroke();
-
-    // 角度を更新
-    this.loadingAngle += 0.05;
-    if (this.loadingAngle > Math.PI * 2) {
-      this.loadingAngle = 0;
-    }
-  }
+//マッチングシーン
+function createMatchingScene() {
+  let matchingScene = new Scene();
+  let matchingText = new TextUI({
+    text: () => {
+      return `マッチング中... 待機${serverStatus['matching']}人`;
+    },
+    x: 0.0,
+    y: 0.0,
+    size: 0.05,
+    colors: ["#ffffff"]
+  });
+  let loading = new LoadingUI({
+    x: 0.0,
+    y: 0.1,
+    scale: 0.05,
+    radius: 0.05,
+  });
+  matchingScene.add(matchingText);
+  matchingScene.add(loading);
+  return matchingScene;
 }
 
-class PlayScene extends Scene {
-  nameSize = 0.03;
 
-  constructor(playerName, opponentName) {
-    super();
-    this.playerName = playerName;
-    this.opponentName = opponentName;
-  }
-  draw() {
-    this.drawPlayerName();
-    board.draw();
-  }
-  onMouseDown(pos) {
-    board.onMouseDown(pos);
-  }
-  onMouseMove(pos) {
-    board.onMouseMove(pos);
-  }
-  onMouseUp(pos) {
-    board.onMouseUp(pos);
-  }
+//ゲームシーン
+function createPlayScene(playerName, opponentName, teban, roomId, time) {
+  let playScene = new Scene();
+  board = new Board();
+  board.init(teban, roomId, time);
+  let boardUI = new BoardUI({
+    board: board,
+    x: 0.0,
+    y: 0.0,
+  });
+  keyboard.init(board, boardUI, canvas);
+  let playerNameUI = new TextUI({
+    text: () => {
+      return `${playerName}`;
+    },
+    x: -0.42,
+    y: 0.4,
+    size: 0.03,
+    colors: ["#FFFFFF"],
+    textBaseline: 'bottom',
+    position: 'right'
+  })
+  let opponentNameUI = new TextUI({
+    text: () => {
+      return `${opponentName}`;
+    },
+    x: 0.42,
+    y: -0.4,
+    size: 0.03,
+    colors: ["#FFFFFF"],
+    textBaseline: 'top',
+    position: 'left'
+  })
 
-  setPlayerName(playerName, opponentName) {
-    this.playerName = playerName;
-    this.opponentName = opponentName;
-  }
+  playScene.add(boardUI);
+  playScene.add(playerNameUI);
+  playScene.add(opponentNameUI);
 
-  drawPlayerName() {
-    drawText(
-      this.playerName,
-      board.offsetX - board.cellSize * 0.1,
-      board.offsetY + board.cellSize * 9,
-      canvas.height * this.nameSize,
-      "#FFFFFF",
-      'right',
-      'bottom'
-    )
-    drawText(
-      this.opponentName,
-      board.offsetX + board.cellSize * 9.1,
-      board.offsetY,
-      canvas.height * this.nameSize,
-      "#FFFFFF",
-      'left',
-      'top'
-    )
-  }
+  return playScene;
 }
 
-class ResultScene extends Scene {
-  /**
-   * 
-   * @type {"win" | "lose"| "draw"} result 
-   */
-  constructor(result) {
-    super();
-    /**@type {typeof result} */
-    this.result = result;
-    this.winloseTextSize = 0.16;
-    this.backButton = new Button(
-      0.5, 0.6, 0.1, 0.05,
-      "戻る", { "normal": "#4cb332", "hover": "#37771d", "down": "#142c0a" },
-      () => {
-        this.clickBackButton();
-      }
-    );
-  }
-  draw() {
-    if (this.result == "win") {
-      ctx.fillStyle = "#00000088";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      drawTextWithDoubleOutline(
-        "勝利",
-        canvas.width / 2,
-        canvas.height / 3,
-        canvas.height * this.winloseTextSize,
-        "#ff6739",
-        "#30140b",
-        "#ffffff",
-      );
-    } else if (this.result == "lose") {
-      ctx.fillStyle = "#00000066";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      // テキストを描画
-      drawTextWithDoubleOutline(
-        "敗北",
-        canvas.width / 2,
-        canvas.height / 3,
-        canvas.height * this.winloseTextSize,
-        "#b639ff",
-        "#270b36",
-        "#ffffff",
-      );
-    }
-    this.backButton.draw();
+//勝敗結果シーン
+function createResultScene(result) {
+  function backToTitle(resultOverlay) {
+    resultOverlay.style.display = 'none';
+    gameState = "waiting";
+    scene = createTitleScene();
   }
-  clickBackButton() {
-    gameState = "title";
-    scene = new TitleScene();
+
+  let resultScene = new Scene();
+  let boardUI = new BoardUI({
+    board: board,
+    x: 0.0,
+    y: 0.0,
+    touchable: false,
+  });
+  let background = new Background({
+    x: 0.0,
+    y: 0.0,
+    width: 1.0,
+    height: 1.0,
+    color: "#00000070",
+  });
+  let resultText = null;
+  if (result == "win") {
+    resultText = new TextUI({
+      text: () => {
+        return "勝利";
+      },
+      x: 0.0,
+      y: -0.2,
+      size: 0.2,
+      colors: ["#ff6739", "#30140b", "#ffffff"]
+    })
+  } else if (result == "lose") {
+    resultText = new TextUI({
+      text: () => {
+        return "敗北";
+      },
+      x: 0.0,
+      y: -0.2,
+      size: 0.2,
+      colors: ["#b639ff", "#270b36", "#ffffff"]
+    })
   }
-  onMouseDown(pos) {
-    this.backButton.mouseDown(pos);
-  }
-  onMouseMove(pos) {
-    this.backButton.mouseMove(pos);
-  }
-  onMouseUp(pos) {
-    this.backButton.mouseUp(pos);
-  }
+  resultScene.add(boardUI);
+  resultScene.add(background);
+  resultScene.add(resultText);
+
+  let resultOverlay = document.getElementById('resultOverlay');
+  let toTitleButton = document.getElementById('toTitleButton');
+  resultOverlay.style.display = 'block';
+  toTitleButton.addEventListener('click', () => { backToTitle(resultOverlay); });
+
+  return resultScene;
 }

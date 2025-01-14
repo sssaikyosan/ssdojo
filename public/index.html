@@ -72,11 +72,30 @@
     #nameInputOverlay.visible {
       display: block;
     }
+
+    #resultOverlay {
+      background-color: #222222;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    #toTitleButton {
+      padding: 10px 20px;
+      font-size: 20px;
+      background-color: #3241c9;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
   </style>
 </head>
 
 <body>
-  <canvas id="shogiCanvas"></canvas>
+  <canvas id="shogiCanvas" tabindex="1"></canvas>
   <div id="nameInputOverlay"
     style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
     <div id="inputContainer">
@@ -84,11 +103,25 @@
       <button id="submitNameButton">プレイ</button>
     </div>
   </div>
+  <div id="resultOverlay"
+    style="display: none; position: absolute; top: 70%; left: 50%; transform: translate(-50%, -50%);">
+    <button id="toTitleButton">タイトルに戻る</button>
+  </div>
+  <script src="/const.js"></script>
   <script src="/globalfunc.js"></script>
+
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-  <script src="/button.js"></script>
   <script src="/piece.js"></script>
   <script src="/board.js"></script>
+  <script src="/keyboard.js"></script>
+  <script src="/ui.js"></script>
+  <script src="/ui_text.js"></script>
+  <script src="/ui_loading.js"></script>
+  <script src="/ui_button.js"></script>
+  <script src="/ui_komadai.js"></script>
+  <script src="/ui_board.js"></script>
+
+
   <script src="/scene.js"></script>
   <script src="/main.js" defer></script>
 </body>

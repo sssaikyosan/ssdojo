@@ -1,19 +1,16 @@
-// グローバル変数
-const CELL_SIZE_RATIO = 0.09;
-const KOMADAI_PIECE_OFFSET = 0.8;  // 駒台の駒の比率
-
 let pieceImages = {};
 let canvas = null;
 /** @type {CanvasRenderingContext2D} */
 let ctx = null;
 let socket = null;
 let gameState = "title";
-/**@type {Scene} */
-let scene = new TitleScene();
+let scene = null;
 /**@type {Board} */
-let board = null;
-let waitPlayerCount = 0;
+let board = new Board();
 let playerName = "";
+let serverStatus = { online: 0, matching: 0 };
+/**@type {Keyboard} */
+let keyboard = null;
 
 // 初期化関数
 function init() {
@@ -21,6 +18,8 @@ function init() {
   canvas = document.getElementById('shogiCanvas');
   //@ts-ignore
   ctx = canvas.getContext('2d');
+
+  scene = createTitleScene();
 
   // Socket.IOの初期化
   //@ts-ignore
@@ -38,65 +37,54 @@ function init() {
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  if (board) {
-    board.resize();
-  }
 }
 
 // イベントリスナーを追加
 function addEventListeners() {
-  canvas.addEventListener('mousedown', onMouseDown);
-  canvas.addEventListener('mousemove', onMouseMove);
-  canvas.addEventListener('mouseup', onMouseUp);
-
   // ウィンドウサイズ変更時のリスナーを追加
   window.addEventListener('resize', () => {
     resizeCanvas();
   });
 
+  canvas.addEventListener('mousedown', (event) => {
+    scene.touchCheck(event, 'mousedown');
+  })
+  canvas.addEventListener('mousemove', (event) => {
+    scene.touchCheck(event, 'mousemove');
+  })
+  canvas.addEventListener('mouseup', (event) => {
+    if (event.button == 2) {
+      scene.touchCheck(event, 'mouseup-right');
+    } else {
+      scene.touchCheck(event, 'mouseup');
+    }
+  })
+
   // 右クリックのデフォルト動作を無効にする
   canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
   });
-}
 
-function getMousePosition(event) {
-  const rect = canvas.getBoundingClientRect();
-  const mouseX = event.clientX - rect.left;
-  const mouseY = event.clientY - rect.top;
-  return { x: mouseX, y: mouseY };
-}
-
-// マウスダウン時の処理
-function onMouseDown(event) {
-  const mousePos = getMousePosition(event);
-  scene.onMouseDown(mousePos);
-}
-
-// マウスムーブ時の処理
-function onMouseMove(event) {
-  scene.onMouseMove(getMousePosition(event));
-}
-
-// マウスアップ時の処理
-function onMouseUp(event) {
-  scene.onMouseUp(getMousePosition(event));
+  keyboard = new Keyboard();
 }
 
 function setupSocket() {
   // 待機人数の更新
-  socket.on('changeWaitingPlayers', (data) => {
-    waitPlayerCount = data.count;
+  socket.on('serverStatus', (data) => {
+    serverStatus = data;
   })
 
   // マッチングが成立したときの処理
   socket.on('matchFound', (data) => {
     console.log('matchFound', data.time);
-    board = new Board(data.teban, data.roomId, data.time);
-    board.init();
-    board.resize();
     gameState = "playing";
-    scene = new PlayScene(playerName, data.name);
+    scene = createPlayScene(
+      playerName,
+      data.name,
+      data.teban,
+      data.roomId,
+      data.time
+    );
   });
 
   socket.on('resign', (data) => {
@@ -164,16 +152,9 @@ const imagePromises = pieceTypes.map(type =>
 );
 
 function roop() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  if (gameState == "playing" || gameState == "win" || gameState == "lose") {
-    board.ptime = performance.now();
-    board.draw();
-  }
-  scene.draw();
+  board.ptime = performance.now();
+  scene.draw(ctx);
   requestAnimationFrame(roop);
 }
 
 init();
-
-
