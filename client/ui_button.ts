@@ -1,4 +1,7 @@
-class Button extends UI {
+import { UI } from "./ui";
+import { darkenColor, drawTextWithOutline } from "./utils";
+
+export class Button extends UI {
 
   constructor(params) {
     super(params);
@@ -8,7 +11,7 @@ class Button extends UI {
     this.color = params.color;
     this.emit = params.emit;
     /** @type {string} */
-    this.state = 'normal'; // ボタンの状態（normal, hover, down）
+    this.state = "normal"; // ボタンの状態（normal, hover, down）
   }
 
   draw(ctx, scale) {
@@ -20,27 +23,27 @@ class Button extends UI {
     const line = this.line * scale;
     ctx.save();
     this.drawRoundedButton(ctx, x, y, width, height, radius, line);
-    drawTextWithOutline(ctx, this.text, x, y, height * 0.6, ['#FFFFFF', '#000000']);
+    drawTextWithOutline(ctx, this.text, x, y, height * 0.6, ["#FFFFFF", "#000000"]);
     ctx.restore();
   }
 
   onClick() { }
 
   mouseDown(pos) {
-    this.state = 'down';
+    this.state = "down";
   }
 
   mouseMove(pos) {
-    if (this.state == "normal") this.state = 'hover';
+    if (this.state == "normal") this.state = "hover";
   }
 
   mouseUp(pos) {
     if (this.state == "down") this.onClick();
-    this.state = 'hover';
+    this.state = "hover";
   }
 
   unTouch() {
-    this.state = 'normal';
+    this.state = "normal";
   }
 
   drawRoundedButton(ctx, x, y, width, height, radius, line) {
@@ -56,13 +59,13 @@ class Button extends UI {
 
     let color;
     switch (this.state) {
-      case 'normal':
+      case "normal":
         color = this.color;
         break;
-      case 'hover':
+      case "hover":
         color = darkenColor(this.color, 0.1);
         break;
-      case 'down':
+      case "down":
         color = darkenColor(this.color, 0.3);
         break;
     }

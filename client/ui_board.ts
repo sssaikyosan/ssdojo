@@ -1,38 +1,56 @@
-class BoardUI extends UI {
-  board = null;
-  cellSize = CELL_SIZE;
-  boardSize = BOARD_SIZE;
-  draggingPiece = null;
-  draggingPiecePos = null;
-  hoveredCell = null;
+import { Board } from "./board";
+import { BOARD_COLOR, BOARD_SIZE, CELL_SIZE, KOMADAI_HEIGHT, KOMADAI_OFFSET_RATIO, LINE_COLOR, LINEWIDTH, MOUSE_HIGHLIGHT_COLOR } from "./const";
+import { Piece } from "./piece";
+import { UI, UiParams } from "./ui";
+import { KomadaiUI } from "./ui_komadai";
+
+export interface BoardUiParams extends UiParams {
+  board: Board;
+  komadai: KomadaiUI;
+  draggingPiece: Piece | null;
+  draggingPiecePos: { x: number, y: number; } | null;
+  hoveredCell: { x: number, y: number; } | null;
+}
+
+export class BoardUI extends UI {
+  x: number = 0;
+  y: number = 0;
+  touchable: boolean = false;
+
+  board: Board;
+  komadai: KomadaiUI;
+  cellSize: number = CELL_SIZE;
+  boardSize: number = BOARD_SIZE;
+  draggingPiece: Piece | null = null;
+  draggingPiecePos: { x: number, y: number; } | null = null;
+  hoveredCell: { x: number, y: number; } | null = null;
 
 
-  constructor(params) {
+
+  constructor(params: BoardUiParams) {
     super(params);
-    this.width = CELL_SIZE * BOARD_SIZE;
-    this.height = CELL_SIZE * BOARD_SIZE;
     this.board = params.board;
     let komadai = new KomadaiUI({
-      x: this.x,
-      y: this.y,
+      x: params.x,
+      y: params.y,
       board: params.board
     });
     this.komadai = komadai;
   }
 
-  renderSelf(ctx, scale) {
+  renderSelf(ctx: CanvasRenderingContext2D, scale: number) {
     ctx.save();
     this.drawBoard(ctx, scale);
     ctx.restore();
   }
 
-  drawBoard(ctx, scale) {
+  drawBoard(ctx: CanvasRenderingContext2D, scale: number) {
     ctx.fillStyle = BOARD_COLOR;
     ctx.strokeStyle = LINE_COLOR;
     ctx.lineWidth = LINEWIDTH;
 
     const cellSize = this.cellSize * scale;
-    ctx.save()
+    ctx.save();
     ctx.translate(-cellSize * this.boardSize / 2, -cellSize * this.boardSize / 2);
     ctx.fillRect(0, 0, this.boardSize * cellSize, this.boardSize * cellSize);
 
@@ -51,7 +69,7 @@ class BoardUI extends UI {
       ctx.stroke();
     }
 
-    ctx.restore()
+    ctx.restore();
 
     ctx.save();
 
@@ -75,10 +93,10 @@ class BoardUI extends UI {
     if (this.hoveredCell) {
       ctx.fillStyle = MOUSE_HIGHLIGHT_COLOR;
       ctx.fillRect(
-        this.hoveredCell.x * CELL_SIZE * scale + LINEWIDTH / 2 - CELL_SIZE * scale * 9 / 2,
-        this.hoveredCell.y * CELL_SIZE * scale + LINEWIDTH / 2 - CELL_SIZE * scale * 9 / 2,
-        CELL_SIZE * scale - LINEWIDTH,
-        CELL_SIZE * scale - LINEWIDTH
+        this.hoveredCell.x * this.cellSize * scale + LINEWIDTH / 2 - this.cellSize * scale * 9 / 2,
+        this.hoveredCell.y * this.cellSize * scale + LINEWIDTH / 2 - this.cellSize * scale * 9 / 2,
+        this.cellSize * scale - LINEWIDTH,
+        this.cellSize * scale - LINEWIDTH
       );
     }
 
@@ -104,9 +122,9 @@ class BoardUI extends UI {
   }
 
   // マウスの位置から盤面の位置を取得
-  getBoardPosition(pos) {
-    const x = Math.floor(pos.x / CELL_SIZE + BOARD_SIZE / 2);
-    const y = Math.floor(pos.y / CELL_SIZE + BOARD_SIZE / 2);
+  getBoardPosition(pos: { x: number, y: number; }) {
+    const x = Math.floor(pos.x / this.cellSize + BOARD_SIZE / 2);
+    const y = Math.floor(pos.y / this.cellSize + BOARD_SIZE / 2);
     let resX = 0;
     let resY = 0;
 
@@ -118,21 +136,21 @@ class BoardUI extends UI {
     return { x: -3, y: -3 };
   }
 
-  getKomadaiPieceAt(pos) {
-    const komadaiX = BOARD_SIZE * CELL_SIZE / 2 + CELL_SIZE * KOMADAI_OFFSET_RATIO;
-    const komadaiY = BOARD_SIZE * CELL_SIZE / 2 - KOMADAI_HEIGHT;
+  getKomadaiPieceAt(pos: { x: number, y: number; }) {
+    const komadaiX = BOARD_SIZE * this.cellSize / 2 + this.cellSize * KOMADAI_OFFSET_RATIO;
+    const komadaiY = BOARD_SIZE * this.cellSize / 2 - KOMADAI_HEIGHT;
 
     // クリック位置がどの駒の範囲内かをチェック
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 4; j++) {
         const type = this.komadai.types[i][j];
         if (!type) continue;
-        if (this.board.komadaiPieces[this.board.teban === 1 ? 'sente' : 'gote'][type] <= 0) continue;
+        if (this.board.komadaiPieces[this.board.teban === 1 ? "sente" : "gote"][type] <= 0) continue;
         if (
-          pos.x >= komadaiX + j * CELL_SIZE &&
-          pos.x <= komadaiX + j * CELL_SIZE + CELL_SIZE &&
-          pos.y >= komadaiY + i * CELL_SIZE &&
-          pos.y <= komadaiY + i * CELL_SIZE + CELL_SIZE
+          pos.x >= komadaiX + j * this.cellSize &&
+          pos.x <= komadaiX + j * this.cellSize + this.cellSize &&
+          pos.y >= komadaiY + i * this.cellSize &&
+          pos.y <= komadaiY + i * this.cellSize + this.cellSize
         ) {
           return type;
         }
@@ -141,14 +159,14 @@ class BoardUI extends UI {
     return null;
   }
 
-  onMouseDown(pos) {
+  onMouseDown(pos: { x: number, y: number; }) {
     const { x, y } = this.getBoardPosition(pos);
     if (x == -3 || y == -3) {
       const komadaiPiece = this.getKomadaiPieceAt(pos);
       if (komadaiPiece) {
         this.draggingPiecePos = pos;
         this.draggingPiece = new Piece(this.board, komadaiPiece, -3, -3, this.board.teban, this.board.starttime, 0);
-        this.board.komadaiPieces[this.board.teban === 1 ? 'sente' : 'gote'][komadaiPiece]--;
+        this.board.komadaiPieces[this.board.teban === 1 ? "sente" : "gote"][komadaiPiece]--;
       }
     } else if (this.board.map[x][y]) {
       if (this.board.map[x][y].teban == this.board.teban) {
@@ -158,7 +176,7 @@ class BoardUI extends UI {
     }
   }
 
-  onMouseMove(pos) {
+  onMouseMove(pos: { x: number, y: number; }) {
     if (this.draggingPiece) {
       this.draggingPiecePos = pos;
     }
@@ -170,7 +188,7 @@ class BoardUI extends UI {
     }
   }
 
-  onMouseUp(pos) {
+  onMouseUp(pos: { x: number, y: number; }) {
     if (!this.draggingPiece) return;
     const { x, y } = this.getBoardPosition(pos);
     if (this.draggingPiece.x == -3) this.board.putPiece(x, y, this.draggingPiece);
@@ -179,7 +197,7 @@ class BoardUI extends UI {
     this.draggingPiecePos = null;
   }
 
-  onMouseUpRight(pos) {
+  onMouseUpRight(pos: { x: number, y: number; }) {
     if (!this.draggingPiece) return;
     const { x, y } = this.getBoardPosition(pos);
     if (x == -3 && y == -3) this.board.putPiece(x, y, this.draggingPiece);

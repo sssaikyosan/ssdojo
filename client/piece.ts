@@ -1,6 +1,20 @@
+import { Board } from "./board";
+import { BOARD_SIZE, CELL_SIZE, LINEWIDTH, MOVE_COLOR, MOVETIME, pieceMoves, TIMER_BGCOLOR, TIMER_BORDER_WIDTH, TIMER_COLOR, TIMER_LINEWIDTH, TIMER_OFFSET_X, TIMER_OFFSET_Y, TIMER_RADIUS } from "./const";
+import { board } from "./main";
+import { PieceImages } from "./pieces";
+import { BoardUiParams } from "./ui_board";
 
-class Piece {
-  constructor(board, type, x, y, teban, lastMoveTime, ptime) {
+export class Piece {
+  board: Board;
+  type: string;
+  teban: number;
+  promoted: boolean;
+  x: number;
+  y: number;
+  lastMoveTime: [number, number];
+  lastMovepTime: number;
+
+  constructor(board: Board, type: string, x: number, y: number, teban: number, lastMoveTime: [number, number], ptime: number) {
     this.board = board;
     this.type = type;
     this.teban = teban;
@@ -11,7 +25,7 @@ class Piece {
     this.lastMovepTime = ptime;
   }
 
-  draw(ctx, scale) {
+  draw(ctx: CanvasRenderingContext2D, scale: number) {
     if (this.x === -3) return;
     ctx.save();
     ctx.translate(CELL_SIZE * (this.x - 4) * scale, CELL_SIZE * (this.y - 4) * scale);
@@ -22,8 +36,8 @@ class Piece {
     ctx.restore();
   }
 
-  drawSelf(ctx, scale) {
-    const img = pieceImages[this.type];
+  drawSelf(ctx: CanvasRenderingContext2D, scale: number) {
+    const img = PieceImages[this.type as keyof typeof PieceImages];
     if (img) {
       ctx.drawImage(img, -CELL_SIZE * scale / 2, -CELL_SIZE * scale / 2, CELL_SIZE * scale, CELL_SIZE * scale);
     }
@@ -33,7 +47,7 @@ class Piece {
     }
   }
 
-  drawDragging(ctx, scale, boardui) {
+  drawDragging(ctx: CanvasRenderingContext2D, scale: number, boardui: BoardUiParams) {
     ctx.save();
     ctx.translate(boardui.draggingPiecePos.x * scale, boardui.draggingPiecePos.y * scale);
     this.drawSelf(ctx, scale);
@@ -43,27 +57,27 @@ class Piece {
   // 成り駒の種類を返す
   getPromotedType() {
     const promotedTypes = {
-      pawn: 'prom_pawn',
-      lance: 'prom_lance',
-      knight: 'prom_knight',
-      silver: 'prom_silver',
-      bishop: 'horse',
-      rook: 'dragon'
+      pawn: "prom_pawn",
+      lance: "prom_lance",
+      knight: "prom_knight",
+      silver: "prom_silver",
+      bishop: "horse",
+      rook: "dragon"
     };
-    return promotedTypes[this.type] || this.type;
+    return promotedTypes[this.type as keyof typeof promotedTypes] || this.type;
   }
 
   // 成り駒の種類を返す
   getUnPromotedType() {
     const promotedTypes = {
-      prom_pawn: 'pawn',
-      prom_lance: 'lance',
-      prom_knight: 'knight',
-      prom_silver: 'silver',
-      horse: 'bishop',
-      dragon: 'rook'
+      prom_pawn: "pawn",
+      prom_lance: "lance",
+      prom_knight: "knight",
+      prom_silver: "silver",
+      horse: "bishop",
+      dragon: "rook"
     };
-    return promotedTypes[this.type] || this.type;
+    return promotedTypes[this.type as keyof typeof promotedTypes] || this.type;
   }
 
   canMove(nx, ny, nteban, map, narazu) {
@@ -73,10 +87,10 @@ class Piece {
     function checkMyPiece(xx, yy, teban, type) {
       if (map[xx][yy] && map[xx][yy].teban === nteban) return false;
       if (!narazu) return true;
-      if (type === 'pawn' || type === 'lance') {
+      if (type === "pawn" || type === "lance") {
         if (teban === 1 && yy === 0) return false;
         if (teban === -1 && yy === 8) return false;
-      } else if (type === 'knight') {
+      } else if (type === "knight") {
         if (teban === 1 && yy <= 1) return false;
         if (teban === -1 && yy >= 7) return false;
       }

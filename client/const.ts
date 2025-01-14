@@ -1,30 +1,30 @@
-const SERVER_MOVETYME = 5;
-const MOVETIME = 5000;
+export const SERVER_MOVETYME = 5;
+export const MOVETIME = 5000;
 
 
-const BOARD_SIZE = 9;
-const LINEWIDTH = 2;
-const CELL_SIZE = 0.09;
-const MOUSE_HIGHLIGHT_COLOR = '#afb61e';
-const BOARD_COLOR = '#af6b1e';
-const LINE_COLOR = '#000000';
+export const BOARD_SIZE = 9;
+export const LINEWIDTH = 2;
+export const CELL_SIZE = 0.09;
+export const MOUSE_HIGHLIGHT_COLOR = "#afb61e";
+export const BOARD_COLOR = "#af6b1e";
+export const LINE_COLOR = "#000000";
 
-const KOMADAI_OFFSET_RATIO = 0.1;
-const KOMADAI_WIDTH = 0.27;
-const KOMADAI_HEIGHT = 0.36;
-const KOMADAI_PIECE_OFFSET = 0.8;
+export const KOMADAI_OFFSET_RATIO = 0.1;
+export const KOMADAI_WIDTH = 0.27;
+export const KOMADAI_HEIGHT = 0.36;
+export const KOMADAI_PIECE_OFFSET = 0.8;
 
-const TIMER_RADIUS = 0.1;
-const TIMER_LINEWIDTH = 0.1;
-const TIMER_OFFSET_X = 0.2;
-const TIMER_OFFSET_Y = - 0.2;
-const TIMER_BORDER_WIDTH = 0.04;
-const TIMER_BGCOLOR = 'rgb(223, 223, 223)';
-const TIMER_COLOR = 'rgb(31, 63, 221)';
+export const TIMER_RADIUS = 0.1;
+export const TIMER_LINEWIDTH = 0.1;
+export const TIMER_OFFSET_X = 0.2;
+export const TIMER_OFFSET_Y = - 0.2;
+export const TIMER_BORDER_WIDTH = 0.04;
+export const TIMER_BGCOLOR = "rgb(223, 223, 223)";
+export const TIMER_COLOR = "rgb(31, 63, 221)";
 
-const MOVE_COLOR = '#cf8b1e'
+export const MOVE_COLOR = "#cf8b1e"
 
-const pieceMoves = {
+export const pieceMoves = {
   pawn: [
     { dx: 0, dy: -1 } // 先手の場合、1マス前
   ],
@@ -134,4 +134,4 @@ const pieceMoves = {
     { dx: 1, dy: 1 },
     { dx: -1, dy: 1 }
   ]
-};
+} as const;

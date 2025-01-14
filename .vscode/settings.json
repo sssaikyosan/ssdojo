@@ -1,0 +1,24 @@
+// これはVSCodeの設定ファイルで、このプロジェクト固有の設定ファイルとして機能する
+// 左のプロパティ名の部分にカーソルを合わせたら意味が表示されるはず
+{
+  "files.exclude": {
+    // ここに書いたファイルをエディタのエクスプローラー欄から非表示にする
+    "**/node_modules": true,
+  },
+
+  // TypeScript設定
+  "[typescript]": {
+    "editor.detectIndentation": false,
+    "editor.indentSize": 2,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit", // 保存時にインポートの並び替え、削除を実行
+    }
+  },
+  "typescript.format.semicolons": "insert",
+  "typescript.preferences.quoteStyle": "double",
+  "typescript.preferences.autoImportFileExcludePatterns": [ "**/node_modules/*" ],
+  // "typescript.preferences.preferTypeOnlyAutoImports": true,
+
+  // JSON設定
+  "json.format.keepLines": true,
+}

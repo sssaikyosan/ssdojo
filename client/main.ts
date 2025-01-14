@@ -1,23 +1,45 @@
-let pieceImages = {};
-let canvas = null;
-/** @type {CanvasRenderingContext2D} */
-let ctx = null;
-let socket = null;
-let gameState = "title";
-let scene = null;
-/**@type {Board} */
-let board = new Board();
-let playerName = "";
-let serverStatus = { online: 0, matching: 0 };
-/**@type {Keyboard} */
-let keyboard = null;
+import { SsTime } from "../share/type";
+import { Board } from "./board";
+import { Keyboard } from "./keyboard";
+import { PieceImageInit } from "./pieces";
+import { createPlayScene, createTitleScene, Scene } from "./scene";
+
+export type GameState = "title" | "matching" | "playing" | "win" | "lose";
+
+export let canvas: HTMLCanvasElement = null!;
+export let ctx:CanvasRenderingContext2D = null!;
+export let socket: import("socket.io").Socket = null!;
+export let gameState:GameState = "title";
+export let scene:Scene = null!;
+export let board:Board = new Board();
+export let playerName = "";
+export let serverStatus = { online: 0, matching: 0 };
+export let keyboard:Keyboard = null!;
+
+export function setGameState(state:GameState) {
+  gameState = state;
+}
+
+export function setScene(s:Scene) {
+  scene = s;
+}
+
+export function setPlayerName(name:string){
+  playerName = name;
+}
+
+export function setBoard(b:Board){
+  board = b;
+}
+
+PieceImageInit();
 
 // 初期化関数
 function init() {
   // キャンバスの初期化
-  canvas = document.getElementById('shogiCanvas');
+  canvas = document.getElementById("shogiCanvas") as any;
   //@ts-ignore
-  ctx = canvas.getContext('2d');
+  ctx = canvas.getContext("2d");
 
   scene = createTitleScene();
 
@@ -42,26 +64,26 @@ function resizeCanvas() {
 // イベントリスナーを追加
 function addEventListeners() {
   // ウィンドウサイズ変更時のリスナーを追加
-  window.addEventListener('resize', () => {
+  window.addEventListener("resize", () => {
     resizeCanvas();
   });
 
-  canvas.addEventListener('mousedown', (event) => {
-    scene.touchCheck(event, 'mousedown');
+  canvas.addEventListener("mousedown", (event) => {
+    scene.touchCheck(event, "mousedown");
   })
-  canvas.addEventListener('mousemove', (event) => {
-    scene.touchCheck(event, 'mousemove');
+  canvas.addEventListener("mousemove", (event) => {
+    scene.touchCheck(event, "mousemove");
   })
-  canvas.addEventListener('mouseup', (event) => {
+  canvas.addEventListener("mouseup", (event) => {
     if (event.button == 2) {
-      scene.touchCheck(event, 'mouseup-right');
+      scene.touchCheck(event, "mouseup-right");
     } else {
-      scene.touchCheck(event, 'mouseup');
+      scene.touchCheck(event, "mouseup");
     }
   })
 
   // 右クリックのデフォルト動作を無効にする
-  canvas.addEventListener('contextmenu', (e) => {
+  canvas.addEventListener("contextmenu", (e) => {
     e.preventDefault();
   });
 
@@ -70,13 +92,13 @@ function addEventListeners() {
 
 function setupSocket() {
   // 待機人数の更新
-  socket.on('serverStatus', (data) => {
+  socket.on("serverStatus", (data) => {
     serverStatus = data;
   })
 
   // マッチングが成立したときの処理
-  socket.on('matchFound', (data) => {
-    console.log('matchFound', data.time);
+  socket.on("matchFound", (data) => {
+    console.log("matchFound", data.time);
     gameState = "playing";
     scene = createPlayScene(
       playerName,
@@ -87,8 +109,8 @@ function setupSocket() {
     );
   });
 
-  socket.on('resign', (data) => {
-    if (gameState === 'playing') {
+  socket.on("resign", (data) => {
+    if (gameState === "playing") {
       if (data.winner === board.teban) {
         gameState = "win";
       } else {
@@ -98,21 +120,21 @@ function setupSocket() {
   });
 
   // 新しい駒の移動を受信
-  socket.on('newMove', (data) => {
+  socket.on("newMove", (data) => {
     if (gameState == "playing") {
       board.newMove(data);
     }
   });
 
   // 新しい駒の配置を受信
-  socket.on('newPut', (data) => {
+  socket.on("newPut", (data) => {
     if (gameState == "playing") {
       board.newPut(data);
     }
   });
 }
 
-function getTimeDiff(startTime, endTime) {
+export function getTimeDiff(startTime: SsTime, endTime: SsTime) {
   // startTimeとendTimeは [秒, ナノ秒] の形式
   const [startSeconds, startNanoseconds] = startTime;
   const [endSeconds, endNanoseconds] = endTime;
@@ -130,26 +152,6 @@ function getTimeDiff(startTime, endTime) {
   }
   return [secondsDiff, nanosecondsDiff];
 }
-
-// 画像の読み込み
-const pieceTypes = ['pawn', 'lance', 'knight', 'silver', 'gold', 'king', 'king2', 'rook', 'bishop',
-  'prom_pawn', 'prom_lance', 'prom_knight', 'prom_silver', 'horse', 'dragon'];
-
-// 画像読み込みのPromiseを作成
-const imagePromises = pieceTypes.map(type =>
-  new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = `/pieces/${type}.png`;
-    img.onload = () => {
-      pieceImages[type] = img;
-      resolve();
-    };
-    img.onerror = () => {
-      console.error(`Failed to load image: ${type}.png`);
-      reject(new Error(`Failed to load image: ${type}.png`));
-    };
-  })
-);
 
 function roop() {
   board.ptime = performance.now();

@@ -1,0 +1,1 @@
+export type SsTime = [number,number]

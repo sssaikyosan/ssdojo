@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>リアルタイム将棋</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <style>
+    /* スクロールを防ぐためのスタイル */
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      /* スクロールを無効化 */
+      height: 100%;
+      /* 画面全体を占める */
+    }
+
+    /* canvasを全画面表示 */
+    #shogiCanvas {
+      display: block;
+      /* インライン要素の隙間をなくす */
+      width: 100vw;
+      /* ビューポートの幅に合わせる */
+      height: 100vh;
+      /* ビューポートの高さに合わせる */
+      background-color: #222222;
+      /* 背景色（オプション） */
+    }
+
+    #nameInputOverlay {
+      background-color: #222222;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    #inputContainer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #nameInput {
+      flex: 1;
+      pointer-events: auto;
+      z-index: 1;
+      background-color: #f0f0f0;
+      color: #000000;
+      border: none;
+      border-radius: 5px;
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 0;
+    }
+
+    #submitNameButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #3241c9;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      /* ボタンのサイズが縮まないように */
+    }
+
+    #nameInputOverlay.visible {
+      display: block;
+    }
+
+    #resultOverlay {
+      background-color: #222222;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    #toTitleButton {
+      padding: 10px 20px;
+      font-size: 20px;
+      background-color: #3241c9;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+  </style>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+
+<body>
+  <canvas id="shogiCanvas"></canvas>
+
+  <div id="nameInputOverlay"
+    style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    <div id="inputContainer">
+      <input type="text" id="nameInput" placeholder="名前" maxlength="20">
+      <button id="submitNameButton">プレイ</button>
+    </div>
+  </div>
+  <div id="resultOverlay"
+    style="display: none; position: absolute; top: 70%; left: 50%; transform: translate(-50%, -50%);">
+    <button id="toTitleButton">タイトルに戻る</button>
+  </div>
+
+  <script type="module" src="/client/main.ts"></script>
+</body>
+
+</html>

@@ -1,0 +1,18 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ES2020",
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "noEmitOnError": false, // 型チェックエラーがある場合でもビルドを実行する
+  },
+  "include": [
+    "./",
+    "../share"
+  ],
+}

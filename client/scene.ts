@@ -1,4 +1,11 @@
-class Scene {
+import { Board } from "./board";
+import { board, canvas, keyboard, playerName, serverStatus, setBoard, setGameState, setPlayerName, setScene, socket } from "./main";
+import { Background, UI } from "./ui";
+import { BoardUI } from "./ui_board";
+import { LoadingUI } from "./ui_loading";
+import { TextUI } from "./ui_text";
+
+export class Scene {
   scale = 0;
   aspect = 3 / 4;
   offsetX = 0;
@@ -11,9 +18,9 @@ class Scene {
 
   }
 
-  draw(ctx) {
+  draw(ctx: CanvasRenderingContext2D) {
     this.resize();
-    ctx.fillStyle = '#101010';
+    ctx.fillStyle = "#101010";
     ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
     ctx.save();
     ctx.translate((window.innerWidth * 0.5), window.innerHeight * 0.5)
@@ -21,22 +28,22 @@ class Scene {
     ctx.restore();
   }
 
-  add(ui) {
+  add(ui: UI) {
     this.ui_lists.push(ui);
   }
 
-  remove(ui) {
+  remove(ui: UI) {
     this.ui_lists = this.ui_lists.filter(u => u !== ui);
   }
 
-  getGamePosition(event) {
+  getGamePosition(event:MouseEvent) {
     const rect = canvas.getBoundingClientRect();
     const x = (event.clientX - rect.left - window.innerWidth * 0.5) / this.scale;
     const y = (event.clientY - rect.top - window.innerHeight * 0.5) / this.scale;
-    return { x: x, y: y }
+    return { x: x, y: y };
   }
 
-  touchCheck(event, str) {
+  touchCheck(event:MouseEvent, str:string) {
     const pos = this.getGamePosition(event);
     this.ui_lists.forEach(ui => {
       ui.touchCheck(pos, str);
@@ -51,7 +58,7 @@ class Scene {
 
   update() {
     const p = performance.now();
-    this.ui_lists.forEach(ui => ui.eventlist['update'](p - this.lastFrameTime));
+    this.ui_lists.forEach(ui => ui.eventlist["update"](p - this.lastFrameTime));
     this.lastFrameTime = p;
     requestAnimationFrame(this.update);
   }
@@ -63,12 +70,12 @@ class Scene {
 
 
 //タイトルシーン
-function createTitleScene() {
+export function createTitleScene() {
   // 入力欄の文字数を制限するメソッド
   function limitInputLength(nameInput) {
     const MAX_LENGTH = 20; // 最大文字数（全角10文字分）
     let currentText = nameInput.value;
-    let newText = '';
+    let newText = "";
     let currentLength = 0;
 
     for (let i = 0; i < currentText.length; i++) {
@@ -91,14 +98,14 @@ function createTitleScene() {
 
   //名前入力オーバーレイ
   function handleNameSubmit(nameInputOverlay, nameInput) {
-    playerName = nameInput.value.trim();
-    localStorage.setItem('playerName', playerName);
-    if (playerName == "") playerName = "名無しの棋士";
+    setPlayerName(nameInput.value.trim());
+    localStorage.setItem("playerName", playerName);
+    if (playerName == "") setPlayerName("名無しの棋士");
     // マッチングを開始
-    socket.emit('requestMatch', { name: playerName });
-    nameInputOverlay.style.display = 'none';
-    gameState = "matching";
-    scene = createMatchingScene();
+    socket.emit("requestMatch", { name: playerName });
+    nameInputOverlay.style.display = "none";
+    setGameState("matching");
+    setScene(createMatchingScene());
   }
 
   let titleScene = new Scene();
@@ -113,7 +120,7 @@ function createTitleScene() {
   });
   let onlineText = new TextUI({
     text: () => {
-      return `オンライン: ${serverStatus['online']}人`;
+      return `オンライン: ${serverStatus["online"]}人`;
     },
     x: 0,
     y: 0.15,
@@ -122,7 +129,7 @@ function createTitleScene() {
   });
   let matchingText = new TextUI({
     text: () => {
-      return `待機人数: ${serverStatus['matching']}人`;
+      return `待機人数: ${serverStatus["matching"]}人`;
     },
     x: 0,
     y: 0.2,
@@ -130,20 +137,20 @@ function createTitleScene() {
     colors: ["#ffffff"]
   });
 
-  let nameInputOverlay = document.getElementById('nameInputOverlay');
-  let nameInput = /**@type {HTMLInputElement}*/(document.getElementById('nameInput'));
-  let submitNameButton = document.getElementById('submitNameButton');
-  nameInput.addEventListener('input', () => { limitInputLength(nameInput); });
-  submitNameButton.addEventListener('click', () => { handleNameSubmit(nameInputOverlay, nameInput); });
+  let nameInputOverlay = document.getElementById("nameInputOverlay");
+  let nameInput = /**@type {HTMLInputElement}*/(document.getElementById("nameInput"));
+  let submitNameButton = document.getElementById("submitNameButton");
+  nameInput.addEventListener("input", () => { limitInputLength(nameInput); });
+  submitNameButton.addEventListener("click", () => { handleNameSubmit(nameInputOverlay, nameInput); });
 
 
   titleScene.add(title);
   titleScene.add(onlineText);
   titleScene.add(matchingText);
 
-  const savedName = localStorage.getItem('playerName');
+  const savedName = localStorage.getItem("playerName");
   if (savedName) nameInput.value = savedName;
-  nameInputOverlay.style.display = 'block';
+  nameInputOverlay.style.display = "block";
   return titleScene;
 }
 
@@ -152,7 +159,7 @@ function createMatchingScene() {
   let matchingScene = new Scene();
   let matchingText = new TextUI({
     text: () => {
-      return `マッチング中... 待機${serverStatus['matching']}人`;
+      return `マッチング中... 待機${serverStatus["matching"]}人`;
     },
     x: 0.0,
     y: 0.0,
@@ -172,9 +179,9 @@ function createMatchingScene() {
 
 
 //ゲームシーン
-function createPlayScene(playerName, opponentName, teban, roomId, time) {
+export function createPlayScene(playerName, opponentName, teban, roomId, time) {
   let playScene = new Scene();
-  board = new Board();
+  setBoard(new Board());
   board.init(teban, roomId, time);
   let boardUI = new BoardUI({
     board: board,
@@ -190,8 +197,8 @@ function createPlayScene(playerName, opponentName, teban, roomId, time) {
     y: 0.4,
     size: 0.03,
     colors: ["#FFFFFF"],
-    textBaseline: 'bottom',
-    position: 'right'
+    textBaseline: "bottom",
+    position: "right"
   })
   let opponentNameUI = new TextUI({
     text: () => {
@@ -201,8 +208,8 @@ function createPlayScene(playerName, opponentName, teban, roomId, time) {
     y: -0.4,
     size: 0.03,
     colors: ["#FFFFFF"],
-    textBaseline: 'top',
-    position: 'left'
+    textBaseline: "top",
+    position: "left"
   })
 
   playScene.add(boardUI);
@@ -214,11 +221,11 @@ function createPlayScene(playerName, opponentName, teban, roomId, time) {
 
 
 //勝敗結果シーン
-function createResultScene(result) {
+export function createResultScene(result) {
   function backToTitle(resultOverlay) {
-    resultOverlay.style.display = 'none';
-    gameState = "waiting";
-    scene = createTitleScene();
+    resultOverlay.style.display = "none";
+    setGameState("waiting");
+    setScene(createTitleScene());
   }
 
   let resultScene = new Scene();
@@ -261,10 +268,10 @@ function createResultScene(result) {
   resultScene.add(background);
   resultScene.add(resultText);
 
-  let resultOverlay = document.getElementById('resultOverlay');
-  let toTitleButton = document.getElementById('toTitleButton');
-  resultOverlay.style.display = 'block';
-  toTitleButton.addEventListener('click', () => { backToTitle(resultOverlay); });
+  let resultOverlay = document.getElementById("resultOverlay");
+  let toTitleButton = document.getElementById("toTitleButton");
+  resultOverlay.style.display = "block";
+  toTitleButton.addEventListener("click", () => { backToTitle(resultOverlay); });
 
   return resultScene;
 }

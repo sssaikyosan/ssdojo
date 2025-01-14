@@ -1,23 +1,23 @@
-class Keyboard {
+export class Keyboard {
   board = null;
   boardUI = null;
   keys = {
-    ' ': 'pawn',
-    'q': 'lance',
-    'w': 'knight',
-    'a': 'silver',
-    's': 'gold',
-    'e': 'rook',
-    'd': 'bishop',
-    'z': 'king',
-    'x': 'king2',
+    " ": "pawn",
+    "q": "lance",
+    "w": "knight",
+    "a": "silver",
+    "s": "gold",
+    "e": "rook",
+    "d": "bishop",
+    "z": "king",
+    "x": "king2",
   }
 
   init(board, boardUI, canvas) {
     this.board = board;
     this.boardUI = boardUI;
     canvas.focus();
-    canvas.addEventListener('keydown', (e) => {
+    canvas.addEventListener("keydown", (e) => {
       this.onKeyDown(e);
     });
   }
