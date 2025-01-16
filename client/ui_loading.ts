@@ -2,17 +2,15 @@ import { UI, UiParams } from "./ui";
 
 interface UiLoadingParams extends UiParams {
   radius: number;
-  loadingAngle: number;
 }
 
 export class LoadingUI extends UI {
   radius: number;
-  loadingAngle: number;
+  loadingAngle: number = 0;
 
   constructor(params: UiLoadingParams) {
     super(params);
     this.radius = params.radius;
-    this.loadingAngle = 0;
   }
 
   draw(ctx: CanvasRenderingContext2D, scale: number) {

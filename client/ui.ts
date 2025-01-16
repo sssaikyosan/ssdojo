@@ -2,7 +2,9 @@
 export interface UiParams {
   x: number;
   y: number;
-  touchable: boolean;
+  width?: number;
+  height?: number;
+  touchable?: boolean;
 }
 
 interface UiBackground extends UiParams {
@@ -21,8 +23,8 @@ export class UI {
   constructor(params: UiParams) {
     this.x = params.x;
     this.y = params.y;
-    this.width = 0;
-    this.height = 0;
+    this.width = params.width ?? 0;
+    this.height = params.height ?? 0;
     this.touchable = params.touchable ?? false;
     this.eventlist = {};
 

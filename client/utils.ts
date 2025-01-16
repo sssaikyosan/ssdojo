@@ -130,3 +130,9 @@ export function darkenColor(color: string, percent: number) {
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 }
 
+export function hrtime2time(hrtime: [number, number]): number {
+  // hrtime[0] = 秒
+  // hrtime[1] = ナノ秒
+  return hrtime[0] * 1000 + hrtime[1] / 1000000;
+}
+

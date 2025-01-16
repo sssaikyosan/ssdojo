@@ -1,57 +1,64 @@
-import { SsTime } from "../share/type";
-import { Board } from "./board";
+import { Socket } from "socket.io";
+import { HrTime } from "../share/type";
+import { Emitter } from "./emitter";
+import { GameManager } from "./gameManager";
 import { Keyboard } from "./keyboard";
-import { PieceImageInit } from "./pieces";
+import { PieceImageInit, PieceType } from "./pieces";
 import { createPlayScene, createTitleScene, Scene } from "./scene";
+import { hrtime2time } from "./utils";
 
-export type GameState = "title" | "matching" | "playing" | "win" | "lose";
+export type GameState = "title" | "matching" | "playing" | "result";
 
 export let canvas: HTMLCanvasElement = null!;
-export let ctx:CanvasRenderingContext2D = null!;
-export let socket: import("socket.io").Socket = null!;
-export let gameState:GameState = "title";
-export let scene:Scene = null!;
-export let board:Board = new Board();
+export let ctx: CanvasRenderingContext2D = null!;
+export let emitter: Emitter = null!;
+export let keyboard: Keyboard = null!;
+export let socket: Socket = null!;
+
+export let gameManager: GameManager = null!;
+
+
+export let scene: Scene = null!;
 export let playerName = "";
-export let serverStatus = { online: 0, matching: 0 };
-export let keyboard:Keyboard = null!;
+export let serverStatus = { online: 0, playing: 0 };
 
-export function setGameState(state:GameState) {
-  gameState = state;
-}
 
-export function setScene(s:Scene) {
+
+export function setScene(s: Scene) {
   scene = s;
 }
 
-export function setPlayerName(name:string){
+export function setPlayerName(name: string) {
   playerName = name;
-}
-
-export function setBoard(b:Board){
-  board = b;
 }
 
 PieceImageInit();
 
 // 初期化関数
 function init() {
-  // キャンバスの初期化
-  canvas = document.getElementById("shogiCanvas") as any;
-  //@ts-ignore
-  ctx = canvas.getContext("2d");
 
-  scene = createTitleScene();
-
-  // Socket.IOの初期化
+  canvas = document.getElementById("shogiCanvas") as HTMLCanvasElement;
+  ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+  emitter = new Emitter();
+  keyboard = new Keyboard(emitter);
   //@ts-ignore
   socket = io();
+  // Socket.IOの初期化
   setupSocket();
 
   // イベントリスナーの追加
   addEventListeners();
 
+  // キャンバスサイズ設定
   resizeCanvas();
+
+  gameManager = new GameManager({
+    socket: socket,
+    emitter: emitter,
+  });
+
+  // シーンの初期化
+  scene = createTitleScene();
   roop();
 }
 
@@ -63,6 +70,7 @@ function resizeCanvas() {
 
 // イベントリスナーを追加
 function addEventListeners() {
+
   // ウィンドウサイズ変更時のリスナーを追加
   window.addEventListener("resize", () => {
     resizeCanvas();
@@ -70,71 +78,69 @@ function addEventListeners() {
 
   canvas.addEventListener("mousedown", (event) => {
     scene.touchCheck(event, "mousedown");
-  })
+  });
   canvas.addEventListener("mousemove", (event) => {
     scene.touchCheck(event, "mousemove");
-  })
+  });
   canvas.addEventListener("mouseup", (event) => {
     if (event.button == 2) {
       scene.touchCheck(event, "mouseup-right");
     } else {
       scene.touchCheck(event, "mouseup");
     }
-  })
+  });
 
   // 右クリックのデフォルト動作を無効にする
   canvas.addEventListener("contextmenu", (e) => {
     e.preventDefault();
   });
 
-  keyboard = new Keyboard();
+  //キーボードのリスナーを追加
+  keyboard.Init(canvas);
 }
 
 function setupSocket() {
   // 待機人数の更新
-  socket.on("serverStatus", (data) => {
+  socket.on("serverStatus", (data: { online: number, playing: number; }) => {
     serverStatus = data;
-  })
-
+  });
   // マッチングが成立したときの処理
-  socket.on("matchFound", (data) => {
-    console.log("matchFound", data.time);
-    gameState = "playing";
-    scene = createPlayScene(
-      playerName,
-      data.name,
-      data.teban,
-      data.roomId,
-      data.time
-    );
-  });
-
-  socket.on("resign", (data) => {
-    if (gameState === "playing") {
-      if (data.winner === board.teban) {
-        gameState = "win";
-      } else {
-        gameState = "lose";
-      }
+  socket.on("matchFound", (data: { name: string, teban: number, roomId: string, hrtime: [number, number]; }) => {
+    console.log("matchFound", data.hrtime);
+    if (gameManager.gameState == "matching") {
+      gameManager.gameState = "playing";
+      scene = createPlayScene(
+        playerName,
+        data.name,
+        data.teban,
+        data.roomId,
+        hrtime2time(data.hrtime),
+        performance.now()
+      );
     }
   });
 
-  // 新しい駒の移動を受信
-  socket.on("newMove", (data) => {
-    if (gameState == "playing") {
-      board.newMove(data);
-    }
+  // 駒の移動を受け取る
+  socket.on("newMove", (data: {
+    x: number, y: number, nx: number, ny: number,
+    narazu: boolean,
+    teban: number,
+    hrtime: [number, number];
+  }) => {
+    gameManager.board.movePieceLocal(data.x, data.y, data.nx, data.ny, data.narazu, data.teban, hrtime2time(data.hrtime));
   });
-
-  // 新しい駒の配置を受信
-  socket.on("newPut", (data) => {
-    if (gameState == "playing") {
-      board.newPut(data);
-    }
+  // 駒の配置を受け取る
+  socket.on("newPut", (data: {
+    nx: number, ny: number,
+    type: PieceType,
+    teban: number,
+    hrtime: [number, number];
+  }) => {
+    gameManager.board.putPieceLocal(data.nx, data.ny, data.type, data.teban, hrtime2time(data.hrtime));
   });
 }
 
-export function getTimeDiff(startTime: SsTime, endTime: SsTime) {
+export function getTimeDiff(startTime: HrTime, endTime: HrTime) {
   // startTimeとendTimeは [秒, ナノ秒] の形式
   const [startSeconds, startNanoseconds] = startTime;
   const [endSeconds, endNanoseconds] = endTime;
@@ -154,7 +160,6 @@ export function getTimeDiff(startTime: SsTime, endTime: SsTime) {
 }
 
 function roop() {
-  board.ptime = performance.now();
   scene.draw(ctx);
   requestAnimationFrame(roop);
 }

@@ -1,7 +1,9 @@
+import { Emitter } from "./emitter";
+import { PieceType } from "./pieces";
+
 export class Keyboard {
-  board = null;
-  boardUI = null;
-  keys = {
+  emitter: Emitter;
+  keys: { [key: string]: PieceType; } = {
     " ": "pawn",
     "q": "lance",
     "w": "knight",
@@ -11,25 +13,28 @@ export class Keyboard {
     "d": "bishop",
     "z": "king",
     "x": "king2",
+  };
+
+  constructor(emitter: Emitter) {
+    this.emitter = emitter;
   }
 
-  init(board, boardUI, canvas) {
-    this.board = board;
-    this.boardUI = boardUI;
+  Init(canvas: HTMLCanvasElement) {
     canvas.focus();
     canvas.addEventListener("keydown", (e) => {
+      console.log(e.key);
       this.onKeyDown(e);
     });
   }
 
-  onKeyDown(e) {
-    const piecetype = this.keys[e.key];
-    if (piecetype) {
-      let pos = this.boardUI.hoveredCell;
-      const piece = new Piece(this.board, piecetype, pos.x, pos.y, this.board.teban, this.board.starttime, 0);
-      if (pos) {
-        this.board.putPieceKey(pos.x, pos.y, piece);
-      }
-    }
+  setKeybind(keys: { [key: string]: PieceType; }) {
+    this.keys = keys;
+    localStorage.setItem("keybind", JSON.stringify(keys));
+  }
+
+  onKeyDown(e: KeyboardEvent) {
+    console.log(e.key);
+    const piecetype: PieceType | undefined = this.keys[e.key];
+    if (piecetype) this.emitter.emit("keydown", piecetype);
   }
 }

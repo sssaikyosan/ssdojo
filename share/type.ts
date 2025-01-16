@@ -1,1 +1,1 @@
-export type SsTime = [number,number]
+export type HrTime = [number, number];

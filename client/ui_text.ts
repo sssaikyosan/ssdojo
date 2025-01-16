@@ -4,17 +4,17 @@ import { drawText, drawTextWithDoubleOutline, drawTextWithOutline } from "./util
 interface UiTextParams extends UiParams {
   text: () => string;
   size: number;
-  textBaseline: CanvasTextBaseline;
-  position: CanvasTextAlign;
+  textBaseline?: CanvasTextBaseline;
+  position?: CanvasTextAlign;
   colors: string[];
 }
 
 export class TextUI extends UI {
-  private text: () => string;
-  private size: number;
-  private textBaseline: CanvasTextBaseline;
-  private position: CanvasTextAlign;
-  private colors: string[];
+  text: () => string;
+  size: number;
+  textBaseline: CanvasTextBaseline;
+  position: CanvasTextAlign;
+  colors: string[];
 
   constructor(params: UiTextParams) {
     super(params);
@@ -23,8 +23,8 @@ export class TextUI extends UI {
 
     this.text = params.text;
     this.size = params.size;
-    this.textBaseline = params.textBaseline;
-    this.position = params.position;
+    this.textBaseline = params.textBaseline ?? "middle";
+    this.position = params.position ?? "center";
     this.colors = params.colors;
   }
 

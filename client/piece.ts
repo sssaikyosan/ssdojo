@@ -1,28 +1,27 @@
 import { Board } from "./board";
 import { BOARD_SIZE, CELL_SIZE, LINEWIDTH, MOVE_COLOR, MOVETIME, pieceMoves, TIMER_BGCOLOR, TIMER_BORDER_WIDTH, TIMER_COLOR, TIMER_LINEWIDTH, TIMER_OFFSET_X, TIMER_OFFSET_Y, TIMER_RADIUS } from "./const";
-import { board } from "./main";
-import { PieceImages } from "./pieces";
-import { BoardUiParams } from "./ui_board";
+import { PieceImages, PieceType } from "./pieces";
+import { BoardUI } from "./ui_board";
+
+
 
 export class Piece {
   board: Board;
-  type: string;
+  type: PieceType;
   teban: number;
-  promoted: boolean;
   x: number;
   y: number;
-  lastMoveTime: [number, number];
-  lastMovepTime: number;
+  lastMoveServerTime: number;
+  lastMoveTime: number;
 
-  constructor(board: Board, type: string, x: number, y: number, teban: number, lastMoveTime: [number, number], ptime: number) {
+  constructor(board: Board, type: PieceType, x: number, y: number, teban: number, servertime: number, time: number) {
     this.board = board;
     this.type = type;
     this.teban = teban;
-    this.promoted = false;
     this.x = x;
     this.y = y;
-    this.lastMoveTime = lastMoveTime;
-    this.lastMovepTime = ptime;
+    this.lastMoveServerTime = servertime;
+    this.lastMoveTime = time;
   }
 
   draw(ctx: CanvasRenderingContext2D, scale: number) {
@@ -41,13 +40,15 @@ export class Piece {
     if (img) {
       ctx.drawImage(img, -CELL_SIZE * scale / 2, -CELL_SIZE * scale / 2, CELL_SIZE * scale, CELL_SIZE * scale);
     }
-    let ptimeDiff = board.ptime - this.lastMovepTime;
-    if (ptimeDiff < MOVETIME) {
-      this.drawTimer(ctx, scale, board, ptimeDiff);
+
+    const timeDiff = performance.now() - this.lastMoveTime;
+    if (timeDiff < MOVETIME) {
+      this.drawTimer(ctx, scale, timeDiff);
     }
   }
 
-  drawDragging(ctx: CanvasRenderingContext2D, scale: number, boardui: BoardUiParams) {
+  drawDragging(ctx: CanvasRenderingContext2D, scale: number, boardui: BoardUI) {
+    if (!boardui.draggingPiecePos) return;
     ctx.save();
     ctx.translate(boardui.draggingPiecePos.x * scale, boardui.draggingPiecePos.y * scale);
     this.drawSelf(ctx, scale);
@@ -64,7 +65,7 @@ export class Piece {
       bishop: "horse",
       rook: "dragon"
     };
-    return promotedTypes[this.type as keyof typeof promotedTypes] || this.type;
+    return promotedTypes[this.type as keyof typeof promotedTypes] as PieceType || this.type;
   }
 
   // 成り駒の種類を返す
@@ -77,14 +78,14 @@ export class Piece {
       horse: "bishop",
       dragon: "rook"
     };
-    return promotedTypes[this.type as keyof typeof promotedTypes] || this.type;
+    return promotedTypes[this.type as keyof typeof promotedTypes] as PieceType || this.type;
   }
 
-  canMove(nx, ny, nteban, map, narazu) {
+  canMove(nx: number, ny: number, nteban: number, map: (Piece | null)[][], narazu: boolean) {
     const dx = nx - this.x;
     const dy = ny - this.y;
 
-    function checkMyPiece(xx, yy, teban, type) {
+    function checkMyPiece(xx: number, yy: number, teban: number, type: PieceType) {
       if (map[xx][yy] && map[xx][yy].teban === nteban) return false;
       if (!narazu) return true;
       if (type === "pawn" || type === "lance") {
@@ -98,7 +99,7 @@ export class Piece {
     }
 
     // 駒の種類に応じた動きを取得
-    const moves = pieceMoves[this.type];
+    const moves: readonly { dx: number, dy: number, recursive: boolean; }[] = pieceMoves[this.type];
     if (!moves) return false;
 
     // 動きの中に一致するものがあるか確認
@@ -110,9 +111,10 @@ export class Piece {
         let currentX = this.x + move.dx;
         let currentY = this.y + move.dy * nteban;
         while (currentX >= 0 && currentX < BOARD_SIZE && currentY >= 0 && currentY < BOARD_SIZE) {
-          if (map[currentX][currentY] && map[currentX][currentY].teban === nteban) break;
+          const piece = map[currentX][currentY];
+          if (piece && piece.teban === nteban) break;
           if (currentX === nx && currentY === ny) return checkMyPiece(currentX, currentY, this.teban, this.type);
-          if (map[currentX][currentY] && map[currentX][currentY].teban !== nteban) break;
+          if (piece && piece.teban !== nteban) break;
           currentX += move.dx;
           currentY += move.dy * nteban;
           if (currentX < 0 || currentX >= BOARD_SIZE || currentY < 0 || currentY >= BOARD_SIZE) break;
@@ -124,7 +126,7 @@ export class Piece {
   }
 
   // 移動可能なマスの描画
-  drawMove(ctx, scale, board) {
+  drawMove(ctx: CanvasRenderingContext2D, scale: number) {
     ctx.fillStyle = MOVE_COLOR;
     for (let move of pieceMoves[this.type]) {
       let moveX = this.x;
@@ -133,7 +135,8 @@ export class Piece {
         moveX = moveX + move.dx * this.teban;
         moveY = moveY + move.dy * this.teban;
         if (moveX < 0 || moveX >= BOARD_SIZE || moveY < 0 || moveY >= BOARD_SIZE) break;
-        if (board.map[moveX][moveY] && board.map[moveX][moveY].teban == this.teban) break;
+        const piece = this.board.map[moveX][moveY];
+        if (piece && piece.teban == this.teban) break;
         ctx.save();
         if (this.teban == -1) {
           ctx.rotate(Math.PI);
@@ -146,7 +149,7 @@ export class Piece {
         );
         ctx.restore();
         if (!move.recursive) break;
-        if (board.map[moveX][moveY] && board.map[moveX][moveY].teban != this.teban) break;
+        if (piece && piece.teban != this.teban) break;
       }
 
     }
@@ -154,7 +157,7 @@ export class Piece {
   }
 
   // ドーナツ型のタイマーを描画する関数
-  drawTimer(ctx, scale, board, ptimeDiff) {
+  drawTimer(ctx: CanvasRenderingContext2D, scale: number, ptimeDiff: number) {
     const radius = Math.max(0, CELL_SIZE * TIMER_RADIUS * scale);
     const lineWidth = CELL_SIZE * TIMER_LINEWIDTH * scale;
     const borderWidth = CELL_SIZE * TIMER_BORDER_WIDTH * scale;

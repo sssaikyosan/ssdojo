@@ -65,6 +65,7 @@ function ioSetup() {
     // プレイヤーがマッチングを要求
     socket.on("requestMatch", (data) => {
       if (serverState.matchMakingPlayers.some(x => x.socket.id === socket.id)) return; // 早期リターン
+      if (serverState.players[socket.id].opponent != null) return; // 早期リターン
       let player = serverState.players[socket.id];
       player.name = data.name;
       serverState.matchMakingPlayers.push(player);
@@ -73,26 +74,38 @@ function ioSetup() {
 
     // 駒の配置を転送
     socket.on("putPiece", (data) => {
-      const time = process.hrtime();
+      data.hrtime = process.hrtime();
       // 移動したプレイヤーと対戦相手に駒の移動と手数を通知
-      io.to(data.roomId).emit("newPut", { ...data, time: time });
+      io.to(data.roomId).emit("newPut", { ...data });
     });
 
     // 駒の移動を転送
     socket.on("movePiece", (data) => {
-      const time = process.hrtime();
+      data.hrtime = process.hrtime();
       // 移動したプレイヤーと対戦相手に駒の移動と手数を通知
-      io.to(data.roomId).emit("newMove", { ...data, time: time });
+      io.to(data.roomId).emit("newMove", { ...data });
+    });
+
+    socket.on("leaveRoom", (data) => {
+      serverState.players[socket.id].opponent = null;
+      socket.leave(data.roomId);
     });
 
     // 切断時の処理
     socket.on("disconnect", () => {
       console.log("A player disconnected:", socket.id);
-      delete serverState.players[socket.id];
+
       const index = serverState.matchMakingPlayers.findIndex(x => x.socket.id === socket.id);
       if (index != -1) {
         serverState.matchMakingPlayers.splice(index, 1);
       }
+      const opponent: Player = serverState.players[socket.id];
+      if (opponent.opponent != null) {
+        opponent.opponent = null;
+        opponent.socket.emit("opponentDisconnected");
+        opponent.socket.leave(opponent.roomId);
+      }
+      delete serverState.players[socket.id];
     });
   });
 }
@@ -103,15 +116,14 @@ function ioSetup() {
 
 class ServerState {
   players: Record<string, Player> = {};
-  /** マッチメイキング用の待機プレイヤーリスト */
   matchMakingPlayers: Player[] = [];
 }
 
 class Player {
-  name = "";
-  roomId = "";
-  teban = 0;
+  name: string = "";
+  roomId: string = "";
   socket: Socket;
+  opponent: Socket | null = null;
 
   constructor(socket: Socket) {
     this.socket = socket;
@@ -139,21 +151,24 @@ function matchMaking() {
       player1.socket.join(roomId);  // ルームに参加
       player2.socket.join(roomId);  // ルームに参加
 
-      let time = process.hrtime();
+      let hrtime = process.hrtime();
 
       // 両プレイヤーにマッチング完了を通知
       io.to(player1.socket.id).emit("matchFound", {
         roomId: roomId,
         teban: 1,
-        time: time,
+        hrtime: hrtime,
         name: player2.name
       });
       io.to(player2.socket.id).emit("matchFound", {
         roomId: roomId,
         teban: -1,
-        time: time,
+        hrtime: hrtime,
         name: player1.name
       });
+
+      serverState.players[player1.socket.id].opponent = player2.socket;
+      serverState.players[player2.socket.id].opponent = player1.socket;
 
       console.log(`Matched players: (先手:${player1.name}) vs (後手:${player2.name})`);
     }
@@ -162,7 +177,7 @@ function matchMaking() {
 
 function sendServerStatus() {
   const online = Object.keys(serverState.players).length;
-  const matching = serverState.matchMakingPlayers.length;
-  console.log("online:", online, "matching:", matching);
-  io.emit("serverStatus", { online: online, matching: matching });
+  const playing = Object.keys(serverState.players).filter(x => serverState.players[x].opponent != null).length;
+  console.log("online:", online, "playing:", playing);
+  io.emit("serverStatus", { online: online, playing: playing });
 }

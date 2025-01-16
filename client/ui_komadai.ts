@@ -1,6 +1,7 @@
 import { Board } from "./board";
 import { BOARD_COLOR, BOARD_SIZE, CELL_SIZE, KOMADAI_HEIGHT, KOMADAI_OFFSET_RATIO, KOMADAI_WIDTH, LINE_COLOR } from "./const";
 import { ctx } from "./main";
+import { Piece } from "./piece";
 import { PieceImages } from "./pieces";
 
 interface KomadaiUiParams {
@@ -31,29 +32,29 @@ export class KomadaiUI {
     ["silver", "gold", "bishop"],
     ["king", "king2", null]];
 
-  draw(ctx: CanvasRenderingContext2D, scale: number) {
+  draw(ctx: CanvasRenderingContext2D, scale: number, dragging: Piece | null, viewteban: number) {
     this.width = KOMADAI_WIDTH * scale;
     this.height = KOMADAI_HEIGHT * scale;
-    this.drawKomadai(ctx, scale, "sente");
-    this.drawKomadai(ctx, scale, "gote");
+    this.drawKomadai(ctx, scale, "sente", dragging, viewteban);
+    this.drawKomadai(ctx, scale, "gote", dragging, viewteban);
   }
 
 
-  drawKomadai(ctx: CanvasRenderingContext2D, scale: number, teban: string) {
+  drawKomadai(ctx: CanvasRenderingContext2D, scale: number, teban: string, dragging: Piece | null, viewteban: number) {
     const x = BOARD_SIZE * CELL_SIZE * scale / 2 + CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
     const y = BOARD_SIZE * CELL_SIZE * scale / 2 - KOMADAI_HEIGHT * scale;
-    const myteban = this.board.teban === 1 ? "sente" : "gote";
+    const myteban = viewteban === 1 ? "sente" : "gote";
     ctx.fillStyle = BOARD_COLOR; // 駒台の色
     ctx.save();
     if (teban !== myteban) ctx.rotate(Math.PI);
     ctx.strokeStyle = LINE_COLOR;
     ctx.fillRect(x, y, this.width, this.height);
     ctx.strokeRect(x, y, this.width, this.height);
-    this.drawKomadaiPieces(x, y, scale, this.board.komadaiPieces[teban]);
+    this.drawKomadaiPieces(x, y, scale, teban, myteban, dragging);
     ctx.restore();
   }
 
-  drawKomadaiPieces(x: number, y: number, scale: number, komadai: { [key: string]: number; }) {
+  drawKomadaiPieces(x: number, y: number, scale: number, teban: string, myteban: string, dragging: Piece | null) {
     const komadaiOffsetX = x + CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
     const komadaiOffsetY = y + CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
     ctx.translate(komadaiOffsetX, komadaiOffsetY);
@@ -61,7 +62,7 @@ export class KomadaiUI {
       ctx.save();
       for (let j = 0; j < 3; j++) {
         if (this.types[i][j]) {
-          this.drawKomadaiPiece(this.types[i][j]!, komadai, scale);
+          this.drawKomadaiPiece(this.types[i][j]!, teban, myteban, scale, dragging);
           ctx.translate(CELL_SIZE * scale, 0);
         };
       }
@@ -71,11 +72,13 @@ export class KomadaiUI {
   }
 
   // 駒台の駒を描画
-  drawKomadaiPiece(type: string, komadai: { [key: string]: number; }, scale: number) {
+  drawKomadaiPiece(type: string, teban: string, myteban: string, scale: number, dragging: Piece | null) {
+    const komadai = this.board.komadaiPieces[myteban];
     const img = PieceImages[type as keyof typeof PieceImages];
     const pieceSize = CELL_SIZE * 0.8 * scale;
     const padding = CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
-    for (let i = 0; i < komadai[type]; i++) {
+    let x = dragging?.type === type && dragging.x === -1 && teban === myteban ? 1 : 0;
+    for (let i = 0 + x; i < komadai[type]; i++) {
       ctx.drawImage(img, (komadai[type] - i - 1) * padding, 0, pieceSize, pieceSize);
     }
   }

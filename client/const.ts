@@ -1,4 +1,3 @@
-export const SERVER_MOVETYME = 5;
 export const MOVETIME = 5000;
 
 
@@ -22,65 +21,66 @@ export const TIMER_BORDER_WIDTH = 0.04;
 export const TIMER_BGCOLOR = "rgb(223, 223, 223)";
 export const TIMER_COLOR = "rgb(31, 63, 221)";
 
-export const MOVE_COLOR = "#cf8b1e"
+export const MOVE_COLOR = "#cf8b1e";
 
+export const KOMADAI_PIECE_TYPE = ["pawn", "lance", "knight", "silver", "gold", "bishop", "rook", "king", "king2"];
 export const pieceMoves = {
   pawn: [
-    { dx: 0, dy: -1 } // 先手の場合、1マス前
+    { dx: 0, dy: -1, recursive: false } // 先手の場合、1マス前
   ],
   prom_pawn: [ // 成り駒（と金）
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: -1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 0 },
-    { dx: -1, dy: 0 },
-    { dx: 0, dy: 1 }
+    { dx: 1, dy: -1, recursive: false },
+    { dx: -1, dy: -1, recursive: false },
+    { dx: 0, dy: -1, recursive: false },
+    { dx: 1, dy: 0, recursive: false },
+    { dx: -1, dy: 0, recursive: false },
+    { dx: 0, dy: 1, recursive: false }
   ],
   lance: [
     { dx: 0, dy: -1, recursive: true } // 先手の場合、前方に無限
   ],
   prom_lance: [ // 成り駒（成香）
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: -1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 0 },
-    { dx: -1, dy: 0 },
-    { dx: 0, dy: 1 }
+    { dx: 1, dy: -1, recursive: false },
+    { dx: -1, dy: -1, recursive: false },
+    { dx: 0, dy: -1, recursive: false },
+    { dx: 1, dy: 0, recursive: false },
+    { dx: -1, dy: 0, recursive: false },
+    { dx: 0, dy: 1, recursive: false }
   ],
   knight: [
-    { dx: 1, dy: -2 },
-    { dx: -1, dy: -2 }
+    { dx: 1, dy: -2, recursive: false },
+    { dx: -1, dy: -2, recursive: false }
   ],
   prom_knight: [ // 成り駒（成桂）
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: -1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 0 },
-    { dx: -1, dy: 0 },
-    { dx: 0, dy: 1 }
+    { dx: 1, dy: -1, recursive: false },
+    { dx: -1, dy: -1, recursive: false },
+    { dx: 0, dy: -1, recursive: false },
+    { dx: 1, dy: 0, recursive: false },
+    { dx: -1, dy: 0, recursive: false },
+    { dx: 0, dy: 1, recursive: false }
   ],
   silver: [
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: -1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 1 },
-    { dx: -1, dy: 1 }
+    { dx: 1, dy: -1, recursive: false },
+    { dx: -1, dy: -1, recursive: false },
+    { dx: 0, dy: -1, recursive: false },
+    { dx: 1, dy: 1, recursive: false },
+    { dx: -1, dy: 1, recursive: false }
   ],
   prom_silver: [ // 成り駒（成銀）
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: -1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 0 },
-    { dx: -1, dy: 0 },
-    { dx: 0, dy: 1 }
+    { dx: 1, dy: -1, recursive: false },
+    { dx: -1, dy: -1, recursive: false },
+    { dx: 0, dy: -1, recursive: false },
+    { dx: 1, dy: 0, recursive: false },
+    { dx: -1, dy: 0, recursive: false },
+    { dx: 0, dy: 1, recursive: false }
   ],
   gold: [
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: -1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 0 },
-    { dx: -1, dy: 0 },
-    { dx: 0, dy: 1 }
+    { dx: 1, dy: -1, recursive: false },
+    { dx: -1, dy: -1, recursive: false },
+    { dx: 0, dy: -1, recursive: false },
+    { dx: 1, dy: 0, recursive: false },
+    { dx: -1, dy: 0, recursive: false },
+    { dx: 0, dy: 1, recursive: false }
   ],
   bishop: [
     { dx: 1, dy: -1, recursive: true }, // 右上
@@ -93,10 +93,10 @@ export const pieceMoves = {
     { dx: -1, dy: -1, recursive: true },// 左上
     { dx: 1, dy: 1, recursive: true },  // 右下
     { dx: -1, dy: 1, recursive: true }, // 左下
-    { dx: 0, dy: -1 }, // 上
-    { dx: 0, dy: 1 },  // 下
-    { dx: 1, dy: 0 },  // 右
-    { dx: -1, dy: 0 }  // 左
+    { dx: 0, dy: -1, recursive: false }, // 上
+    { dx: 0, dy: 1, recursive: false },  // 下
+    { dx: 1, dy: 0, recursive: false },  // 右
+    { dx: -1, dy: 0, recursive: false }  // 左
   ],
   rook: [
     { dx: 0, dy: -1, recursive: true }, // 上
@@ -109,29 +109,29 @@ export const pieceMoves = {
     { dx: 0, dy: 1, recursive: true },  // 下
     { dx: 1, dy: 0, recursive: true },  // 右
     { dx: -1, dy: 0, recursive: true }, // 左
-    { dx: 1, dy: -1 }, // 右上
-    { dx: -1, dy: -1 },// 左上
-    { dx: 1, dy: 1 },  // 右下
-    { dx: -1, dy: 1 }  // 左下
+    { dx: 1, dy: -1, recursive: false }, // 右上
+    { dx: -1, dy: -1, recursive: false },// 左上
+    { dx: 1, dy: 1, recursive: false },  // 右下
+    { dx: -1, dy: 1, recursive: false }  // 左下
   ],
   king: [
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: -1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 0 },
-    { dx: -1, dy: 0 },
-    { dx: 0, dy: 1 },
-    { dx: 1, dy: 1 },
-    { dx: -1, dy: 1 }
+    { dx: 1, dy: -1, recursive: false },
+    { dx: -1, dy: -1, recursive: false },
+    { dx: 0, dy: -1, recursive: false },
+    { dx: 1, dy: 0, recursive: false },
+    { dx: -1, dy: 0, recursive: false },
+    { dx: 0, dy: 1, recursive: false },
+    { dx: 1, dy: 1, recursive: false },
+    { dx: -1, dy: 1, recursive: false }
   ],
   king2: [ // 相手の王将
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: -1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 0 },
-    { dx: -1, dy: 0 },
-    { dx: 0, dy: 1 },
-    { dx: 1, dy: 1 },
-    { dx: -1, dy: 1 }
+    { dx: 1, dy: -1, recursive: false },
+    { dx: -1, dy: -1, recursive: false },
+    { dx: 0, dy: -1, recursive: false },
+    { dx: 1, dy: 0, recursive: false },
+    { dx: -1, dy: 0, recursive: false },
+    { dx: 0, dy: 1, recursive: false },
+    { dx: 1, dy: 1, recursive: false },
+    { dx: -1, dy: 1, recursive: false }
   ]
 } as const;

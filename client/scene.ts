@@ -1,30 +1,26 @@
-import { Board } from "./board";
-import { board, canvas, keyboard, playerName, serverStatus, setBoard, setGameState, setPlayerName, setScene, socket } from "./main";
+import { canvas, emitter, gameManager, playerName, serverStatus, setPlayerName, setScene, socket } from "./main";
 import { Background, UI } from "./ui";
-import { BoardUI } from "./ui_board";
 import { LoadingUI } from "./ui_loading";
 import { TextUI } from "./ui_text";
 
 export class Scene {
-  scale = 0;
-  aspect = 3 / 4;
-  offsetX = 0;
-  offsetY = 0;
-  htmls = [];
-  ui_lists = [];
-  lastFrameTime = performance.now();
+  scale: number = 0;
+  aspect: number = 3 / 4;
+  offsetX: number = 0;
+  offsetY: number = 0;
+  htmls: HTMLElement[] = [];
+  ui_lists: UI[] = [];
+  lastFrameTime: number = performance.now();
 
-  init() {
-
-  }
+  init() { }
 
   draw(ctx: CanvasRenderingContext2D) {
     this.resize();
     ctx.fillStyle = "#101010";
     ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
     ctx.save();
-    ctx.translate((window.innerWidth * 0.5), window.innerHeight * 0.5)
-    this.ui_lists.forEach(ui => ui.draw(ctx, this.scale, this.aspect));
+    ctx.translate((window.innerWidth * 0.5), window.innerHeight * 0.5);
+    this.ui_lists.forEach(ui => ui.draw(ctx, this.scale));
     ctx.restore();
   }
 
@@ -36,14 +32,14 @@ export class Scene {
     this.ui_lists = this.ui_lists.filter(u => u !== ui);
   }
 
-  getGamePosition(event:MouseEvent) {
+  getGamePosition(event: MouseEvent) {
     const rect = canvas.getBoundingClientRect();
     const x = (event.clientX - rect.left - window.innerWidth * 0.5) / this.scale;
     const y = (event.clientY - rect.top - window.innerHeight * 0.5) / this.scale;
     return { x: x, y: y };
   }
 
-  touchCheck(event:MouseEvent, str:string) {
+  touchCheck(event: MouseEvent, str: string) {
     const pos = this.getGamePosition(event);
     this.ui_lists.forEach(ui => {
       ui.touchCheck(pos, str);
@@ -56,23 +52,73 @@ export class Scene {
     this.offsetY = Math.max(0, window.innerHeight - window.innerWidth * this.aspect) * 0.5;
   }
 
-  update() {
-    const p = performance.now();
-    this.ui_lists.forEach(ui => ui.eventlist["update"](p - this.lastFrameTime));
-    this.lastFrameTime = p;
-    requestAnimationFrame(this.update);
-  }
+  // update() { }
 }
 
 
+
+const nameInputOverlay = document.getElementById("nameInputOverlay") as HTMLElement;
+const nameInput = document.getElementById("nameInput") as HTMLInputElement;
+const submitNameButton = document.getElementById("submitNameButton") as HTMLButtonElement;
+
+const resultOverlay = document.getElementById("resultOverlay") as HTMLElement;
+const toTitleButton = document.getElementById("toTitleButton") as HTMLButtonElement;
+
+//タイトルシーン要素
+const title = new TextUI({
+  text: () => "リアルタイム将棋",
+  x: 0,
+  y: -0.25,
+  size: 0.12,
+  colors: ["#c2a34f", "#000000", "#ffffff"]
+});
+const onlineText = new TextUI({
+  text: () => `オンライン: ${serverStatus["online"]}人`,
+  x: 0,
+  y: 0.15,
+  size: 0.035,
+  colors: ["#ffffff"]
+});
+
+
+//暗い背景
+let background = new Background({
+  x: 0.0,
+  y: 0.0,
+  width: 1.0,
+  height: 1.0,
+  color: "#00000070",
+});
+
+//勝敗結果テキスト
+const winText = new TextUI({
+  text: () => {
+    return "勝利";
+  },
+  x: 0.0,
+  y: -0.2,
+  size: 0.2,
+  colors: ["#ff6739", "#30140b", "#ffffff"]
+});
+
+const loseText = new TextUI({
+  text: () => {
+    return "敗北";
+  },
+  x: 0.0,
+  y: -0.2,
+  size: 0.2,
+  colors: ["#b639ff", "#270b36", "#ffffff"]
+});
 
 
 
 
 //タイトルシーン
 export function createTitleScene() {
+
   // 入力欄の文字数を制限するメソッド
-  function limitInputLength(nameInput) {
+  function limitInputLength(nameInput: HTMLInputElement) {
     const MAX_LENGTH = 20; // 最大文字数（全角10文字分）
     let currentText = nameInput.value;
     let newText = "";
@@ -97,56 +143,26 @@ export function createTitleScene() {
   }
 
   //名前入力オーバーレイ
-  function handleNameSubmit(nameInputOverlay, nameInput) {
+  function handleNameSubmit(nameInputOverlay: HTMLElement, nameInput: HTMLInputElement) {
     setPlayerName(nameInput.value.trim());
     localStorage.setItem("playerName", playerName);
     if (playerName == "") setPlayerName("名無しの棋士");
     // マッチングを開始
     socket.emit("requestMatch", { name: playerName });
     nameInputOverlay.style.display = "none";
-    setGameState("matching");
+    gameManager.gameState = "matching";
     setScene(createMatchingScene());
   }
 
   let titleScene = new Scene();
-  let title = new TextUI({
-    text: () => {
-      return "リアルタイム将棋";
-    },
-    x: 0,
-    y: -0.25,
-    size: 0.12,
-    colors: ["#c2a34f", "#000000", "#ffffff"]
-  });
-  let onlineText = new TextUI({
-    text: () => {
-      return `オンライン: ${serverStatus["online"]}人`;
-    },
-    x: 0,
-    y: 0.15,
-    size: 0.035,
-    colors: ["#ffffff"]
-  });
-  let matchingText = new TextUI({
-    text: () => {
-      return `待機人数: ${serverStatus["matching"]}人`;
-    },
-    x: 0,
-    y: 0.2,
-    size: 0.035,
-    colors: ["#ffffff"]
-  });
 
-  let nameInputOverlay = document.getElementById("nameInputOverlay");
-  let nameInput = /**@type {HTMLInputElement}*/(document.getElementById("nameInput"));
-  let submitNameButton = document.getElementById("submitNameButton");
   nameInput.addEventListener("input", () => { limitInputLength(nameInput); });
   submitNameButton.addEventListener("click", () => { handleNameSubmit(nameInputOverlay, nameInput); });
 
 
   titleScene.add(title);
   titleScene.add(onlineText);
-  titleScene.add(matchingText);
+  // titleScene.add(matchingText);
 
   const savedName = localStorage.getItem("playerName");
   if (savedName) nameInput.value = savedName;
@@ -159,7 +175,7 @@ function createMatchingScene() {
   let matchingScene = new Scene();
   let matchingText = new TextUI({
     text: () => {
-      return `マッチング中... 待機${serverStatus["matching"]}人`;
+      return `マッチング中... （プレイ人数${serverStatus["playing"]}）`;
     },
     x: 0.0,
     y: 0.0,
@@ -169,7 +185,6 @@ function createMatchingScene() {
   let loading = new LoadingUI({
     x: 0.0,
     y: 0.1,
-    scale: 0.05,
     radius: 0.05,
   });
   matchingScene.add(matchingText);
@@ -179,17 +194,21 @@ function createMatchingScene() {
 
 
 //ゲームシーン
-export function createPlayScene(playerName, opponentName, teban, roomId, time) {
-  let playScene = new Scene();
-  setBoard(new Board());
-  board.init(teban, roomId, time);
-  let boardUI = new BoardUI({
-    board: board,
-    x: 0.0,
-    y: 0.0,
-  });
-  keyboard.init(board, boardUI, canvas);
-  let playerNameUI = new TextUI({
+export function createPlayScene(
+  playerName: string,
+  opponentName: string,
+  teban: number,
+  roomId: string,
+  servertime: number,
+  time: number,
+  cpu: number = -1
+) {
+  const playScene = new Scene();
+
+  gameManager.Init(roomId, teban, cpu, servertime, time);
+
+  //プレイヤー名
+  const playerNameUI = new TextUI({
     text: () => {
       return `${playerName}`;
     },
@@ -199,8 +218,10 @@ export function createPlayScene(playerName, opponentName, teban, roomId, time) {
     colors: ["#FFFFFF"],
     textBaseline: "bottom",
     position: "right"
-  })
-  let opponentNameUI = new TextUI({
+  });
+
+  //対戦相手名
+  const opponentNameUI = new TextUI({
     text: () => {
       return `${opponentName}`;
     },
@@ -210,68 +231,34 @@ export function createPlayScene(playerName, opponentName, teban, roomId, time) {
     colors: ["#FFFFFF"],
     textBaseline: "top",
     position: "left"
-  })
+  });
 
-  playScene.add(boardUI);
+
+  playScene.add(gameManager.boardUI);
   playScene.add(playerNameUI);
   playScene.add(opponentNameUI);
 
-  return playScene;
-}
-
-
-//勝敗結果シーン
-export function createResultScene(result) {
-  function backToTitle(resultOverlay) {
+  function backToTitle() {
     resultOverlay.style.display = "none";
-    setGameState("waiting");
+    gameManager.gameState = "title";
     setScene(createTitleScene());
   }
 
-  let resultScene = new Scene();
-  let boardUI = new BoardUI({
-    board: board,
-    x: 0.0,
-    y: 0.0,
-    touchable: false,
+  //ゲームマネージャーのイベントを受け取る
+  emitter.on("endGame", (result: number) => {
+    socket.emit("leaveRoom", { roomId: gameManager.roomId });
+    gameManager.gameState = "result";
+    playScene.remove(playerNameUI);
+    playScene.remove(opponentNameUI);
+    playScene.add(background);
+    if (result === gameManager.teban) {
+      playScene.add(winText);
+    } else {
+      playScene.add(loseText);
+    }
+    resultOverlay.style.display = "block";
+    toTitleButton.addEventListener("click", () => { backToTitle(); });
   });
-  let background = new Background({
-    x: 0.0,
-    y: 0.0,
-    width: 1.0,
-    height: 1.0,
-    color: "#00000070",
-  });
-  let resultText = null;
-  if (result == "win") {
-    resultText = new TextUI({
-      text: () => {
-        return "勝利";
-      },
-      x: 0.0,
-      y: -0.2,
-      size: 0.2,
-      colors: ["#ff6739", "#30140b", "#ffffff"]
-    })
-  } else if (result == "lose") {
-    resultText = new TextUI({
-      text: () => {
-        return "敗北";
-      },
-      x: 0.0,
-      y: -0.2,
-      size: 0.2,
-      colors: ["#b639ff", "#270b36", "#ffffff"]
-    })
-  }
-  resultScene.add(boardUI);
-  resultScene.add(background);
-  resultScene.add(resultText);
 
-  let resultOverlay = document.getElementById("resultOverlay");
-  let toTitleButton = document.getElementById("toTitleButton");
-  resultOverlay.style.display = "block";
-  toTitleButton.addEventListener("click", () => { backToTitle(resultOverlay); });
-
-  return resultScene;
+  return playScene;
 }
