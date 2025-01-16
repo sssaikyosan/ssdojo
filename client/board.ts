@@ -160,6 +160,7 @@ export class Board {
 
   //駒が打てるか判定する関数
   canPutPiece(x: number, y: number, type: string, teban: number) {
+    if (this.komadaiPieces[teban === 1 ? "sente" : "gote"][type] <= 0) return false;
     if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE || this.map[x][y]) return false;
     if (this.isTopCell(y, type, teban)) return false;
     if (this.isNihu(x, type, teban)) return false;
@@ -173,6 +174,7 @@ export class Board {
     this.map[nx][ny] = piece;
     this.pieces.push(piece);
     this.kifu.push({ x: -1, y: KOMADAI_PIECE_TYPE.indexOf(type), nx: nx, ny: ny, narazu: true, teban: teban, time: servertime });
+    playSound("sound");
   }
 
 

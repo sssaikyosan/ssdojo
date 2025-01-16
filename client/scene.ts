@@ -75,7 +75,15 @@ const title = new TextUI({
 const onlineText = new TextUI({
   text: () => `オンライン: ${serverStatus["online"]}人`,
   x: 0,
-  y: 0.15,
+  y: 0.25,
+  size: 0.035,
+  colors: ["#ffffff"]
+});
+
+const playingText = new TextUI({
+  text: () => `プレイ中: ${serverStatus["playing"]}人`,
+  x: 0,
+  y: 0.30,
   size: 0.035,
   colors: ["#ffffff"]
 });
@@ -162,7 +170,7 @@ export function createTitleScene() {
 
   titleScene.add(title);
   titleScene.add(onlineText);
-  // titleScene.add(matchingText);
+  titleScene.add(playingText);
 
   const savedName = localStorage.getItem("playerName");
   if (savedName) nameInput.value = savedName;
@@ -175,7 +183,7 @@ function createMatchingScene() {
   let matchingScene = new Scene();
   let matchingText = new TextUI({
     text: () => {
-      return `マッチング中... （プレイ人数${serverStatus["playing"]}）`;
+      return "マッチング中...";
     },
     x: 0.0,
     y: 0.0,
@@ -189,6 +197,8 @@ function createMatchingScene() {
   });
   matchingScene.add(matchingText);
   matchingScene.add(loading);
+  matchingScene.add(onlineText);
+  matchingScene.add(playingText);
   return matchingScene;
 }
 

@@ -202,10 +202,11 @@ export class BoardUI extends UI {
   onMouseUp(pos: { x: number, y: number; }) {
     if (!this.draggingPiece) return;
     const { x, y } = this.getBoardPosition(pos);
+    console.log("onMouseUp", x, y, this.draggingPiece.x, this.draggingPiece.y);
     if (this.draggingPiece.x === -1) {
       const data = {
-        nx: -1,
-        ny: PieceTypes.findIndex(type => type === this.draggingPiece!.type),
+        nx: x,
+        ny: y,
         type: this.draggingPiece.type,
         teban: this.teban,
       };
@@ -233,10 +234,9 @@ export class BoardUI extends UI {
 
     if (this.draggingPiece.x === -1) {
       const data = {
-        x: -1,
-        y: PieceTypes.findIndex(type => type === this.draggingPiece!.type),
         nx: npos.x,
         ny: npos.y,
+        type: this.draggingPiece.type,
         narazu: true,
         teban: this.teban,
       };

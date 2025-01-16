@@ -22,7 +22,6 @@ export class Keyboard {
   Init(canvas: HTMLCanvasElement) {
     canvas.focus();
     canvas.addEventListener("keydown", (e) => {
-      console.log(e.key);
       this.onKeyDown(e);
     });
   }
@@ -33,7 +32,6 @@ export class Keyboard {
   }
 
   onKeyDown(e: KeyboardEvent) {
-    console.log(e.key);
     const piecetype: PieceType | undefined = this.keys[e.key];
     if (piecetype) this.emitter.emit("keydown", piecetype);
   }

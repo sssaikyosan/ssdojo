@@ -40,7 +40,6 @@ export class GameManager {
   Init(roomId: string, teban: number, cpu: number, servertime: number, time: number) {
     //イベントを受け取る
     this.emitter.on("keydown", (piecetype: PieceType) => {
-      console.log(piecetype);
       const pos = this.boardUI.hoveredCell;
       if (!pos) return;
       if (!this.board.canPutPiece(pos.x, pos.y, piecetype, this.teban)) return;
@@ -52,8 +51,10 @@ export class GameManager {
       this.sendMovePiece(data.x, data.y, data.nx, data.ny, data.narazu);
     });
 
-    this.emitter.on("putPiece", (data: { nx: number, ny: number, type: PieceType, teban: number, servertime: number; }) => {
+    this.emitter.on("putPiece", (data: { nx: number, ny: number, type: PieceType, teban: number; }) => {
+      console.log("putPiece", data);
       if (!this.board.canPutPiece(data.nx, data.ny, data.type, data.teban)) return;
+      console.log("canput", data);
       this.sendPutPiece(data.nx, data.ny, data.type);
     });
 
@@ -90,8 +91,10 @@ export class GameManager {
   }
 
   sendPutPiece(nx: number, ny: number, type: PieceType) {
+    console.log("sendPutPiece", nx, ny, type);
     if (this.cpu === -1) {
       if (!this.canSendPiece(nx, ny)) return false;
+      console.log("socket", nx, ny, type);
       this.socket.emit("putPiece", {
         nx: nx, ny: ny,
         type: type,

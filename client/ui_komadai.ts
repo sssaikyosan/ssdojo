@@ -55,6 +55,7 @@ export class KomadaiUI {
   }
 
   drawKomadaiPieces(x: number, y: number, scale: number, teban: string, myteban: string, dragging: Piece | null) {
+    if (teban !== myteban) return;
     const komadaiOffsetX = x + CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
     const komadaiOffsetY = y + CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
     ctx.translate(komadaiOffsetX, komadaiOffsetY);
