@@ -55,7 +55,6 @@ export class KomadaiUI {
   }
 
   drawKomadaiPieces(x: number, y: number, scale: number, teban: string, myteban: string, dragging: Piece | null) {
-    if (teban !== myteban) return;
     const komadaiOffsetX = x + CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
     const komadaiOffsetY = y + CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
     ctx.translate(komadaiOffsetX, komadaiOffsetY);
@@ -74,7 +73,7 @@ export class KomadaiUI {
 
   // 駒台の駒を描画
   drawKomadaiPiece(type: string, teban: string, myteban: string, scale: number, dragging: Piece | null) {
-    const komadai = this.board.komadaiPieces[myteban];
+    const komadai = this.board.komadaiPieces[teban];
     const img = PieceImages[type as keyof typeof PieceImages];
     const pieceSize = CELL_SIZE * 0.8 * scale;
     const padding = CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;

@@ -110,6 +110,7 @@ export class Board {
 
   //駒の移動関数
   movePieceLocal(x: number, y: number, nx: number, ny: number, narazu: boolean, teban: number, servertime: number) {
+    if (!this.canMovePiece(x, y, nx, ny, narazu, teban)) return false;
     const piece: Piece | null = this.map[x][y];
     const npiece: Piece | null = this.map[nx][ny];
 
@@ -169,6 +170,7 @@ export class Board {
 
   //駒を打つ関数
   putPieceLocal(nx: number, ny: number, type: PieceType, teban: number, servertime: number) {
+    if (!this.canPutPiece(nx, ny, type, teban)) return;
     this.komadaiPieces[teban === 1 ? "sente" : "gote"][type]--;
     const piece = new Piece(this, type, nx, ny, teban, servertime, performance.now());
     this.map[nx][ny] = piece;
