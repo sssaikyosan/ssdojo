@@ -70,6 +70,18 @@
       /* ボタンのサイズが縮まないように */
     }
 
+    #cpuButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #3241c9;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
     #nameInputOverlay.visible {
       display: block;
     }
@@ -104,7 +116,8 @@
     style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
     <div id="inputContainer">
       <input type="text" id="nameInput" placeholder="名前" maxlength="20">
-      <button id="submitNameButton">プレイ</button>
+      <button id="submitNameButton">オンライン対戦</button>
+      <button id="cpuButton">CPU対戦</button>
     </div>
   </div>
   <div id="resultOverlay"

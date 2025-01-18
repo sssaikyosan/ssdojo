@@ -3,6 +3,7 @@ import { BOARD_COLOR, BOARD_SIZE, CELL_SIZE, KOMADAI_HEIGHT, KOMADAI_OFFSET_RATI
 import { ctx } from "./main";
 import { Piece } from "./piece";
 import { PieceImages } from "./pieces";
+import { drawTextWithDoubleOutline } from "./utils";
 
 interface KomadaiUiParams {
   x: number;
@@ -17,6 +18,15 @@ export class KomadaiUI {
   width: number;
   height: number;
   cellSize: number;
+  shortcut: { [key: string]: string; } = {
+    "pawn": "Space",
+    "lance": "Q",
+    "knight": "W",
+    "rook": "E",
+    "silver": "A",
+    "gold": "S",
+    "bishop": "D",
+  };
 
   constructor(params: KomadaiUiParams) {
     this.x = params.x;
@@ -61,6 +71,10 @@ export class KomadaiUI {
     for (let i = 0; i < 4; i++) {
       ctx.save();
       for (let j = 0; j < 3; j++) {
+        const type = this.types[i][j];
+        if (teban === myteban && type && this.shortcut[type]) {
+          drawTextWithDoubleOutline(ctx, this.shortcut[type], 0.02 * scale, 0.05 * scale, CELL_SIZE * 0.4 * scale, ["#ffcc88", "#00000000", "#00000000"], "center" as CanvasTextBaseline, "left");
+        }
         if (this.types[i][j]) {
           this.drawKomadaiPiece(this.types[i][j]!, teban, myteban, scale, dragging);
           ctx.translate(CELL_SIZE * scale, 0);
@@ -73,13 +87,14 @@ export class KomadaiUI {
 
   // 駒台の駒を描画
   drawKomadaiPiece(type: string, teban: string, myteban: string, scale: number, dragging: Piece | null) {
-    const komadai = this.board.komadaiPieces[teban];
+    const numteban = teban === "sente" ? 1 : -1;
+    const onmyKomadai = this.board.pieces.filter(piece => piece.type === type && piece.x === -1 && piece.teban === numteban);
     const img = PieceImages[type as keyof typeof PieceImages];
     const pieceSize = CELL_SIZE * 0.8 * scale;
     const padding = CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
     let x = dragging?.type === type && dragging.x === -1 && teban === myteban ? 1 : 0;
-    for (let i = 0 + x; i < komadai[type]; i++) {
-      ctx.drawImage(img, (komadai[type] - i - 1) * padding, 0, pieceSize, pieceSize);
+    for (let i = 0 + x; i < onmyKomadai.length; i++) {
+      ctx.drawImage(img, (onmyKomadai.length - i - 1) * padding, 0, pieceSize, pieceSize);
     }
   }
 

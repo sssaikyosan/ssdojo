@@ -1,3 +1,4 @@
+import { CPU } from "./cpu";
 import { canvas, emitter, gameManager, playerName, serverStatus, setPlayerName, setScene, socket } from "./main";
 import { Background, UI } from "./ui";
 import { LoadingUI } from "./ui_loading";
@@ -60,6 +61,7 @@ export class Scene {
 const nameInputOverlay = document.getElementById("nameInputOverlay") as HTMLElement;
 const nameInput = document.getElementById("nameInput") as HTMLInputElement;
 const submitNameButton = document.getElementById("submitNameButton") as HTMLButtonElement;
+const cpuButton = document.getElementById("cpuButton") as HTMLButtonElement;
 
 const resultOverlay = document.getElementById("resultOverlay") as HTMLElement;
 const toTitleButton = document.getElementById("toTitleButton") as HTMLButtonElement;
@@ -77,7 +79,7 @@ const onlineText = new TextUI({
   x: 0,
   y: 0.25,
   size: 0.035,
-  colors: ["#ffffff"]
+  colors: ["#ffffff", "#00000000", "#00000000"]
 });
 
 const playingText = new TextUI({
@@ -85,7 +87,7 @@ const playingText = new TextUI({
   x: 0,
   y: 0.30,
   size: 0.035,
-  colors: ["#ffffff"]
+  colors: ["#ffffff", "#00000000", "#00000000"]
 });
 
 
@@ -119,14 +121,38 @@ const loseText = new TextUI({
   colors: ["#b639ff", "#270b36", "#ffffff"]
 });
 
+const timeText = new TextUI({
+  text: () => {
+    return `${Math.floor(gameManager.board.time / 1000)}`;
+  },
+  x: 0.0,
+  y: -0.49,
+  size: 0.08,
+  colors: ["#ffffff", "#888888", "#00000000"],
+  textBaseline: "top",
+});
 
-
+const matchingText = new TextUI({
+  text: () => {
+    return "マッチング中...";
+  },
+  x: 0.0,
+  y: 0.0,
+  size: 0.05,
+  colors: ["#ffffff", "#00000000", "#00000000"]
+});
+const loading = new LoadingUI({
+  x: 0.0,
+  y: 0.1,
+  radius: 0.05,
+});
 
 //タイトルシーン
 export function createTitleScene() {
-
+  let titleScene = new Scene();
   // 入力欄の文字数を制限するメソッド
   function limitInputLength(nameInput: HTMLInputElement) {
+
     const MAX_LENGTH = 20; // 最大文字数（全角10文字分）
     let currentText = nameInput.value;
     let newText = "";
@@ -159,14 +185,23 @@ export function createTitleScene() {
     socket.emit("requestMatch", { name: playerName });
     nameInputOverlay.style.display = "none";
     gameManager.gameState = "matching";
-    setScene(createMatchingScene());
+    titleScene.add(matchingText);
+    titleScene.add(loading);
   }
+  //名前入力オーバーレイ
+  function handleCPUSubmit(nameInputOverlay: HTMLElement, nameInput: HTMLInputElement) {
+    setPlayerName(nameInput.value.trim());
+    localStorage.setItem("playerName", playerName);
+    if (playerName == "") setPlayerName("名無しの棋士");
 
-  let titleScene = new Scene();
+    nameInputOverlay.style.display = "none";
+    gameManager.gameState = "playing";
+    setScene(createPlayScene(playerName, "CPU", 0, "0", 0, 0, 1));
+  }
 
   nameInput.addEventListener("input", () => { limitInputLength(nameInput); });
   submitNameButton.addEventListener("click", () => { handleNameSubmit(nameInputOverlay, nameInput); });
-
+  cpuButton.addEventListener("click", () => { handleCPUSubmit(nameInputOverlay, nameInput); });
 
   titleScene.add(title);
   titleScene.add(onlineText);
@@ -177,31 +212,6 @@ export function createTitleScene() {
   nameInputOverlay.style.display = "block";
   return titleScene;
 }
-
-//マッチングシーン
-function createMatchingScene() {
-  let matchingScene = new Scene();
-  let matchingText = new TextUI({
-    text: () => {
-      return "マッチング中...";
-    },
-    x: 0.0,
-    y: 0.0,
-    size: 0.05,
-    colors: ["#ffffff"]
-  });
-  let loading = new LoadingUI({
-    x: 0.0,
-    y: 0.1,
-    radius: 0.05,
-  });
-  matchingScene.add(matchingText);
-  matchingScene.add(loading);
-  matchingScene.add(onlineText);
-  matchingScene.add(playingText);
-  return matchingScene;
-}
-
 
 //ゲームシーン
 export function createPlayScene(
@@ -214,8 +224,15 @@ export function createPlayScene(
   cpu: number = -1
 ) {
   const playScene = new Scene();
+  if (cpu === -1) {
+    gameManager.Init(roomId, teban, null, servertime, time);
+  } else {
+    const now = performance.now();
+    const ai = new CPU();
+    gameManager.Init("CPUroom", 1, ai, now, now);
+    ai.init(gameManager.board, -1, now);
 
-  gameManager.Init(roomId, teban, cpu, servertime, time);
+  }
 
   //プレイヤー名
   const playerNameUI = new TextUI({
@@ -225,7 +242,7 @@ export function createPlayScene(
     x: -0.42,
     y: 0.4,
     size: 0.03,
-    colors: ["#FFFFFF"],
+    colors: ["#ffffff", "#00000000", "#00000000"],
     textBaseline: "bottom",
     position: "right"
   });
@@ -238,7 +255,7 @@ export function createPlayScene(
     x: 0.42,
     y: -0.4,
     size: 0.03,
-    colors: ["#FFFFFF"],
+    colors: ["#ffffff", "#00000000", "#00000000"],
     textBaseline: "top",
     position: "left"
   });
@@ -247,6 +264,8 @@ export function createPlayScene(
   playScene.add(gameManager.boardUI);
   playScene.add(playerNameUI);
   playScene.add(opponentNameUI);
+  playScene.add(timeText);
+
 
   function backToTitle() {
     resultOverlay.style.display = "none";
@@ -258,8 +277,6 @@ export function createPlayScene(
   emitter.on("endGame", (result: number) => {
     socket.emit("leaveRoom", { roomId: gameManager.roomId });
     gameManager.gameState = "result";
-    playScene.remove(playerNameUI);
-    playScene.remove(opponentNameUI);
     playScene.add(background);
     if (result === gameManager.teban) {
       playScene.add(winText);

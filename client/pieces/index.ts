@@ -33,9 +33,9 @@ export const PieceFileFiles = {
   silver,
 } as const;
 
-export const PieceTypeNormals = ["pawn", "lance", "knight", "silver", "gold", "king", "king2", "rook", "bishop"] as const;
+export const PieceTypeNormals = ["pawn", "none", "none", "lance", "knight", "rook", "silver", "gold", "bishop", "king", "king2"] as const;
 export type PieceTypeNormal = typeof PieceTypeNormals[number];
-export const PieceTypeNaris = ["prom_pawn", "prom_lance", "prom_knight", "prom_silver", "horse", "dragon"] as const;
+export const PieceTypeNaris = ["prom_pawn", "none", "none", "prom_lance", "prom_knight", "dragon", "prom_silver", "none", "horse", "none", "none"] as const;
 export type PieceTypeNari = typeof PieceTypeNaris[number];
 export const PieceTypes = [...PieceTypeNormals, ...PieceTypeNaris] as const;
 export type PieceType = typeof PieceTypes[number];
@@ -49,7 +49,11 @@ export function PieceImageInit() {
   return PieceTypes.map(piece => {
     const p = promiser();
     const img = new Image();
-    img.src = PieceFileFiles[piece];
+    if (piece === "none") {
+      img.src = PieceFileFiles["king2"];
+    } else {
+      img.src = PieceFileFiles[piece];
+    }
     img.onload = () => {
       PieceImages[piece] = img;
       p.resolve();

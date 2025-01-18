@@ -1,10 +1,12 @@
 import { Socket } from "socket.io";
 import { HrTime } from "../share/type";
+import { Move } from "./const";
 import { Emitter } from "./emitter";
 import { GameManager } from "./gameManager";
 import { Keyboard } from "./keyboard";
-import { PieceImageInit, PieceType } from "./pieces";
+import { PieceImageInit } from "./pieces";
 import { createPlayScene, createTitleScene, Scene } from "./scene";
+import { playSound } from "./sounds";
 import { hrtime2time } from "./utils";
 
 export type GameState = "title" | "matching" | "playing" | "result";
@@ -118,6 +120,7 @@ function setupSocket() {
         performance.now()
       );
     }
+    playSound("match");
   });
 
   // 駒の移動を受け取る
@@ -127,16 +130,17 @@ function setupSocket() {
     teban: number,
     hrtime: [number, number];
   }) => {
-    gameManager.board.movePieceLocal(data.x, data.y, data.nx, data.ny, data.narazu, data.teban, hrtime2time(data.hrtime));
-  });
-  // 駒の配置を受け取る
-  socket.on("newPut", (data: {
-    nx: number, ny: number,
-    type: PieceType,
-    teban: number,
-    hrtime: [number, number];
-  }) => {
-    gameManager.board.putPieceLocal(data.nx, data.ny, data.type, data.teban, hrtime2time(data.hrtime));
+    console.log("newMove", data);
+    const move: Move = {
+      x: data.x,
+      y: data.y,
+      nx: data.nx,
+      ny: data.ny,
+      narazu: data.narazu,
+      teban: data.teban,
+      servertime: hrtime2time(data.hrtime),
+    };
+    gameManager.board.movePieceLocal(move);
   });
 }
 
@@ -160,6 +164,9 @@ export function getTimeDiff(startTime: HrTime, endTime: HrTime) {
 }
 
 function roop() {
+  if (gameManager.gameState == "playing") {
+    gameManager.update();
+  }
   scene.draw(ctx);
   requestAnimationFrame(roop);
 }

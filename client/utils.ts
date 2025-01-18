@@ -34,7 +34,6 @@ export function drawText(
   ctx.font = `${fontSize}px Arial`;
   ctx.textBaseline = textBaseline;
   ctx.textAlign = position;
-  ctx.strokeStyle = "#00000000";
   ctx.fillStyle = colors[0];
   ctx.fillText(text, x, y);
 }
@@ -136,3 +135,16 @@ export function hrtime2time(hrtime: [number, number]): number {
   return hrtime[0] * 1000 + hrtime[1] / 1000000;
 }
 
+export function formatTime(milliseconds: number): string {
+  // 時間、分、秒に変換
+  const hours = Math.floor(milliseconds / 3600000);
+  const minutes = Math.floor((milliseconds % 3600000) / 60000);
+  const seconds = Math.floor((milliseconds % 60000) / 1000);
+
+  // 2桁表示にフォーマット
+  return [
+    hours.toString().padStart(2, '0'),
+    minutes.toString().padStart(2, '0'),
+    seconds.toString().padStart(2, '0')
+  ].join(':');
+}

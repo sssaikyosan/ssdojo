@@ -2,7 +2,6 @@ import { Board } from "./board";
 import { BOARD_COLOR, BOARD_SIZE, CELL_SIZE, KOMADAI_HEIGHT, KOMADAI_OFFSET_RATIO, LINE_COLOR, LINEWIDTH, MOUSE_HIGHLIGHT_COLOR } from "./const";
 import { Emitter } from "./emitter";
 import { Piece } from "./piece";
-import { PieceType, PieceTypes } from "./pieces";
 import { UI, UiParams } from "./ui";
 import { KomadaiUI } from "./ui_komadai";
 
@@ -157,16 +156,17 @@ export class BoardUI extends UI {
         };
         const type = this.komadai.types[i][j];
         if (!type) continue;
-        if (this.board.komadaiPieces[this.teban === 1 ? "sente" : "gote"][type] <= 0) continue;
+        const piece = this.board.pieces.find(piece => piece.type === type && piece.x === -1 && piece.teban === this.teban);
+        if (!piece) continue;
         if (
           pos.x >= komadaiX + j * this.cellSize &&
           pos.x <= komadaiX + j * this.cellSize + this.cellSize &&
           pos.y >= komadaiY + i * this.cellSize &&
           pos.y <= komadaiY + i * this.cellSize + this.cellSize
         ) {
-          return type;
+          return piece;
         }
-      }
+      };
     }
     return null;
   }
@@ -177,21 +177,20 @@ export class BoardUI extends UI {
       const komadaiPiece = this.getKomadaiPieceAt(pos);
       if (komadaiPiece) {
         this.draggingPiecePos = pos;
-        this.draggingPiece = new Piece(this.board, komadaiPiece as PieceType, -1, PieceTypes.findIndex(type => type === komadaiPiece), this.teban, this.board.serverstarttime, this.board.starttime);
+        this.draggingPiece = komadaiPiece;
       }
-    } else if (this.board.map[x][y]) {
-      if (this.board.map[x][y].teban == this.teban) {
-        this.draggingPiece = this.board.map[x][y];
+    } else if (this.board.map[x][y] !== -1) {
+      if (this.board.pieces[this.board.map[x][y]].teban == this.teban) {
+        this.draggingPiece = this.board.pieces[this.board.map[x][y]];
         this.draggingPiecePos = pos;
       }
     }
   }
 
   onMouseMove(pos: { x: number, y: number; }) {
-    if (this.draggingPiece) {
-      this.draggingPiecePos = pos;
-    }
+    if (this.draggingPiece) this.draggingPiecePos = pos;
     const cell = this.getBoardPosition(pos);
+
     if (cell.x === -1 && cell.y === -1) {
       this.hoveredCell = null; // 盤面外ならリセット
     } else {
@@ -202,56 +201,32 @@ export class BoardUI extends UI {
   onMouseUp(pos: { x: number, y: number; }) {
     if (!this.draggingPiece) return;
     const { x, y } = this.getBoardPosition(pos);
-    console.log("onMouseUp", x, y, this.draggingPiece.x, this.draggingPiece.y);
-    if (this.draggingPiece.x === -1) {
-      const data = {
-        nx: x,
-        ny: y,
-        type: this.draggingPiece.type,
-        teban: this.teban,
-      };
-      this.emitter.emit("putPiece", data);
-    } else {
-      const data = {
-        x: this.draggingPiece.x,
-        y: this.draggingPiece.y,
-        nx: x,
-        ny: y,
-        narazu: false,
-        teban: this.teban,
-      };
-      this.emitter.emit("movePiece", data);
-    }
-
-
+    console.log(this.draggingPiece);
+    const data: { x: number, y: number, nx: number, ny: number, narazu: boolean, teban: number; } = {
+      x: this.draggingPiece.x,
+      y: this.draggingPiece.y,
+      nx: x,
+      ny: y,
+      narazu: false,
+      teban: this.teban,
+    };
+    this.emitter.emit("movePiece", data);
     this.draggingPiece = null;
     this.draggingPiecePos = null;
   }
 
   onMouseUpRight(pos: { x: number, y: number; }) {
     if (!this.draggingPiece) return;
-    const npos = this.getBoardPosition(pos);
-
-    if (this.draggingPiece.x === -1) {
-      const data = {
-        nx: npos.x,
-        ny: npos.y,
-        type: this.draggingPiece.type,
-        narazu: true,
-        teban: this.teban,
-      };
-      this.emitter.emit("putPiece", data);
-    } else {
-      const data = {
-        x: this.draggingPiece.x,
-        y: this.draggingPiece.y,
-        nx: npos.x,
-        ny: npos.y,
-        narazu: true,
-        teban: this.teban,
-      };
-      this.emitter.emit("movePiece", data);
-    }
+    const { x, y } = this.getBoardPosition(pos);
+    const data: { x: number, y: number, nx: number, ny: number, narazu: boolean, teban: number; } = {
+      x: this.draggingPiece.x,
+      y: this.draggingPiece.y,
+      nx: x,
+      ny: y,
+      narazu: true,
+      teban: this.teban,
+    };
+    this.emitter.emit("movePiece", data);
     this.draggingPiece = null;
     this.draggingPiecePos = null;
   }

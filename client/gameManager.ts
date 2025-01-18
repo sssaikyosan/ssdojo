@@ -1,6 +1,8 @@
 
 import { Socket } from "socket.io";
 import { Board } from "./board";
+import { KOMADAI_PIECE_TYPE, Move } from "./const";
+import { CPU } from "./cpu";
 import { Emitter } from "./emitter";
 import { GameState } from "./main";
 import { Piece } from "./piece";
@@ -18,7 +20,8 @@ export class GameManager {
   emitter: Emitter;
   roomId: string = "";
   teban: number = 0;
-  cpu: number = -1;
+  cpu: CPU | null = null;
+  endgame: boolean = false;
 
   board: Board;
   boardUI: BoardUI;
@@ -37,33 +40,39 @@ export class GameManager {
   }
 
 
-  Init(roomId: string, teban: number, cpu: number, servertime: number, time: number) {
-    //イベントを受け取る
+  Init(roomId: string, teban: number, cpu: CPU | null, servertime: number, time: number) {
+    // キーを受け取る
     this.emitter.on("keydown", (piecetype: PieceType) => {
       const pos = this.boardUI.hoveredCell;
       if (!pos) return;
-      if (!this.board.canPutPiece(pos.x, pos.y, piecetype, this.teban)) return;
-      this.sendPutPiece(pos.x, pos.y, piecetype);
+      if (!this.board.pieces[this.board.map[pos.x][pos.y]].canMove(-1, KOMADAI_PIECE_TYPE.indexOf(piecetype), false)) return;
+      this.sendMovePiece(pos.x, pos.y, -1, KOMADAI_PIECE_TYPE.indexOf(piecetype), false);
     });
 
-    this.emitter.on("movePiece", (data: { x: number, y: number, nx: number, ny: number, narazu: boolean, teban: number; }) => {
-      if (!this.board.canMovePiece(data.x, data.y, data.nx, data.ny, data.narazu, this.teban)) return;
+    // 指し手を受け取る
+    this.emitter.on("movePiece", (data: Move) => {
+      console.log(data);
+      console.log(this.board.pieces);
+      const piece: Piece | undefined = data.x === -1
+        ? this.board.pieces.find(piece =>
+          piece.x === -1 &&
+          piece.y === data.y &&
+          piece.teban === data.teban
+        )
+        : this.board.pieces[this.board.map[data.x][data.y]];
+      console.log(piece);
+      if (!piece) return;
+      if (!piece.canMove(data.nx, data.ny, data.narazu)) return;
       this.sendMovePiece(data.x, data.y, data.nx, data.ny, data.narazu);
-    });
-
-    this.emitter.on("putPiece", (data: { nx: number, ny: number, type: PieceType, teban: number; }) => {
-      console.log("putPiece", data);
-      if (!this.board.canPutPiece(data.nx, data.ny, data.type, data.teban)) return;
-      console.log("canput", data);
-      this.sendPutPiece(data.nx, data.ny, data.type);
     });
 
     this.gameState = "playing";
     this.roomId = roomId;
     this.teban = teban;
-    this.cpu = cpu;
     this.board.init(servertime, time);
     this.boardUI.init(teban);
+    this.endgame = false;
+    this.cpu = cpu;
   }
 
   canSendPiece(nx: number, ny: number) {
@@ -75,7 +84,7 @@ export class GameManager {
   }
 
   sendMovePiece(x: number, y: number, nx: number, ny: number, narazu: boolean) {
-    if (this.cpu === -1) {
+    if (this.cpu === null) {
       if (!this.canSendPiece(nx, ny)) return false;
       this.socket.emit("movePiece", {
         x: x, y: y,
@@ -85,29 +94,31 @@ export class GameManager {
         roomId: this.roomId,
       });
     } else {
-      this.board.movePieceLocal(x, y, nx, ny, narazu, this.teban, performance.now());
+      const move: Move = {
+        x: x, y: y,
+        nx: nx, ny: ny,
+        narazu: narazu,
+        teban: this.teban,
+        servertime: performance.now(),
+      };
+      this.board.movePieceLocal(move);
     }
     return true;
   }
 
-  sendPutPiece(nx: number, ny: number, type: PieceType) {
-    console.log("sendPutPiece", nx, ny, type);
-    if (this.cpu === -1) {
-      if (!this.canSendPiece(nx, ny)) return false;
-      console.log("socket", nx, ny, type);
-      this.socket.emit("putPiece", {
-        nx: nx, ny: ny,
-        type: type,
-        teban: this.teban,
-        roomId: this.roomId,
-      });
-    } else {
-      this.board.putPieceLocal(nx, ny, type, this.teban, performance.now());
-    }
-    return true;
+  gameEnd() {
+
   }
 
   update() {
-    this.board.time = performance.now();
+
+    if (this.cpu !== null) {
+      const time = performance.now();
+      this.board.time = time - this.board.serverstarttime;
+      this.cpu.update(time);
+    } else {
+      const time = performance.now();
+      this.board.time = time - this.board.starttime;
+    }
   }
-};
+}

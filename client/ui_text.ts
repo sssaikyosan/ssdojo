@@ -42,7 +42,7 @@ export class TextUI extends UI {
         drawTextWithDoubleOutline(ctx, this.text(), x, y, size, this.colors, this.textBaseline, this.position);
       default:
         drawText(ctx, this.text(), x, y, size, this.colors, this.textBaseline, this.position);
-    }
+    };
     ctx.restore();
   }
 }

@@ -24,6 +24,7 @@ export const TIMER_COLOR = "rgb(31, 63, 221)";
 export const MOVE_COLOR = "#cf8b1e";
 
 export const KOMADAI_PIECE_TYPE = ["pawn", "lance", "knight", "silver", "gold", "bishop", "rook", "king", "king2"];
+
 export const pieceMoves = {
   pawn: [
     { dx: 0, dy: -1, recursive: false } // 先手の場合、1マス前
@@ -133,5 +134,9 @@ export const pieceMoves = {
     { dx: 0, dy: 1, recursive: false },
     { dx: 1, dy: 1, recursive: false },
     { dx: -1, dy: 1, recursive: false }
-  ]
+  ],
+  none: []
 } as const;
+
+
+export type Move = { x: number, y: number, nx: number, ny: number, narazu: boolean, teban: number, servertime: number; };
