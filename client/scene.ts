@@ -1,4 +1,4 @@
-import { CPU } from "./cpu";
+import { Teban } from "../share/type";
 import { canvas, emitter, gameManager, playerName, serverStatus, setPlayerName, setScene, socket } from "./main";
 import { Background, UI } from "./ui";
 import { LoadingUI } from "./ui_loading";
@@ -123,7 +123,7 @@ const loseText = new TextUI({
 
 const timeText = new TextUI({
   text: () => {
-    return `${Math.floor(gameManager.board.time / 1000)}`;
+    return `${Math.floor((gameManager.board.time - gameManager.board.starttime) / 1000)}`;
   },
   x: 0.0,
   y: -0.49,
@@ -196,7 +196,8 @@ export function createTitleScene() {
 
     nameInputOverlay.style.display = "none";
     gameManager.gameState = "playing";
-    setScene(createPlayScene(playerName, "CPU", 0, "0", 0, 0, 1));
+    
+    setScene(createPlayScene(playerName, "CPU", 1, "0", 0, 0, true));
   }
 
   nameInput.addEventListener("input", () => { limitInputLength(nameInput); });
@@ -217,21 +218,17 @@ export function createTitleScene() {
 export function createPlayScene(
   playerName: string,
   opponentName: string,
-  teban: number,
+  teban: Teban,
   roomId: string,
   servertime: number,
   time: number,
-  cpu: number = -1
+  cpu = false
 ) {
   const playScene = new Scene();
-  if (cpu === -1) {
-    gameManager.Init(roomId, teban, null, servertime, time);
+  if (cpu) {
+    gameManager.initFromCpu("CPUroom", 1);
   } else {
-    const now = performance.now();
-    const ai = new CPU();
-    gameManager.Init("CPUroom", 1, ai, now, now);
-    ai.init(gameManager.board, -1, now);
-
+    gameManager.init(roomId, teban, servertime, time);
   }
 
   //プレイヤー名

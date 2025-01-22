@@ -1,247 +1,481 @@
 import { Board } from "./board";
-import { BOARD_SIZE, KOMADAI_PIECE_TYPE, Move } from "./const";
-import { Emitter } from "./emitter";
+import { BOARD_SIZE, KifuMove, MOVETIME, STARTHANDS, STARTMAP } from "./const";
+import { CPUBoard, CPUMove, getAllPossibleMoves, Kifu, setBoard } from "./cpuboard";
+import { gameManager } from "./main";
 import { Piece } from "./piece";
-import { PieceType } from "./pieces";
+import { shuffle } from "./utils";
 
+/** 駒の価値テーブル */
+/*
+歩
+香車
+桂馬
+飛車
+銀
+金
+角
+王
+玉
+と
+成香
+成桂
+竜
+成銀
+馬
+*/
 
+const PIECE_SCORE_TABLE = [
+  0,
+  105,
+  700,
+  576,
+  227,
+  279,
+  444,
+  529,
+  99999,
+  483,
+  1002,
+  730,
+  348,
+  535,
+  543
+];
 
 export class CPU {
   board: Board | null = null;
-  aiboard: Board = new Board(new Emitter());
-  teban: number = 0;
-  cputime: number = 0;
-  time: number = 0;
+  cpu_board: CPUBoard = {
+    map: STARTMAP,
+    hands: STARTHANDS
+  };
 
-  currentEval: number = 0;
+  kifu: Kifu[] = [];
 
-  moves: Move[] = [];
-  movepoints: { idx: number, aival: number; }[] = [];
+  moves: CPUMove[] = [];
+  goodMoves: { move: CPUMove, aival: number; }[] = [];
+  waitingMoves: CPUMove[] = [];
   idx: number = 0;
 
-  opponentMoves: Move[] = [];
-  opevals: number[] = [];
-  opidx: number = 0;
+  lastSendTime: number = 0;
+  thinkTime: number = 1000;
 
-  init(board: Board, teban: number, time: number) {
+
+
+  // allMoves: CPUMove[][][] =
+  //   [
+  //     [[], [], [], [], [], [], [], [], []],
+  //     [[], [], [], [], [], [], [], [], []],
+  //     [[], [], [], [], [], [], [], [], []],
+  //     [[], [], [], [], [], [], [], [], []],
+  //     [[], [], [], [], [], [], [], [], []],
+  //     [[], [], [], [], [], [], [], [], []],
+  //     [[], [], [], [], [], [], [], [], []],
+  //     [[], [], [], [], [], [], [], [], []],
+  //     [[], [], [], [], [], [], [], [], []]
+  //   ];
+
+  // allPuts: CPUMove[][][] =
+  //   [
+  //     [[], [], [], [], [], [], [], [], []],
+  //     [[], [], [], [], [], [], [], [], []],
+  //     [[], [], [], [], [], [], [], [], []],
+  //     [[], [], [], [], [], [], [], [], []],
+  //     [[], [], [], [], [], [], [], [], []],
+  //     [[], [], [], [], [], [], [], [], []],
+  //     [[], [], [], [], [], [], [], [], []],
+  //     [[], [], [], [], [], [], [], [], []],
+  //     [[], [], [], [], [], [], [], [], []]
+  //   ];
+
+
+  constructor(board: Board) {
     this.board = board;
-    this.aiboard = new Board(new Emitter());
-    this.teban = teban;
-    this.cputime = 0;
-    this.time = time;
-
-    this.moves = [];
-
-    this.movepoints = [];
-    this.idx = 0;
-
-    this.opponentMoves = [];
-    this.opevals = [];
-    this.opidx = 0;
   }
 
-  evaluatePosition(): number {
+  //駒の価値のみで評価値を算出
+  // evaluatePosition(): number {
+  //   let boardScore = 0;
+  //   let handScore = 0;
+
+  //   const map = this.cpu_board.map;
+
+  //   // 盤面の駒を評価
+  //   for (let i = 0; i < BOARD_SIZE; i++) {
+  //     for (let j = 0; j < BOARD_SIZE; j++) {
+
+  //       if (map[i][j] == null) continue;
+  //       boardScore += this.getPieceValue(map[i][j]!.type) * (map[i][j]!.owner ? 1 : -1);
+  //     }
+  //   }
+
+  //   // 持ち駒を評価
+  //   for (let i = 0; i < 2; i++) {
+  //     for (let j = 0; j < 7; j++) {
+  //       handScore += this.getPieceValue(j) * (i === 1 ? 1 : -1) * 1.1;
+  //     }
+  //   }
+
+  //   const totalScore = boardScore + handScore;
+  //   // console.log('Evaluation:', {
+  //   //   boardScore,
+  //   //   handScore,
+  //   //   totalScore
+  //   // });
+  //   return totalScore;
+  // }
+
+  // getPosVal(typeA: number, typeB: number, dir: number) {
+  //   return POSITION_SCORE_TABLE[typeA][typeB][dir];
+  // }
+
+  // evalPos(): number {
+  //   let score = 0;
+  //   for (let i = 0; i < BOARD_SIZE; i++) {
+  //     for (let j = 0; j < BOARD_SIZE; j++) {
+  //       const piece = this.cpu_board.map[i][j];
+  //       if (!piece) continue;
+  //       const sidePiece = this.cpu_board.map[i + 1][j];
+  //       const botPiece = this.cpu_board.map[i][j + 1];
+  //       const sbPiece = this.cpu_board.map[i + 1][j + 1];
+  //       if (sidePiece) score += this.getPosVal(piece.type, sidePiece.type, 0);
+  //       if (botPiece) score += this.getPosVal(piece.type, botPiece.type, 1);
+  //       if (sbPiece) score += this.getPosVal(piece.type, sbPiece.type, 2);
+  //     }
+  //   }
+  //   return score;
+  // }
+
+  //駒の価値を取得
+  getPieceValue(type: number): number {
+    return PIECE_SCORE_TABLE[type];
+  }
+
+  // setAllMoves() {
+  //   this.allMoves = [];
+  //   for (let i = 0; i < BOARD_SIZE; i++) {
+  //     for (let j = 0; j < BOARD_SIZE; j++) {
+  //       const piece = this.cpu_board.map[i][j];
+  //       if (!piece) continue;
+  //       repeatMove(this.cpu_board, piece, i, j, (x, y) => {
+  //         this.allMoves[i][j].push({ owner: piece.owner, from: { x: i, y: j }, to: { x, y }, nari: false });
+  //         if (canNari(j, y, piece.type, piece.owner)) {
+  //           this.allMoves[i][j].push({ owner: piece.owner, from: { x: i, y: j }, to: { x, y }, nari: true });
+  //         }
+  //         return false;
+  //       });
+  //     }
+  //   }
+  // }
+
+  // myminimax(depth: number, isMaximizing: boolean, alpha: number = -Infinity, beta: number = Infinity, lastmove: CPUMove | null = null) {
+  //   if (depth === 0) return this.evalPos();
+
+  //   if (lastmove) {
+  //     this.allMoves[lastmove.from.x][lastmove.from.y] = [];
+  //     this.researchMoves(lastmove);
+  //   }
+
+  //   if (isMaximizing) {
+  //     let maxEval = -Infinity;
+  //     for (let i = 0; i < BOARD_SIZE; i++) {
+  //       for (let j = 0; j < BOARD_SIZE; j++) {
+  //         for (const move of this.allMoves[i][j]) {
+  //           const movefrom = this.allMoves[i][j];
+  //           this.kifu.push(doMove(this.cpu_board, move)!);
+
+  //           const aival = this.myminimax(depth - 1, false, alpha, beta);
+  //           undoMove(this.cpu_board, this.kifu.pop()!);
+  //           for (const lastmove of movefrom) {
+  //             this.allMoves[i][j].push(lastmove);
+  //           }
+
+  //           maxEval = Math.max(maxEval, aival!);
+  //           alpha = Math.max(alpha, aival!);
+  //           if (beta <= alpha) break;
+  //         }
+  //       }
+  //     }
+  //   } else {
+
+  //   }
+  // }
+
+  // researchMoves(move: CPUMove) {
+  //   const { owner, from, to, nari } = move;
+  //   this.allMoves[from.x][from.y] = [];
+  //   for (let i = 0; i < 2; i++) {
+  //     for (let j = 0; j < 2; j++) {
+  //       const lx = from.x + i - 1;
+  //       const ly = from.y + j - 1;
+  //       if (lx < 0 || lx >= 9 || ly < 0 || ly >= 9) continue;
+  //       const nearPiece = this.cpu_board.map[lx][ly];
+  //       if (!nearPiece) continue;
+  //       if (nearPiece.owner !== owner) continue;
+  //       for (const komamove of PIECE_MOVES[nearPiece.type]) {
+  //         if (komamove.x === 1 - i && komamove.y === 1 - j) {
+  //           this.allMoves[lx][ly].push({
+  //             owner: owner,
+  //             from: { x: lx, y: ly },
+  //             to: { x: from.x, y: from.y },
+  //             nari: false,
+  //           });
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+
+
+
+
+  // // ミニマックスで最善の手を選択
+  // minimax(depth: number, isMaximizing: boolean, pos: Pos = { x: -1, y: -1 }, alpha: number = -Infinity, beta: number = Infinity) {
+  //   //深さ０の場合は評価関数を呼び出す
+  //   if (depth <= 0) return this.evaluatePosition();
+
+  //   //すべての合法手を取得
+  //   const moves = getAllPossibleMoves(this.cpu_board, isMaximizing ? true : false);
+  //   if (moves.length === 0) {
+  //     return isMaximizing ? -Infinity : Infinity;
+  //   };
+
+  //   shuffle(moves);
+  //   //簡易評価による手のソート
+  //   this.sortMoves(moves, isMaximizing);
+
+
+  //   //互いに可能な限り評価が高くなるように手を選択
+  //   if (isMaximizing) {
+  //     let maxEval = -Infinity;
+  //     for (const move of moves) {
+  //       const moveResult = doMove(this.cpu_board, move);
+  //       if (!moveResult) {
+  //         console.error("Invalid move:", move);
+  //         continue;
+  //       }
+  //       this.kifu.push(moveResult);
+  //       let aival: number;
+  //       aival = this.minimax(depth - 1, false, move.to);
+  //       const lastMove = this.kifu.pop();
+  //       if (lastMove) {
+  //         undoMove(this.cpu_board, lastMove);
+  //       }
+
+  //       maxEval = Math.max(maxEval, aival);
+  //       alpha = Math.max(alpha, aival);
+
+  //       if (beta <= alpha) break;
+  //     }
+  //     return maxEval;
+  //   } else {
+  //     let minEval = Infinity;
+  //     for (const move of moves) {
+  //       this.kifu.push(doMove(this.cpu_board, move)!);
+  //       const aival: number = this.minimax(depth - 1, true);
+  //       undoMove(this.cpu_board, this.kifu.pop()!);
+
+  //       minEval = Math.min(minEval, aival);
+  //       beta = Math.min(beta, aival);
+
+  //       if (beta <= alpha) break;
+  //     }
+  //     return minEval;
+  //   }
+  // }
+
+  // //駒をとれる手を優先
+  // sortMoves(moves: CPUMove[], isMaximizing: boolean) {
+  //   // キラームーブヒューリスティックによる手のソート
+  //   moves.sort((a, b) => {
+  //     const evalA = this.quickEvaluateMove(a);
+  //     const evalB = this.quickEvaluateMove(b);
+  //     return isMaximizing ? evalB - evalA : evalA - evalB;
+  //   });
+  // }
+
+  //簡易評価関数（取れる駒の価値のみ算出）
+  quickEvaluateMove(move: CPUMove): number {
+    const { to } = move;
     let score = 0;
-    for (let piece of this.aiboard.pieces) {
-      score += this.getPieceValue(piece.type) * piece.teban * this.teban;
-    }
-    return score;
-  }
-
-  getPieceValue(type: PieceType): number {
-    // 駒の価値テーブル
-    const values = {
-      pawn: 105,
-      prom_pawn: 483,
-      lance: 227,
-      prom_lance: 348,
-      knight: 279,
-      prom_knight: 535,
-      silver: 444,
-      prom_silver: 543,
-      gold: 529,
-      bishop: 576,
-      horse: 730,
-      rook: 700,
-      dragon: 1002,
-      king: 9999999,
-      king2: 9999999,
-      none: 0,
-    };
-    return values[type] || 0;
-  }
-
-  getValidPuts(piece: Piece) {
-    const puts: Move[] = [];
-    for (let nx = 0; nx < BOARD_SIZE; nx++) {
-      for (let ny = 0; ny < BOARD_SIZE; ny++) {
-        if (!piece.canMove(nx, ny, false)) continue;
-        puts.push({ x: -1, y: KOMADAI_PIECE_TYPE.indexOf(piece.type), nx: nx, ny: ny, narazu: false, teban: piece.teban, servertime: this.time });
-      }
-    }
-    return puts;
-  }
-
-  getAllLegalMoves(teban: number, time: number = Infinity) {
-    const moves: Move[] = [];
-
-    let pieceFlag = [false, false, false, false, false, false, false, false, false];
-
-    //合法手を取得
-    for (let piece of this.aiboard.pieces) {
-      if (piece.teban !== teban) continue;
-      if (piece.x === -1) {
-        if (pieceFlag[piece.y]) continue;
-        moves.push(...this.getValidPuts(piece));
-        pieceFlag[piece.y] = true;
-      } else {
-        moves.push(...piece.getMoves(time));
-      }
-    }
-    return moves;
-  }
-
-  // ミニマックスで最善の手を選択
-  minimax(depth: number, isMaximizing: boolean, alpha: number = -Infinity, beta: number = Infinity) {
-    if (depth === 0) return this.evaluatePosition();
-    const moves = this.getAllLegalMoves(isMaximizing ? this.teban : -this.teban);
-    if (moves.length === 0) {
-      console.log("moves length is 0");
-      return isMaximizing ? -Infinity : Infinity;
-    };
-    this.sortMoves(moves, isMaximizing);
-
-    if (isMaximizing) {
-      let maxEval = -Infinity;
-      for (const move of moves) {
-        console.log("move", move);
-        if (!this.aiboard.movePieceAI(move)) {
-          throw new Error(`Invalid move: ${move.x},${move.y} -> ${move.nx},${move.ny}`);
-        }
-        const aival = this.minimax(depth - 1, false);
-        this.aiboard.undoMoveForAI();
-
-        maxEval = Math.max(maxEval, aival);
-        alpha = Math.max(alpha, aival);
-
-        if (beta <= alpha) break;
-      }
-      return maxEval;
-    } else {
-      let minEval = Infinity;
-      for (const move of moves) {
-        console.log("move", move);
-        if (!this.aiboard.movePieceAI(move)) {
-          throw new Error(`Invalid move: ${move.x},${move.y} -> ${move.nx},${move.ny})`);
-        }
-        const aival = this.minimax(depth - 1, true);
-        this.aiboard.undoMoveForAI();
-
-        minEval = Math.min(minEval, aival);
-        beta = Math.min(beta, aival);
-
-        if (beta <= alpha) break;
-      }
-      return minEval;
-    }
-  }
-
-  sortMoves(moves: Move[], isMaximizing: boolean) {
-    // キラームーブヒューリスティックによる手のソート
-    moves.sort((a, b) => {
-      const evalA = this.quickEvaluateMove(a);
-      const evalB = this.quickEvaluateMove(b);
-      return isMaximizing ? evalB - evalA : evalA - evalB;
-    });
-  }
-
-  quickEvaluateMove(move: Move): number {
-    // 簡易的な手の評価
-    let score = 0;
-
-    // 駒の価値
-    const targetPiece = this.aiboard.pieces[this.aiboard.map[move.nx][move.ny]];
+    const targetPiece = this.cpu_board.map[to.x][to.y];
     if (targetPiece) {
       score += this.getPieceValue(targetPiece.type);
     }
     return score;
   }
 
-  deepCopyBoard(board: Board) {
-    // this.aiboard = new Board(new Emitter());
-    this.aiboard.pieces = [];
-    this.aiboard.map = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(-2));
 
-    // 駒リストのコピー
-    for (const piece of board.pieces) {
-      this.aiboard.pieces.push(new Piece(this.aiboard, piece.type, piece.x, piece.y, piece.teban, piece.lastMoveServerTime, piece.lastMoveTime, piece.idx));
-    }
-
-    // 盤面のコピー
-    for (let piece of this.aiboard.pieces) {
-      if (piece.x === -1) continue;
-      this.aiboard.map[piece.x][piece.y] = piece.idx;
-    }
-    console.log("deepCopyBoard", this.aiboard.map);
-    console.log("Board", board.map);
-    console.log("deepCopyPieces", this.aiboard.pieces);
-    console.log("Board", board.pieces);
-  }
-
-  reset() {
-    this.moves = [];
-    this.movepoints = [];
-    this.idx = 0;
-
-    this.opponentMoves = [];
-    this.opevals = [];
-    this.opidx = 0;
-  }
-
-  update(time: number) {
-    console.log("start", this.aiboard.map);
-    this.time = time;
-    if (this.board === null) return;
-
-    if (this.moves.length === 0) {
-      this.deepCopyBoard(this.board);
-      this.moves = this.getAllLegalMoves(this.teban, time);
-      this.opponentMoves = this.getAllLegalMoves(-this.teban, time);
-      return;
-    }
-
-    if (this.idx < this.moves.length) {
-      this.aiboard.movePieceAI(this.moves[this.idx]);
-      const aival = this.minimax(2, false);
-      this.aiboard.undoMoveForAI();
-      this.movepoints.push({ idx: this.idx, aival: aival });
-      this.idx++;
-      return;
-    }
-
-    if (this.opidx < this.opponentMoves.length) {
-      this.aiboard.movePieceAI(this.opponentMoves[this.opidx]);
-      const aival = this.minimax(2, true);
-      this.aiboard.undoMoveForAI();
-      this.opevals.push(aival);
-      this.opidx++;
-      return;
-    }
+  //指し手を送信
+  sendMovePiece() {
+    const time = performance.now();
+    for (let i = 0; i < this.waitingMoves.length; i++) {
+      const move = this.waitingMoves[i];
+      if (move.from.x >= 0) {
+        const piece = this.board!.getPiece(move.from.x, move.from.y);
+        if (!piece) continue;
+        if (piece.lastMoveTime + MOVETIME > time) continue;
+      }
+      const send: KifuMove = {
+        x: move.from.x,
+        y: move.from.y,
+        nx: move.to.x,
+        ny: move.to.y,
+        narazu: false,
+        teban: -1,
+        servertime: time,
+      };
 
 
-    const lowestEval = Math.min(...this.opevals);
-    this.movepoints.sort((a, b) => b.aival - a.aival);
-
-    for (let i = 0; i < this.movepoints.length; i++) {
-      if (this.movepoints[i].aival <= lowestEval) break;
-      const bestmove: Move = this.moves[this.movepoints[i].idx];
-      if (this.board.movePieceLocal(bestmove)) {
-        // console.log(lowestEval, this.movepoints[i].aival);
-        this.reset();
-        return;
+      if (gameManager.resieveMove(send)) {
+        this.waitingMoves.splice(i, 1);
+        return true;
       }
     }
-    this.reset();
-    return;
+    return false;
   }
-};
+
+
+
+  checkWaitingMoves(board: Board) {
+    // キャッシュ用変数
+    const boardSize = BOARD_SIZE;
+    const pieces = board.pieces;
+    const map = board.map;
+
+    // 逆順ループでspliceによるインデックス問題を回避
+    for (let i = this.waitingMoves.length - 1; i >= 0; i--) {
+      const move = this.waitingMoves[i];
+      const { from, to, nari } = move;
+      let piece: Piece | undefined;
+
+      // 持ち駒を打つ手の場合
+      if (from.x === -1) {
+        // キャッシュされたpieces配列を使用
+        for (let j = 0, len = pieces.length; j < len; j++) {
+          const p = pieces[j];
+          if (p.teban != -1) break;
+          if (p.x === -1 && p.y === from.y) {
+            piece = p;
+            break;
+          }
+        }
+      }
+      // 通常の手の場合
+      else if (from.x >= 0 && from.x < boardSize &&
+        from.y >= 0 && from.y < boardSize) {
+        const idx = map[from.x][from.y];
+        piece = pieces[idx];
+      }
+
+      // 無効な手を削除
+      if (!piece || piece.teban !== -1 || !piece.canMove(board, to.x, to.y, !nari)) {
+        this.waitingMoves.splice(i, 1);
+      }
+    }
+  }
+
+  decideMove(time: number) {
+    if (time - this.lastSendTime < this.thinkTime) return;
+    for (let i = 0; i < this.goodMoves.length; i++) {
+      const move = this.goodMoves[i].move;
+      for (const waitingMove of this.waitingMoves) {
+        if (move.from.x === waitingMove.from.x &&
+          move.from.y === waitingMove.from.y &&
+          move.to.x === waitingMove.to.x &&
+          move.to.y === waitingMove.to.y) {
+          this.goodMoves.splice(i, 1);
+          i--;
+          continue;
+        }
+      }
+      this.waitingMoves.push(move);
+      break;
+    }
+
+    this.moves = [];
+    this.idx = 0;
+    this.kifu = [];
+    this.goodMoves = [];
+  }
+
+
+
+
+  //毎フレーム呼び出される関数
+  update(time: number) {
+    if (this.board === null) return;
+    if (time - this.board.starttime < 5000) return;
+    this.checkWaitingMoves(this.board);
+    this.sendMovePiece();
+
+    // if (this.idx > 0 && this.idx === this.moves.length) {
+    //   this.decideMove(time);
+    // }
+
+    if (this.lastSendTime + this.thinkTime < time) {
+      const pieces = this.board.pieces;
+      const map = this.board.map;
+      this.cpu_board = setBoard(this.board, this.cpu_board);
+      const rndmoves = getAllPossibleMoves(this.cpu_board, true);
+      console.log(rndmoves.length);
+      shuffle(rndmoves);
+      for (let i = 0; i < rndmoves.length; i++) {
+        const { from, to, nari } = rndmoves[i];
+        if (from.x < 0) {
+          const piece = pieces.find(p => p.x === -1 && p.type === from.y && p.teban === -1);
+          if (!piece || !piece.canMove(this.board, to.x, to.y, !nari)) {
+            rndmoves.splice(i, 1);
+            i--;
+            continue;
+          }
+        } else {
+          const piece = pieces[map[from.x][from.y]];
+          if (!piece || !piece.canMove(this.board, to.x, to.y, !nari)) {
+            rndmoves.splice(i, 1);
+            i--;
+            continue;
+          }
+
+        }
+        this.waitingMoves.push(rndmoves[i]);
+        this.lastSendTime = time;
+        break;
+      }
+    }
+
+    // if (this.moves.length === 0) {
+    //   //CPUの脳内盤面をリセット
+
+
+    //簡易評価で手をソート
+    // this.sortMoves(this.moves, true);
+  }
+
+  // while (this.idx < this.moves.length) {
+  //   if (performance.now() - time > 10) {
+  //     break;
+  //   }
+  //   //自分視点の手を評価
+  //   if (this.idx < this.moves.length) {
+  //     const move = this.moves[this.idx];
+  //     const moveResult = doMove(this.cpu_board, move);
+  //     if (!moveResult) {
+  //       console.error("Invalid move:", move);
+  //       continue;
+  //     }
+  //     this.kifu.push(moveResult);
+  //     let finalaival: number = 0;
+  //     try {
+  //       finalaival = this.minimax(2, false);
+  //     } finally {
+  //       const lastMove = this.kifu.pop();
+  //       if (lastMove) {
+  //         undoMove(this.cpu_board, lastMove);
+  //       }
+  //     }
+  //     this.goodMoves.push({ move: move, aival: finalaival });
+  //     this.goodMoves.sort((a, b) => b.aival - a.aival);
+  //     this.idx++;
+  //   }
+  // }
+}

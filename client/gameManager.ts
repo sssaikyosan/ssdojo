@@ -1,12 +1,12 @@
-
 import { Socket } from "socket.io";
+import { Teban } from "../share/type";
 import { Board } from "./board";
-import { KOMADAI_PIECE_TYPE, Move } from "./const";
+import { KifuMove } from "./const";
 import { CPU } from "./cpu";
 import { Emitter } from "./emitter";
 import { GameState } from "./main";
 import { Piece } from "./piece";
-import { PieceType } from "./pieces";
+import { playSound } from "./sounds";
 import { BoardUI } from "./ui_board";
 
 export interface GameManagerParams {
@@ -19,7 +19,7 @@ export class GameManager {
   socket: Socket;
   emitter: Emitter;
   roomId: string = "";
-  teban: number = 0;
+  teban: Teban = null!;     // TODO: 後で考える
   cpu: CPU | null = null;
   endgame: boolean = false;
 
@@ -40,19 +40,20 @@ export class GameManager {
   }
 
 
-  Init(roomId: string, teban: number, cpu: CPU | null, servertime: number, time: number) {
+  init(roomId: string, teban: Teban, servertime: number, time: number) {
     // キーを受け取る
-    this.emitter.on("keydown", (piecetype: PieceType) => {
+    this.emitter.on("keydown", (piecetype: number) => {
       const pos = this.boardUI.hoveredCell;
-      if (!pos) return;
-      if (!this.board.pieces[this.board.map[pos.x][pos.y]].canMove(-1, KOMADAI_PIECE_TYPE.indexOf(piecetype), false)) return;
-      this.sendMovePiece(pos.x, pos.y, -1, KOMADAI_PIECE_TYPE.indexOf(piecetype), false);
+      if (!pos) return false;
+      const piece = this.board.pieces.find(piece => piece.x === -1 && piece.y === piecetype && piece.teban === this.teban);
+      if (!piece) return false;
+      if (!piece.canMove(this.board, pos.x, pos.y, false)) return false;
+      this.sendMovePiece(-1, piecetype, pos.x, pos.y, false);
+      return true;
     });
 
     // 指し手を受け取る
-    this.emitter.on("movePiece", (data: Move) => {
-      console.log(data);
-      console.log(this.board.pieces);
+    this.emitter.on("movePiece", (data: KifuMove) => {
       const piece: Piece | undefined = data.x === -1
         ? this.board.pieces.find(piece =>
           piece.x === -1 &&
@@ -60,19 +61,24 @@ export class GameManager {
           piece.teban === data.teban
         )
         : this.board.pieces[this.board.map[data.x][data.y]];
-      console.log(piece);
       if (!piece) return;
-      if (!piece.canMove(data.nx, data.ny, data.narazu)) return;
+      if (!piece.canMove(this.board, data.nx, data.ny, data.narazu)) return;
       this.sendMovePiece(data.x, data.y, data.nx, data.ny, data.narazu);
     });
 
     this.gameState = "playing";
     this.roomId = roomId;
     this.teban = teban;
+    // TODO: 初期化は new するほうが良い
     this.board.init(servertime, time);
     this.boardUI.init(teban);
     this.endgame = false;
-    this.cpu = cpu;
+  }
+
+  initFromCpu(roomId: string, teban: Teban) {
+    const time = performance.now();
+    this.init(roomId, teban, time, time);
+    this.cpu = new CPU(this.board);
   }
 
   canSendPiece(nx: number, ny: number) {
@@ -93,17 +99,25 @@ export class GameManager {
         teban: this.teban,
         roomId: this.roomId,
       });
-    } else {
-      const move: Move = {
-        x: x, y: y,
-        nx: nx, ny: ny,
-        narazu: narazu,
-        teban: this.teban,
-        servertime: performance.now(),
-      };
-      this.board.movePieceLocal(move);
+      return true;
     }
+    const move: KifuMove = {
+      x: x, y: y,
+      nx: nx, ny: ny,
+      narazu: narazu,
+      teban: this.teban,
+      servertime: performance.now(),
+    };
+    this.resieveMove(move);
     return true;
+  }
+
+  resieveMove(move: KifuMove) {
+    if (this.board.movePieceLocal(move)) {
+      playSound("sound");
+      return true;
+    };
+    return false;
   }
 
   gameEnd() {
@@ -111,14 +125,11 @@ export class GameManager {
   }
 
   update() {
+    const time = performance.now();
+    this.board.time = time;
 
     if (this.cpu !== null) {
-      const time = performance.now();
-      this.board.time = time - this.board.serverstarttime;
       this.cpu.update(time);
-    } else {
-      const time = performance.now();
-      this.board.time = time - this.board.starttime;
     }
   }
 }

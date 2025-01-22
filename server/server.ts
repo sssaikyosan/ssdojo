@@ -30,8 +30,7 @@ if (isProduction) {
   });
 
   httpServer.listen(80, () => {
-    console.log(`HTTP Server is running on port 80`);
-  });
+      });
 } else {
   // vite を利用して配信
   const ViteExpress: typeof import("vite-express") = require("vite-express");
@@ -40,8 +39,7 @@ if (isProduction) {
 }
 
 server.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT} (${isProduction ? "Production" : "Development"})`);
-});
+  });
 
 
 function createServer() {
@@ -59,8 +57,7 @@ function createServer() {
 
 function ioSetup() {
   io.on("connection", (socket) => {
-    console.log("A player connected:", socket.id);
-    serverState.players[socket.id] = new Player(socket);
+        serverState.players[socket.id] = new Player(socket);
 
     // プレイヤーがマッチングを要求
     socket.on("requestMatch", (data) => {
@@ -69,8 +66,7 @@ function ioSetup() {
       let player = serverState.players[socket.id];
       player.name = data.name;
       serverState.matchMakingPlayers.push(player);
-      console.log(`Player name set: ${data.name}`);
-    });
+          });
 
     // 駒の配置を転送
     socket.on("putPiece", (data) => {
@@ -93,8 +89,7 @@ function ioSetup() {
 
     // 切断時の処理
     socket.on("disconnect", () => {
-      console.log("A player disconnected:", socket.id);
-
+      
       const index = serverState.matchMakingPlayers.findIndex(x => x.socket.id === socket.id);
       if (index != -1) {
         serverState.matchMakingPlayers.splice(index, 1);
@@ -170,14 +165,12 @@ function matchMaking() {
       serverState.players[player1.socket.id].opponent = player2.socket;
       serverState.players[player2.socket.id].opponent = player1.socket;
 
-      console.log(`Matched players: (先手:${player1.name}) vs (後手:${player2.name})`);
-    }
+          }
   }
 }
 
 function sendServerStatus() {
   const online = Object.keys(serverState.players).length;
   const playing = Object.keys(serverState.players).filter(x => serverState.players[x].opponent != null).length;
-  console.log("online:", online, "playing:", playing);
-  io.emit("serverStatus", { online: online, playing: playing });
+    io.emit("serverStatus", { online: online, playing: playing });
 }

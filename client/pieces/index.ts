@@ -33,11 +33,11 @@ export const PieceFileFiles = {
   silver,
 } as const;
 
-export const PieceTypeNormals = ["pawn", "none", "none", "lance", "knight", "rook", "silver", "gold", "bishop", "king", "king2"] as const;
+export const PieceTypeNormals = ["none", "pawn", "rook", "bishop", "lance", "knight", "silver", "gold", "king"] as const;
 export type PieceTypeNormal = typeof PieceTypeNormals[number];
-export const PieceTypeNaris = ["prom_pawn", "none", "none", "prom_lance", "prom_knight", "dragon", "prom_silver", "none", "horse", "none", "none"] as const;
+export const PieceTypeNaris = ["prom_pawn", "dragon", "horse", "prom_lance", "prom_knight", "prom_silver"] as const;
 export type PieceTypeNari = typeof PieceTypeNaris[number];
-export const PieceTypes = [...PieceTypeNormals, ...PieceTypeNaris] as const;
+export const PieceTypes = [...PieceTypeNormals, ...PieceTypeNaris, "king2"] as const;
 export type PieceType = typeof PieceTypes[number];
 
 export let PieceImages: Record<PieceType, HTMLImageElement> = {} as any;
@@ -47,13 +47,10 @@ export let PieceImages: Record<PieceType, HTMLImageElement> = {} as any;
  */
 export function PieceImageInit() {
   return PieceTypes.map(piece => {
+    if (piece === "none") return;
     const p = promiser();
     const img = new Image();
-    if (piece === "none") {
-      img.src = PieceFileFiles["king2"];
-    } else {
-      img.src = PieceFileFiles[piece];
-    }
+    img.src = PieceFileFiles[piece];
     img.onload = () => {
       PieceImages[piece] = img;
       p.resolve();

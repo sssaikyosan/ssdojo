@@ -1,8 +1,9 @@
+import { Teban } from "../share/type";
 import { Board } from "./board";
-import { BOARD_COLOR, BOARD_SIZE, CELL_SIZE, KOMADAI_HEIGHT, KOMADAI_OFFSET_RATIO, KOMADAI_WIDTH, LINE_COLOR } from "./const";
+import { BOARD_COLOR, BOARD_SIZE, CELL_SIZE, KOMADAI_HEIGHT, KOMADAI_OFFSET_RATIO, KOMADAI_PIECE_TYPE, KOMADAI_WIDTH, LINE_COLOR } from "./const";
 import { ctx } from "./main";
 import { Piece } from "./piece";
-import { PieceImages } from "./pieces";
+import { PieceImages, PieceTypes } from "./pieces";
 import { drawTextWithDoubleOutline } from "./utils";
 
 interface KomadaiUiParams {
@@ -36,13 +37,8 @@ export class KomadaiUI {
     this.board = params.board;
     this.cellSize = CELL_SIZE;
   }
-  types = [
-    ["pawn", null, null],
-    ["lance", "knight", "rook"],
-    ["silver", "gold", "bishop"],
-    ["king", "king2", null]];
 
-  draw(ctx: CanvasRenderingContext2D, scale: number, dragging: Piece | null, viewteban: number) {
+  draw(ctx: CanvasRenderingContext2D, scale: number, dragging: Piece | null, viewteban: Teban) {
     this.width = KOMADAI_WIDTH * scale;
     this.height = KOMADAI_HEIGHT * scale;
     this.drawKomadai(ctx, scale, "sente", dragging, viewteban);
@@ -50,7 +46,7 @@ export class KomadaiUI {
   }
 
 
-  drawKomadai(ctx: CanvasRenderingContext2D, scale: number, teban: string, dragging: Piece | null, viewteban: number) {
+  drawKomadai(ctx: CanvasRenderingContext2D, scale: number, teban: string, dragging: Piece | null, viewteban: Teban) {
     const x = BOARD_SIZE * CELL_SIZE * scale / 2 + CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
     const y = BOARD_SIZE * CELL_SIZE * scale / 2 - KOMADAI_HEIGHT * scale;
     const myteban = viewteban === 1 ? "sente" : "gote";
@@ -71,12 +67,12 @@ export class KomadaiUI {
     for (let i = 0; i < 4; i++) {
       ctx.save();
       for (let j = 0; j < 3; j++) {
-        const type = this.types[i][j];
-        if (teban === myteban && type && this.shortcut[type]) {
-          drawTextWithDoubleOutline(ctx, this.shortcut[type], 0.02 * scale, 0.05 * scale, CELL_SIZE * 0.4 * scale, ["#ffcc88", "#00000000", "#00000000"], "center" as CanvasTextBaseline, "left");
+        const type: number | null = KOMADAI_PIECE_TYPE[i * 3 + j];
+        if (teban === myteban && type !== null && this.shortcut[PieceTypes[type]]) {
+          drawTextWithDoubleOutline(ctx, this.shortcut[PieceTypes[type]], 0.02 * scale, 0.05 * scale, CELL_SIZE * 0.4 * scale, ["#ffcc88", "#00000000", "#00000000"], "center" as CanvasTextBaseline, "left");
         }
-        if (this.types[i][j]) {
-          this.drawKomadaiPiece(this.types[i][j]!, teban, myteban, scale, dragging);
+        if (type !== null) {
+          this.drawKomadaiPiece(type, teban, myteban, scale, dragging);
           ctx.translate(CELL_SIZE * scale, 0);
         };
       }
@@ -86,13 +82,13 @@ export class KomadaiUI {
   }
 
   // 駒台の駒を描画
-  drawKomadaiPiece(type: string, teban: string, myteban: string, scale: number, dragging: Piece | null) {
+  drawKomadaiPiece(type: number, teban: string, myteban: string, scale: number, dragging: Piece | null) {
     const numteban = teban === "sente" ? 1 : -1;
     const onmyKomadai = this.board.pieces.filter(piece => piece.type === type && piece.x === -1 && piece.teban === numteban);
-    const img = PieceImages[type as keyof typeof PieceImages];
+    const img = PieceImages[PieceTypes[type]];
     const pieceSize = CELL_SIZE * 0.8 * scale;
     const padding = CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
-    let x = dragging?.type === type && dragging.x === -1 && teban === myteban ? 1 : 0;
+    let x = dragging?.type === type && dragging?.x === -1 && teban === myteban ? 1 : 0;
     for (let i = 0 + x; i < onmyKomadai.length; i++) {
       ctx.drawImage(img, (onmyKomadai.length - i - 1) * padding, 0, pieceSize, pieceSize);
     }

@@ -1,5 +1,6 @@
+import { Teban } from "../share/type";
 import { Board } from "./board";
-import { BOARD_COLOR, BOARD_SIZE, CELL_SIZE, KOMADAI_HEIGHT, KOMADAI_OFFSET_RATIO, LINE_COLOR, LINEWIDTH, MOUSE_HIGHLIGHT_COLOR } from "./const";
+import { BOARD_COLOR, BOARD_SIZE, CELL_SIZE, KOMADAI_HEIGHT, KOMADAI_OFFSET_RATIO, KOMADAI_PIECE_TYPE, LINE_COLOR, LINEWIDTH, MOUSE_HIGHLIGHT_COLOR } from "./const";
 import { Emitter } from "./emitter";
 import { Piece } from "./piece";
 import { UI, UiParams } from "./ui";
@@ -8,7 +9,7 @@ import { KomadaiUI } from "./ui_komadai";
 export interface BoardUiParams extends UiParams {
   emitter: Emitter;
   board: Board;
-  teban: number;
+  teban: Teban;
 }
 
 export class BoardUI extends UI {
@@ -17,7 +18,7 @@ export class BoardUI extends UI {
   y: number = 0;
   touchable: boolean = false;
 
-  teban: number;
+  teban: Teban;
   board: Board;
   komadai: KomadaiUI | null = null;
   cellSize: number = CELL_SIZE;
@@ -41,7 +42,7 @@ export class BoardUI extends UI {
     this.teban = params.teban;
   }
 
-  init(teban: number) {
+  init(teban: Teban) {
     this.teban = teban;
   }
 
@@ -80,13 +81,12 @@ export class BoardUI extends UI {
 
     ctx.save();
     if (this.komadai) this.komadai.draw(ctx, scale, this.draggingPiece, this.teban);
-    else console.log("komadai is null");
     ctx.restore();
 
     ctx.save();
 
     if (this.draggingPiece && this.draggingPiece.x !== -1) {
-      this.draggingPiece.drawMove(ctx, scale);
+      this.draggingPiece.drawMove(this.board, ctx, scale);
     }
 
     ctx.restore();
@@ -140,7 +140,7 @@ export class BoardUI extends UI {
       resY = 4 + this.teban * (y - 4);
       return { x: resX, y: resY };
     }
-    return { x: -1, y: -1 };
+    return { x: -3, y: -3 };
   }
 
   getKomadaiPieceAt(pos: { x: number, y: number; }) {
@@ -151,11 +151,10 @@ export class BoardUI extends UI {
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 4; j++) {
         if (!this.komadai) {
-          console.log("komadai is null");
           continue;
         };
-        const type = this.komadai.types[i][j];
-        if (!type) continue;
+        const type = KOMADAI_PIECE_TYPE[i * 3 + j];
+        if (type === null) continue;
         const piece = this.board.pieces.find(piece => piece.type === type && piece.x === -1 && piece.teban === this.teban);
         if (!piece) continue;
         if (
@@ -172,14 +171,15 @@ export class BoardUI extends UI {
   }
 
   onMouseDown(pos: { x: number, y: number; }) {
+
     const { x, y } = this.getBoardPosition(pos);
-    if (x === -1 && y === -1) {
+    if (x === -3 && y === -3) {
       const komadaiPiece = this.getKomadaiPieceAt(pos);
       if (komadaiPiece) {
         this.draggingPiecePos = pos;
         this.draggingPiece = komadaiPiece;
       }
-    } else if (this.board.map[x][y] !== -1) {
+    } else if (this.board.map[x][y] !== -2) {
       if (this.board.pieces[this.board.map[x][y]].teban == this.teban) {
         this.draggingPiece = this.board.pieces[this.board.map[x][y]];
         this.draggingPiecePos = pos;
@@ -191,7 +191,7 @@ export class BoardUI extends UI {
     if (this.draggingPiece) this.draggingPiecePos = pos;
     const cell = this.getBoardPosition(pos);
 
-    if (cell.x === -1 && cell.y === -1) {
+    if (cell.x === -3 && cell.y === -3) {
       this.hoveredCell = null; // 盤面外ならリセット
     } else {
       this.hoveredCell = cell; // マウスオーバー中のセルを更新
@@ -201,8 +201,7 @@ export class BoardUI extends UI {
   onMouseUp(pos: { x: number, y: number; }) {
     if (!this.draggingPiece) return;
     const { x, y } = this.getBoardPosition(pos);
-    console.log(this.draggingPiece);
-    const data: { x: number, y: number, nx: number, ny: number, narazu: boolean, teban: number; } = {
+    const data: { x: number, y: number, nx: number, ny: number, narazu: boolean, teban: Teban; } = {
       x: this.draggingPiece.x,
       y: this.draggingPiece.y,
       nx: x,
@@ -218,7 +217,7 @@ export class BoardUI extends UI {
   onMouseUpRight(pos: { x: number, y: number; }) {
     if (!this.draggingPiece) return;
     const { x, y } = this.getBoardPosition(pos);
-    const data: { x: number, y: number, nx: number, ny: number, narazu: boolean, teban: number; } = {
+    const data: { x: number, y: number, nx: number, ny: number, narazu: boolean, teban: Teban; } = {
       x: this.draggingPiece.x,
       y: this.draggingPiece.y,
       nx: x,

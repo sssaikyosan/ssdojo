@@ -1,22 +1,21 @@
+import { Teban } from "../share/type";
 import { Board } from "./board";
-import { BOARD_SIZE, CELL_SIZE, KOMADAI_PIECE_TYPE, LINEWIDTH, Move, MOVE_COLOR, MOVETIME, pieceMoves, TIMER_BGCOLOR, TIMER_BORDER_WIDTH, TIMER_COLOR, TIMER_LINEWIDTH, TIMER_OFFSET_X, TIMER_OFFSET_Y, TIMER_RADIUS } from "./const";
-import { PieceImages, PieceType, PieceTypes } from "./pieces";
+import { BOARD_SIZE, CELL_SIZE, KifuMove, LINEWIDTH, MOVE_COLOR, MOVETIME, PIECE_MOVES, TIMER_BGCOLOR, TIMER_BORDER_WIDTH, TIMER_COLOR, TIMER_LINEWIDTH, TIMER_OFFSET_X, TIMER_OFFSET_Y, TIMER_RADIUS } from "./const";
+import { PieceImages, PieceTypeNormals, PieceTypes } from "./pieces";
 import { BoardUI } from "./ui_board";
 
-
-
 export class Piece {
-  board: Board;
-  type: PieceType;
-  teban: number;
+  type: number;
+  /** 駒台にある場合は `-1` */
   x: number;
+  /** 駒台にある場合は (`PieceTypeNormals`のindex) */
   y: number;
+  teban: Teban;
   lastMoveServerTime: number;
   lastMoveTime: number;
   idx: number;
 
-  constructor(board: Board, type: PieceType, x: number, y: number, teban: number, servertime: number, time: number, idx: number) {
-    this.board = board;
+  constructor(type: number, x: number, y: number, teban: Teban, servertime: number, time: number, idx: number) {
     this.type = type;
     this.teban = teban;
     this.x = x;
@@ -26,131 +25,126 @@ export class Piece {
     this.idx = idx;
   }
 
-
+  clone(): Piece {
+    return new Piece(
+      this.type,
+      this.x,
+      this.y,
+      this.teban,
+      this.lastMoveServerTime,
+      this.lastMoveTime,
+      this.idx,
+    );
+  }
 
   // 成り駒の種類を返す
   getPromotedType() {
-    const promotedTypes = {
-      pawn: "prom_pawn",
-      lance: "prom_lance",
-      knight: "prom_knight",
-      silver: "prom_silver",
-      bishop: "horse",
-      rook: "dragon"
-    };
-    return promotedTypes[this.type as keyof typeof promotedTypes] as PieceType || this.type;
+    if (this.type < 7) return this.type + 8;
+    return this.type;
   }
 
   // 成り駒の種類を返す
   getUnPromotedType() {
-    const promotedTypes = {
-      prom_pawn: "pawn",
-      prom_lance: "lance",
-      prom_knight: "knight",
-      prom_silver: "silver",
-      horse: "bishop",
-      dragon: "rook"
-    };
-    return promotedTypes[this.type as keyof typeof promotedTypes] as PieceType || this.type;
-  }
-
-  // 駒の種類を数値で返す
-  getTypeNum(type: PieceType) {
-    return PieceTypes.indexOf(type);
+    if (this.type < 9) return this.type;
+    return this.type - 8;
   }
 
 
 
-  //移動先のマスに自分の駒があるかどうかを判定
+  //移動先のマスに自分の駒があるかどうかを判定   とりあえず引数で
   //１段目及び２段目の判定
-  checkMyPiece(xx: number, yy: number, narazu: boolean, teban: number, type: PieceType) {
-    if (this.board.pieces[this.board.map[xx][yy]] && this.board.pieces[this.board.map[xx][yy]].teban === teban) return false;
-    if (!narazu) return true;
-    if (type === "pawn" || type === "lance") {
-      if (teban === 1 && yy === 0) return false;
-      if (teban === -1 && yy === 8) return false;
-    } else if (type === "knight") {
-      if (teban === 1 && yy <= 1) return false;
-      if (teban === -1 && yy >= 7) return false;
+  isTopCell(y: number, narazu: boolean, teban: Teban, type: number) {
+    if (!narazu) return false;
+    if (type === 1 || type === 4) {
+      if (teban === 1 && y === 0) return true;
+      if (teban === -1 && y === 8) return true;
+    } else if (type === 5) {
+      if (teban === 1 && y <= 1) return true;
+      if (teban === -1 && y >= 7) return true;
     }
-    return true;
+    return false;
   }
 
-  //２歩の判定
-  isNotNihu(nx: number, teban: number, type: PieceType) {
-    if (type !== "pawn") return true;
+  //２歩の判定 ピースの責任ではない    とりあえず引数で
+  isNihu(board: Board, nx: number, teban: Teban, type: number) {
+    if (type !== 1) return false;
+    const pieces = board.pieces;
+    const line = board.map[nx];
     for (let i = 0; i < BOARD_SIZE; i++) {
-      const piece = this.board.pieces[this.board.map[nx][i]];
-      if (piece && piece.type === "pawn" && piece.teban === teban) return false;
+      if (!pieces[line[i]]) continue;
+      if (pieces[line[i]].type !== 1) continue;
+      if (pieces[line[i]].teban !== teban) continue;
+      return true;
     }
-    return true;
+    return false;
+  }
+
+  isMyPiece(board: Board, x: number, y: number, teban: number) {
+    if (board.pieces[board.map[x][y]] && board.pieces[board.map[x][y]].teban === teban) return true;
+    return false;
   }
 
   //指定した位置に移動可能か判定
-  canMove(nx: number, ny: number, narazu: boolean) {
-    console.log(this);
+  canMove(board: Board, nx: number, ny: number, narazu: boolean) {
     if (nx < 0 || nx >= BOARD_SIZE || ny < 0 || ny >= BOARD_SIZE) return false;
     const teban = this.teban;
 
     //駒台の駒を打つ場合
     if (this.x === -1) {
-      if (ny < 0 || ny >= KOMADAI_PIECE_TYPE.length) return false;
-      if (this.board.map[nx][ny] !== -1) return false;
-      if (this.checkMyPiece(nx, ny, true, teban, this.type)) {
-        return this.isNotNihu(nx, teban, this.type);
-      }
-      return false;
+      if (this.y < 0 || this.y >= PieceTypeNormals.length) return false;
+      if (board.map[nx][ny] !== -2) return false;
+      if (this.isMyPiece(board, nx, ny, teban)) false;
+      if (this.isTopCell(ny, true, teban, this.y)) return false;
+      if (this.isNihu(board, nx, teban, this.y)) return false;
+      return true;
     }
 
     // 駒の種類に応じた動きを取得
-    const moves: readonly { dx: number, dy: number, recursive: boolean; }[] = pieceMoves[this.type];
+    const moves: readonly { x: number, y: number, recursive: boolean; }[] = PIECE_MOVES[this.type];
     if (!moves) return false;
-
     // 動きの中に一致するものがあるか確認
-    return this.repeatMove((x, y) => {
-      if (x === nx && y === ny) return this.checkMyPiece(nx, ny, narazu, teban, this.type);
-      return false;
+    return this.repeatMove(board, (x, y) => {
+      if (x !== nx || y !== ny) return false;
+      if (this.isMyPiece(board, x, y, teban)) return false;
+      if (this.isTopCell(y, narazu, teban, this.type)) return false;
+      return true;
     });
   }
 
+  getMoves(board: Board, time: number) {
+    const moves: KifuMove[] = [];
+    this.repeatMove(board, (nx, ny) => {
+      moves.push({
+        x: this.x, y: this.y,
+        nx: nx, ny: ny,
+        narazu: false,
+        teban: this.teban,
+        servertime: time
+      });
+      return false;
+    });
+    return moves;
+  }
 
-  // 駒の動きを繰り返す関数
-  repeatMove(cb: (x: number, y: number) => boolean) {
-    console.log("repeatMove", this.x, this.y);
-    for (let move of pieceMoves[this.type]) {
-      let moveX = this.x + move.dx * this.teban;
-      let moveY = this.y + move.dy * this.teban;
+
+  // 駒の動きを繰り返す関数 これは？　保留…    とりあえず引数で
+  repeatMove(board: Board, cb: (x: number, y: number) => boolean) {
+    for (const move of PIECE_MOVES[this.type]) {
+      let moveX = this.x + move.x * this.teban;
+      let moveY = this.y + move.y * this.teban;
       while (moveX >= 0 && moveX < BOARD_SIZE && moveY >= 0 && moveY < BOARD_SIZE) {
-        const piece = this.board.pieces[this.board.map[moveX][moveY]];
-        if (piece && piece.teban == this.teban) break;
+        const piece = board.pieces[board.map[moveX][moveY]];
+        if (piece && piece.teban === this.teban) break;
         if (cb(moveX, moveY)) return true;
         if (!move.recursive) break;
         if (piece) break;
-        moveX += move.dx * this.teban;
-        moveY += move.dy * this.teban;
+        moveX += move.x * this.teban;
+        moveY += move.y * this.teban;
       }
     }
     return false;
   }
 
-  getMoves(time: number) {
-    const moves: Move[] = [];
-    if (this.x === -1) return moves;
-    for (let move of pieceMoves[this.type]) {
-      let moveX = this.x + move.dx * this.teban;
-      let moveY = this.y + move.dy * this.teban;
-      while (moveX >= 0 && moveX < BOARD_SIZE && moveY >= 0 && moveY < BOARD_SIZE) {
-        const piece = this.board.pieces[this.board.map[moveX][moveY]];
-        if (piece && piece.teban == this.teban) break;
-        moves.push({ x: this.x, y: this.y, nx: moveX, ny: moveY, narazu: false, teban: this.teban, servertime: time });
-        if (!move.recursive) break;
-        if (piece) break;
-        moveX += move.dx * this.teban;
-        moveY += move.dy * this.teban;
-      }
-    }
-    return moves;
-  }
 
 
 
@@ -159,8 +153,9 @@ export class Piece {
 
 
 
-
-
+  // 駒自身が描画関数を持つより、
+  // 駒を描画するクラスを作るべきかも
+  // 将棋のロジックを持つ駒と、描画用の駒。
   /*＊＊＊＊＊＊＊＊＊*/
   /*ここから描画用関数*/
   /*＊＊＊＊＊＊＊＊＊*/
@@ -178,7 +173,8 @@ export class Piece {
   }
 
   drawSelf(ctx: CanvasRenderingContext2D, scale: number) {
-    const img = PieceImages[this.type as keyof typeof PieceImages];
+    let img = PieceImages[PieceTypes[this.type]];
+    if (this.type === 8 && this.teban === -1) img = PieceImages["king2"];
     if (img) {
       ctx.drawImage(img, -CELL_SIZE * scale / 2, -CELL_SIZE * scale / 2, CELL_SIZE * scale, CELL_SIZE * scale);
     }
@@ -198,10 +194,10 @@ export class Piece {
   }
 
 
-  // 移動可能なマスの描画
-  drawMove(ctx: CanvasRenderingContext2D, scale: number) {
+  // 移動可能なマスの描画   とりあえず引数で‥
+  drawMove(board: Board, ctx: CanvasRenderingContext2D, scale: number) {
     ctx.fillStyle = MOVE_COLOR;
-    this.repeatMove((moveX, moveY) => {
+    this.repeatMove(board, (moveX, moveY) => {
       ctx.save();
       if (this.teban == -1) {
         ctx.rotate(Math.PI);

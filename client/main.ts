@@ -1,6 +1,5 @@
 import { Socket } from "socket.io";
-import { HrTime } from "../share/type";
-import { Move } from "./const";
+import { HrTime, Teban } from "../share/type";
 import { Emitter } from "./emitter";
 import { GameManager } from "./gameManager";
 import { Keyboard } from "./keyboard";
@@ -8,6 +7,7 @@ import { PieceImageInit } from "./pieces";
 import { createPlayScene, createTitleScene, Scene } from "./scene";
 import { playSound } from "./sounds";
 import { hrtime2time } from "./utils";
+import { KifuMove } from "./const";
 
 export type GameState = "title" | "matching" | "playing" | "result";
 
@@ -107,8 +107,7 @@ function setupSocket() {
     serverStatus = data;
   });
   // マッチングが成立したときの処理
-  socket.on("matchFound", (data: { name: string, teban: number, roomId: string, hrtime: [number, number]; }) => {
-    console.log("matchFound", data.hrtime);
+  socket.on("matchFound", (data: { name: string, teban: Teban, roomId: string, hrtime: [number, number]; }) => {
     if (gameManager.gameState == "matching") {
       gameManager.gameState = "playing";
       scene = createPlayScene(
@@ -127,11 +126,10 @@ function setupSocket() {
   socket.on("newMove", (data: {
     x: number, y: number, nx: number, ny: number,
     narazu: boolean,
-    teban: number,
+    teban: Teban,
     hrtime: [number, number];
   }) => {
-    console.log("newMove", data);
-    const move: Move = {
+    const move: KifuMove = {
       x: data.x,
       y: data.y,
       nx: data.nx,
@@ -140,7 +138,7 @@ function setupSocket() {
       teban: data.teban,
       servertime: hrtime2time(data.hrtime),
     };
-    gameManager.board.movePieceLocal(move);
+    gameManager.resieveMove(move);
   });
 }
 
