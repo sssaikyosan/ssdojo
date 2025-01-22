@@ -227,9 +227,9 @@ export class Board {
         this.emitter.emit("endGame", piece.teban);
       }
     }
-    if (piece.type === 8 && nx === 4 && ny === 0) {
+    if (piece.type === 8 && piece.teban === 1 && nx === 4 && ny === 0) {
       this.emitter.emit("endGame", 1);
-    } else if (piece.type === 8 && nx === 4 && ny === 8) {
+    } else if (piece.type === 8 && piece.teban === -1 && nx === 4 && ny === 8) {
       this.emitter.emit("endGame", -1);
     }
   }

@@ -346,22 +346,11 @@ export class CPU {
     for (let i = this.waitingMoves.length - 1; i >= 0; i--) {
       const move = this.waitingMoves[i];
       const { from, to, nari } = move;
-      let piece: Piece | undefined;
+      let piece: Piece | undefined = undefined;
 
-      // 持ち駒を打つ手の場合
       if (from.x === -1) {
-        // キャッシュされたpieces配列を使用
-        for (let j = 0, len = pieces.length; j < len; j++) {
-          const p = pieces[j];
-          if (p.teban != -1) break;
-          if (p.x === -1 && p.y === from.y) {
-            piece = p;
-            break;
-          }
-        }
-      }
-      // 通常の手の場合
-      else if (from.x >= 0 && from.x < boardSize &&
+        piece = pieces.find(p => p.x === -1 && p.y === from.y && p.teban === -1);
+      } else if (from.x >= 0 && from.x < boardSize &&
         from.y >= 0 && from.y < boardSize) {
         const idx = map[from.x][from.y];
         piece = pieces[idx];
@@ -421,21 +410,19 @@ export class CPU {
       shuffle(rndmoves);
       for (let i = 0; i < rndmoves.length; i++) {
         const { from, to, nari } = rndmoves[i];
-        if (from.x < 0) {
-          const piece = pieces.find(p => p.x === -1 && p.type === from.y && p.teban === -1);
-          if (!piece || !piece.canMove(this.board, to.x, to.y, !nari)) {
-            rndmoves.splice(i, 1);
-            i--;
-            continue;
-          }
+        let piece: Piece | undefined = undefined;
+        if (from.x === -1) {
+          console.log("putcheck");
+          piece = pieces.find(p => p.x === -1 && p.y === from.y && p.teban === -1);
         } else {
-          const piece = pieces[map[from.x][from.y]];
-          if (!piece || !piece.canMove(this.board, to.x, to.y, !nari)) {
-            rndmoves.splice(i, 1);
-            i--;
-            continue;
-          }
-
+          piece = pieces[map[from.x][from.y]];
+        }
+        if (!piece || !piece.canMove(this.board, to.x, to.y, !nari)) {
+          console.log(piece);
+          rndmoves.splice(i, 1);
+          i--;
+          console.log("checkx", from, to);
+          continue;
         }
         this.waitingMoves.push(rndmoves[i]);
         this.lastSendTime = time;
