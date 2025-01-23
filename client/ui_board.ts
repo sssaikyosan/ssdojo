@@ -209,9 +209,9 @@ export class BoardUI extends UI {
       narazu: false,
       teban: this.teban,
     };
-    this.emitter.emit("movePiece", data);
     this.draggingPiece = null;
     this.draggingPiecePos = null;
+    this.emitter.emit("movePiece", data);
   }
 
   onMouseUpRight(pos: { x: number, y: number; }) {

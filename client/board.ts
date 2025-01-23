@@ -138,10 +138,11 @@ export class Board {
   private putPiece(move: KifuMove): boolean {
     const { y, nx, ny, teban, servertime } = move;
     console.log("putPiece");
-    const handpiece = this.pieces.find(piece => piece.x === -1 && piece.y === y && piece.teban === teban) || null;
+    const handpiece: Piece | null = this.pieces.find(piece => piece.x === -1 && piece.y === y && piece.teban === teban) || null;
     console.log(handpiece);
     //nullチェック
     if (!handpiece) return false;
+    if (handpiece.x !== move.x || handpiece.y !== move.y) return false;
 
     //駒台の駒を打つ
     handpiece.x = nx;
