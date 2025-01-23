@@ -2,7 +2,6 @@ import { ServerKifu, Teban } from "../share/type";
 import { BOARD_SIZE, KifuMove, MOVETIME } from "./const";
 import { Emitter } from "./emitter";
 import { Piece } from "./piece";
-import { playSmallSound } from "./sounds";
 
 type PieceAndCaputure = [piece: Piece, capturePiece: Piece | undefined];
 
@@ -152,8 +151,6 @@ export class Board {
     handpiece.lastMoveServerTime = servertime;
     handpiece.lastMoveTime = performance.now();
 
-    //音再生
-    playSmallSound("sound");
     return true;
   }
 
