@@ -116,13 +116,14 @@ export class Board {
   /**
    * `move`が成立する場合に移動する駒と取る駒を取得する
    */
-  private getCanMovePiece({ x, y, nx, ny, narazu, servertime }: KifuMove): PieceAndCaputure | undefined {
+  private getCanMovePiece({ x, y, nx, ny, narazu, teban, servertime }: KifuMove): PieceAndCaputure | undefined {
     //盤上の駒を動かす場合
     if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) return;
     const piece = this.getPiece(x, y);
 
     //nullチェック
     if (!piece) return;
+    if (teban !== piece.teban) return;
     //時間チェック
     if (servertime - piece.lastMoveServerTime < MOVETIME) return;
     //駒の移動が可能かどうかを判定  // エラーチェック: ここでreturn

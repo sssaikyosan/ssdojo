@@ -30,7 +30,7 @@ if (isProduction) {
   });
 
   httpServer.listen(80, () => {
-      });
+  });
 } else {
   // vite を利用して配信
   const ViteExpress: typeof import("vite-express") = require("vite-express");
@@ -39,7 +39,7 @@ if (isProduction) {
 }
 
 server.listen(PORT, () => {
-  });
+});
 
 
 function createServer() {
@@ -57,7 +57,7 @@ function createServer() {
 
 function ioSetup() {
   io.on("connection", (socket) => {
-        serverState.players[socket.id] = new Player(socket);
+    serverState.players[socket.id] = new Player(socket);
 
     // プレイヤーがマッチングを要求
     socket.on("requestMatch", (data) => {
@@ -66,7 +66,7 @@ function ioSetup() {
       let player = serverState.players[socket.id];
       player.name = data.name;
       serverState.matchMakingPlayers.push(player);
-          });
+    });
 
     // 駒の配置を転送
     socket.on("putPiece", (data) => {
@@ -89,7 +89,7 @@ function ioSetup() {
 
     // 切断時の処理
     socket.on("disconnect", () => {
-      
+
       const index = serverState.matchMakingPlayers.findIndex(x => x.socket.id === socket.id);
       if (index != -1) {
         serverState.matchMakingPlayers.splice(index, 1);
@@ -165,12 +165,12 @@ function matchMaking() {
       serverState.players[player1.socket.id].opponent = player2.socket;
       serverState.players[player2.socket.id].opponent = player1.socket;
 
-          }
+    }
   }
 }
 
 function sendServerStatus() {
   const online = Object.keys(serverState.players).length;
   const playing = Object.keys(serverState.players).filter(x => serverState.players[x].opponent != null).length;
-    io.emit("serverStatus", { online: online, playing: playing });
+  io.emit("serverStatus", { online: online, playing: playing });
 }

@@ -108,11 +108,11 @@ export class GameManager {
       teban: this.teban,
       servertime: performance.now(),
     };
-    this.resieveMove(move);
+    this.receiveMove(move);
     return true;
   }
 
-  resieveMove(move: KifuMove) {
+  receiveMove(move: KifuMove) {
     if (this.board.movePieceLocal(move)) {
       playSound("sound");
       return true;

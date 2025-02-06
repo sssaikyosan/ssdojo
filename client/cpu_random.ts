@@ -65,7 +65,7 @@ export class CPURANDOM extends CPU {
       };
 
 
-      if (gameManager.resieveMove(send)) {
+      if (gameManager.receiveMove(send)) {
         this.waitingMoves.splice(i, 1);
         return true;
       }

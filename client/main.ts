@@ -1,5 +1,6 @@
 import { Socket } from "socket.io";
 import { HrTime, Teban } from "../share/type";
+import { KifuMove } from "./const";
 import { Emitter } from "./emitter";
 import { GameManager } from "./gameManager";
 import { Keyboard } from "./keyboard";
@@ -7,7 +8,6 @@ import { PieceImageInit } from "./pieces";
 import { createPlayScene, createTitleScene, Scene } from "./scene";
 import { playSound } from "./sounds";
 import { hrtime2time } from "./utils";
-import { KifuMove } from "./const";
 
 export type GameState = "title" | "matching" | "playing" | "result";
 
@@ -138,7 +138,7 @@ function setupSocket() {
       teban: data.teban,
       servertime: hrtime2time(data.hrtime),
     };
-    gameManager.resieveMove(move);
+    gameManager.receiveMove(move);
   });
 }
 
