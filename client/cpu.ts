@@ -1,6 +1,6 @@
 import { Board } from "./board";
 import { BOARD_SIZE, KifuMove, MOVETIME, STARTHANDS, STARTMAP } from "./const";
-import { CPUBoard, CPUMove, CPUPiece, doMove, getAllPossibleMoves, Kifu, Pos, setBoard, undoMove } from "./cpuboard";
+import { CPUBoard, CPUMove, doMove, getAllPossibleMoves, Kifu, Pos, setBoard, undoMove } from "./cpuboard";
 import { gameManager } from "./main";
 import { Piece } from "./piece";
 import { shuffle } from "./utils";
@@ -49,11 +49,6 @@ export class CPU {
     hands: STARTHANDS
   };
 
-  fastboard: CPUBoard = {
-    map: STARTMAP,
-    hands: STARTHANDS
-  };
-
   kifu: Kifu[] = [];
 
   moves: CPUMove[] = [];
@@ -64,11 +59,6 @@ export class CPU {
 
   lastSendTime: number = 0;
   thinkTime: number = 1000;
-
-  myking: CPUPiece | null = null;
-
-
-
 
   // allMoves: CPUMove[][][] =
   //   [

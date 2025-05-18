@@ -69,7 +69,7 @@ export class KomadaiUI {
       for (let j = 0; j < 3; j++) {
         const type: number | null = KOMADAI_PIECE_TYPE[i * 3 + j];
         if (teban === myteban && type !== null && this.shortcut[PieceTypes[type]]) {
-          drawTextWithDoubleOutline(ctx, this.shortcut[PieceTypes[type]], 0.02 * scale, 0.05 * scale, CELL_SIZE * 0.4 * scale, ["#ffcc88", "#00000000", "#00000000"], "center" as CanvasTextBaseline, "left");
+          drawTextWithDoubleOutline(ctx, this.shortcut[PieceTypes[type]], 0.02 * scale, 0.05 * scale, CELL_SIZE * 0.4 * scale, ["#ffcc88", "#00000000", "#00000000"], "middle" as CanvasTextBaseline, "left");
         }
         if (type !== null) {
           this.drawKomadaiPiece(type, teban, myteban, scale, dragging);

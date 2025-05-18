@@ -10,8 +10,8 @@ import uuid from "uuid-random";
 dotenv.config();
 
 // 環境変数に応じて設定を切り替え
-const isProduction = process.env.NODE_ENV === "production";
-const PORT = isProduction ? 443 : 3000;
+const isProduction = process.env.NODE_ENV !== "development";
+const PORT = isProduction ? 443 : 5000;
 const app = express();
 const server = createServer();
 const io = new Server(server);

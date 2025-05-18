@@ -13,7 +13,6 @@ export const LINE_COLOR = "#000000";
 export const KOMADAI_OFFSET_RATIO = 0.1;
 export const KOMADAI_WIDTH = 0.27;
 export const KOMADAI_HEIGHT = 0.36;
-export const KOMADAI_PIECE_OFFSET = 0.8;
 
 export const KOMADAI_PIECE_TYPE: (number | null)[] = [1, null, null, 4, 5, 2, 6, 7, 3, 8];
 export const PROMOTE_TYPE: number[] = [0, 9, 10, 11, 12, 13, 14, 6, 7, 8, 9, 10, 11, 12, 13];

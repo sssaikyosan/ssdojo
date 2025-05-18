@@ -88,11 +88,11 @@ export class Board {
   //駒の移動関数
   movePieceLocal(move: KifuMove) {
     const { x, nx, ny } = move;
-    if (nx < 0 || nx >= BOARD_SIZE || ny < 0 || ny >= BOARD_SIZE) return false;
+    if (nx < 0 || nx >= BOARD_SIZE || ny < 0 || ny >= BOARD_SIZE) return [false, null] as const;
 
     // 駒台の駒を打つ場合
     if (x === -1) {
-      return this.putPiece(move);
+      return [this.putPiece(move), null] as const;
     }
 
     // 駒を取得する
@@ -100,7 +100,7 @@ export class Board {
     if (result) {
       console.log(result[0], result[1]);
     }
-    if (result == null) return false;
+    if (result == null) return [false, null] as const;
     const [piece, capturePiece] = result;
     // 駒を移動する
     this.movePiece(move, result);
@@ -108,7 +108,7 @@ export class Board {
     //勝敗判定
     this.checkGameEnd(piece, capturePiece, nx, ny);
 
-    return true;
+    return [true, capturePiece] as const;
   }
 
 

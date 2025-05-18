@@ -1,6 +1,6 @@
 import { Teban } from "../share/type";
 import { Board } from "./board";
-import { BOARD_SIZE, CELL_SIZE, KifuMove, LINEWIDTH, MOVE_COLOR, MOVETIME, PIECE_MOVES, TIMER_BGCOLOR, TIMER_BORDER_WIDTH, TIMER_COLOR, TIMER_LINEWIDTH, TIMER_OFFSET_X, TIMER_OFFSET_Y, TIMER_RADIUS } from "./const";
+import { BOARD_SIZE, CELL_SIZE, LINEWIDTH, MOVE_COLOR, MOVETIME, PIECE_MOVES, TIMER_BGCOLOR, TIMER_BORDER_WIDTH, TIMER_COLOR, TIMER_LINEWIDTH, TIMER_OFFSET_X, TIMER_OFFSET_Y, TIMER_RADIUS } from "./const";
 import { PieceImages, PieceTypeNormals, PieceTypes } from "./pieces";
 import { BoardUI } from "./ui_board";
 
@@ -110,22 +110,6 @@ export class Piece {
       return true;
     });
   }
-
-  getMoves(board: Board, time: number) {
-    const moves: KifuMove[] = [];
-    this.repeatMove(board, (nx, ny) => {
-      moves.push({
-        x: this.x, y: this.y,
-        nx: nx, ny: ny,
-        narazu: false,
-        teban: this.teban,
-        servertime: time
-      });
-      return false;
-    });
-    return moves;
-  }
-
 
   // 駒の動きを繰り返す関数 これは？　保留…    とりあえず引数で
   repeatMove(board: Board, cb: (x: number, y: number) => boolean) {

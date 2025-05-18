@@ -26,10 +26,6 @@ export class GameManager {
   board: Board;
   boardUI: BoardUI;
 
-  draggingPiece: Piece | null = null;
-  draggingPiecePos: { x: number, y: number; } | null = null;
-  hoveredCell: { x: number, y: number; } | null = null;
-
   constructor(params: GameManagerParams) {
     this.socket = params.socket;
     this.emitter = params.emitter;
@@ -113,7 +109,12 @@ export class GameManager {
   }
 
   receiveMove(move: KifuMove) {
-    if (this.board.movePieceLocal(move)) {
+    const result = this.board.movePieceLocal(move);
+    if (result[0]) {
+      if (result[1] === this.boardUI.draggingPiece) {
+        this.boardUI.draggingPiece = null;
+        this.boardUI.draggingPiecePos = null;
+      }
       playSound("sound");
       return true;
     };
