@@ -446,7 +446,7 @@ export class CPU {
         }
       }
 
-      if (finalaival > this.minaival) {
+      if (finalaival > this.minaival && finalaival > -50000) {
         this.waitingMoves.push(move);
         continue;
       }
