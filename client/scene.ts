@@ -196,7 +196,7 @@ export function createTitleScene() {
 
     nameInputOverlay.style.display = "none";
     gameManager.gameState = "playing";
-    
+
     setScene(createPlayScene(playerName, "CPU", 1, "0", 0, 0, true));
   }
 
@@ -210,7 +210,7 @@ export function createTitleScene() {
 
   const savedName = localStorage.getItem("playerName");
   if (savedName) nameInput.value = savedName;
-  nameInputOverlay.style.display = "block";
+  nameInputOverlay.style.display = "flex";
   return titleScene;
 }
 

@@ -33,7 +33,7 @@ const PIECE_SCORE_TABLE = [
   279,
   444,
   529,
-  99999,
+  999999,
   483,
   1002,
   730,
@@ -306,32 +306,23 @@ export class CPU {
 
 
   //指し手を送信
-  sendMovePiece() {
+  sendMovePiece(move: CPUMove) {
     const time = performance.now();
-    for (let i = 0; i < this.waitingMoves.length; i++) {
-      const move = this.waitingMoves[i];
-      if (move.from.x >= 0) {
-        const piece = this.board!.getPiece(move.from.x, move.from.y);
-        if (!piece) continue;
-        if (piece.lastMoveTime + MOVETIME > time) continue;
-      }
-      const send: KifuMove = {
-        x: move.from.x,
-        y: move.from.y,
-        nx: move.to.x,
-        ny: move.to.y,
-        narazu: false,
-        teban: -1,
-        servertime: time,
-      };
-
-
-      if (gameManager.receiveMove(send)) {
-        this.waitingMoves.splice(i, 1);
-        return true;
-      }
+    if (move.from.x >= 0) {
+      const piece = this.board!.getPiece(move.from.x, move.from.y);
+      if (!piece) return false;
+      if (piece.lastMoveTime + MOVETIME > time) return false;
     }
-    return false;
+    const send: KifuMove = {
+      x: move.from.x,
+      y: move.from.y,
+      nx: move.to.x,
+      ny: move.to.y,
+      narazu: false,
+      teban: -1,
+      servertime: time,
+    };
+    return gameManager.receiveMove(send);
   }
 
 
@@ -446,7 +437,7 @@ export class CPU {
         }
       }
 
-      if (finalaival > this.minaival && finalaival > -50000) {
+      if (finalaival > this.minaival && finalaival > -500000) {
         this.waitingMoves.push(move);
         continue;
       }
@@ -459,14 +450,26 @@ export class CPU {
     }
   }
 
+  randmove(board: Board, time: number) {
+    if (time < this.lastSendTime + this.thinkTime) return false;
+    this.cpu_board = setBoard(board, this.cpu_board);
+    this.moves = getAllPossibleMoves(this.cpu_board, true);
+    shuffle(this.moves);
+    for (let i = 0; i < this.moves.length; i++) {
+      if (this.sendMovePiece(this.moves[i])) {
+        this.lastSendTime = time;
+        return true;
+      }
+    }
+    return false;
+  }
+
+
 
   //毎フレーム呼び出される関数
   update(time: number) {
     if (this.board === null) return;
     if (time - this.board.starttime < 5000) return;
-    this.checkWaitingMoves(this.board);
-    this.sendMovePiece();
-
-    this.randfastmove(this.board, time);
+    this.randmove(this.board, time);
   }
 }

@@ -17,7 +17,7 @@ export type Kifu = { move: CPUMove, take: number; };
 
 //成りが可能か判定
 export function canNari(y: number, ny: number, type: number, owner: boolean) {
-  if (type > 6 || type === 5) return false;
+  if (type > 6 || type === 0) return false;
   if (!owner && y <= 2) return true;
   if (!owner && ny <= 2) return true;
   if (owner && y >= 6) return true;
@@ -27,11 +27,11 @@ export function canNari(y: number, ny: number, type: number, owner: boolean) {
 
 //最上段に行けない駒の判定
 export function isTopcell(y: number, type: number, owner: boolean) {
-  if (type !== 0 && type !== 1 && type !== 2) return false;
-  if (type === 0 || type === 1) {
+  if (type !== 1 && type !== 2 && type !== 3) return false;
+  if (type === 1 || type === 2) {
     if (owner && y === 8) return true;
     if (!owner && y === 0) return true;
-  } else if (type === 2) {
+  } else if (type === 3) {
     if (owner && y >= 7) return true;
     if (!owner && y <= 1) return true;
   }
@@ -40,10 +40,11 @@ export function isTopcell(y: number, type: number, owner: boolean) {
 
 //２歩の判定
 export function isNihu(board: CPUBoard, x: number, type: number, owner: boolean) {
-  if (type !== 0) return false;
+  if (type !== 1) return false;
+  const targetLine = board.map[x];
+  if (!targetLine) return false;
   for (let i = 0; i < 9; i++) {
-    const target = board.map[x][i];
-    if (target && target.type === 0 && target.owner === owner) return true;
+    if (targetLine[i] !== null && targetLine[i]!.type === 1 && targetLine[i]!.owner === owner) return true;
   }
   return false;
 }
@@ -57,24 +58,16 @@ export function getAllPuts(board: CPUBoard, owner: boolean) {
   // 持ち駒の種類ごとに処理
   for (let k = 0; k < 7; k++) {
     if (hands[k] === 0) continue;
-
     // 各マスをチェック
     for (let i = 0; i < 9; i++) {
-      // 二歩チェック用フラグ
-      let nihuCheck = k === 0;
-      let nihuFound = false;
-
+      console.log("nihu");
+      if (isNihu(board, i, k, owner)) continue;
       for (let j = 0; j < 9; j++) {
         // 既に駒がある場合はスキップ
-        if (map[i][j]) continue;
-
-        // 二歩チェック
-        if (nihuCheck && !nihuFound) {
-          nihuFound = isNihu(board, i, k, owner);
-        }
+        if (map[i][j] !== null) continue;
 
         // 打てる手を追加
-        if (!isTopcell(j, k, owner) && !(nihuCheck && nihuFound)) {
+        if (!isTopcell(j, k, owner)) {
           moves.push({ owner, from: { x: -1, y: k }, to: { x: i, y: j }, nari: false });
         }
       }
@@ -170,8 +163,14 @@ export function isInEnemyTerritory(y: number, owner: boolean) {
 //駒を移動する関数
 export function movePiece(board: CPUBoard, move: CPUMove) {
   const { from, to } = move;
-  board.map[to.x][to.y] = board.map[from.x][from.y];
-  board.map[from.x][from.y] = null;
+  if (board.map[from.x][from.y] !== null) {
+    const fromType = board.map[from.x][from.y]!.type;
+    const fromOwner = board.map[from.x][from.y]!.owner;
+    board.map[to.x][to.y] = { type: fromType, owner: fromOwner };
+    board.map[from.x][from.y] = null;
+    return true;
+  }
+  return false;
 }
 
 //駒を打つ関数
