@@ -11,7 +11,6 @@ export class Emitter {
 
     // イベントの発火
     emit(event, data) {
-        console.log('emitted', data);
         if (this.events.has(event)) {
             this.events.get(event).forEach(listener => listener(data));
         }

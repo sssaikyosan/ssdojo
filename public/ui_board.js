@@ -1,10 +1,10 @@
 import { KomadaiUI } from "./ui_komadai.js";
 import { UI } from "./ui.js";
-import { pieceImages } from "./main.js";
+import { gameManager, pieceImages } from "./main.js";
 import { CELL_SIZE, BOARD_SIZE, BOARD_COLOR, LINE_COLOR, LINEWIDTH, MOUSE_HIGHLIGHT_COLOR, KOMADAI_OFFSET_RATIO, KOMADAI_HEIGHT, MOVETIME, TIMER_RADIUS, TIMER_LINEWIDTH, TIMER_BORDER_WIDTH, TIMER_OFFSET_X, TIMER_OFFSET_Y, TIMER_BGCOLOR, TIMER_COLOR, MOVE_COLOR, PIECE_MOVES, UNPROMODED_TYPES } from "./const.js";
+import { sendPutPiece, sendMovePiece } from "./emit.js";
 
 export class BoardUI extends UI {
-  emitter;
   teban;
   board;
   komadai;
@@ -18,7 +18,7 @@ export class BoardUI extends UI {
 
   constructor(params) {
     super(params);
-    this.emitter = params.emitter;
+    this.gameManager = params.gameManager;
     this.width = CELL_SIZE * BOARD_SIZE;
     this.height = CELL_SIZE * BOARD_SIZE;
     this.board = params.board;
@@ -165,7 +165,6 @@ export class BoardUI extends UI {
       if (this.board.map[x][y].teban == this.teban) {
         const piece = this.board.map[x][y];
         this.draggingPiece = { x: x, y: y, type: piece.type, lastmoveptime: piece.lastmoveptime };
-        console.log('mouseDown', this.draggingPiece);
         this.draggingPiecePos = pos;
       }
     }
@@ -187,13 +186,13 @@ export class BoardUI extends UI {
     if (!this.draggingPiece) return;
     const { x, y } = this.getBoardPosition(pos);
     if (this.draggingPiece.x === -1) {
-      this.emitter.emit('putPiece', { nx: x, ny: y, type: this.draggingPiece.type });
+      sendPutPiece(x, y, this.draggingPiece.type);
     } else {
       let nari = false;
       if ((this.teban === 1 && y < 3) || (this.teban === -1 && y > 5)) {
         if (UNPROMODED_TYPES.includes(this.draggingPiece.type)) nari = true;
       }
-      this.emitter.emit('movePiece', { x: this.draggingPiece.x, y: this.draggingPiece.y, nx: x, ny: y, nari: nari });
+      sendMovePiece(this.draggingPiece.x, this.draggingPiece.y, x, y, nari);
     }
     this.draggingPiece = null;
     this.draggingPiecePos = null;
@@ -203,9 +202,9 @@ export class BoardUI extends UI {
     if (!this.draggingPiece) return;
     const { x, y } = this.getBoardPosition(pos);
     if (this.draggingPiece.x === -1) {
-      this.emitter.emit('putPiece', { nx: x, ny: y, type: this.draggingPiece.type });
+      sendPutPiece(x, y, this.draggingPiece.type);
     } else {
-      this.emitter.emit('movePiece', { x: this.draggingPiece.x, y: this.draggingPiece.y, nx: x, ny: y, nari: false });
+      sendMovePiece(this.draggingPiece.x, this.draggingPiece.y, x, y, false);
     }
     this.draggingPiece = null;
     this.draggingPiecePos = null;
@@ -248,7 +247,6 @@ export class BoardUI extends UI {
   drawDragging(ctx, scale) {
     ctx.save();
     ctx.translate(this.draggingPiecePos.x * scale, this.draggingPiecePos.y * scale);
-    console.log(this.draggingPiece);
     this.drawPieceSelf(ctx, scale, this.draggingPiece);
     ctx.restore();
   }
@@ -299,7 +297,6 @@ export class BoardUI extends UI {
     ctx.fillStyle = MOVE_COLOR;
 
     function drawSquare(moveX, moveY, teban) {
-      console.log(moveX, moveY);
       ctx.save();
       if (teban === -1) {
         ctx.rotate(Math.PI);

@@ -3,6 +3,7 @@ import uuid from 'uuid-random';
 import { Board } from './board.js'
 
 export class ServerState {
+    timecount = 0;
     rooms = {};
     players = {};
 
@@ -45,9 +46,9 @@ export class ServerState {
                 const roomId = uuid();  // ルームIDを生成
 
                 this.rooms[roomId] = { board: new Board(), sente: player1, gote: player2, spectators: [] };
-                this.rooms[roomId].board.init();
 
                 let time = performance.now();
+                this.rooms[roomId].board.init(time, time);
 
                 // 両プレイヤーにマッチング完了を通知
                 this.players[player1].goToPlay(roomId);
@@ -66,7 +67,7 @@ export class ServerState {
                     name: this.players[player1].name
                 });
 
-                console.log(`Matched players: (先手:${this.players[player1].name}) vs (後手:${this.players[player2].name})`);
+                console.log(new Date(), `Matched players: (先手:${this.players[player1].name}) vs (後手:${this.players[player2].name})`);
             }
         }
     }
@@ -88,7 +89,8 @@ export class ServerState {
 
     sendServerStatus() {
         const online = Object.keys(this.players).length;
-        const roomcount = Object.keys(this.rooms).length;
-        this.io.emit("serverStatus", { online: online, roomcount: roomcount });
+        const roomCount = Object.keys(this.rooms).length;
+        this.io.emit("serverStatus", { online: online, roomCount: roomCount });
+        this.timecount++;
     }
 }

@@ -1,5 +1,5 @@
 import { BoardUI } from "./ui_board.js";
-import { canvas, emitter, gameManager, playerName, serverStatus, setGameManager, setPlayerName, setScene, socket } from "./main.js";
+import { canvas, emitter, gameManager, playerName, scene, serverStatus, setPlayerName, setScene, socket } from "./main.js";
 import { Background, UI } from "./ui.js";
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
@@ -79,7 +79,7 @@ const title = new TextUI({
   colors: ["#c2a34f", "#000000", "#ffffff"]
 });
 const onlineText = new TextUI({
-  text: () => `オンライン: ${serverStatus["online"]}人`,
+  text: () => `オンライン: ${serverStatus.online}人`,
   x: 0,
   y: 0.25,
   size: 0.035,
@@ -87,7 +87,7 @@ const onlineText = new TextUI({
 });
 
 const playingText = new TextUI({
-  text: () => `プレイ中: ${serverStatus["playing"]}人`,
+  text: () => `部屋数: ${serverStatus.roomCount}`,
   x: 0,
   y: 0.30,
   size: 0.035,
@@ -216,8 +216,7 @@ export function createTitleScene() {
 //ゲームシーン
 export function createPlayScene(playerName, opponentName, teban, roomId, servertime, cpu = false) {
   let playScene = new Scene();
-  setGameManager();
-  gameManager.init(roomId, teban, servertime);
+  gameManager.setRoom(roomId, teban, servertime);
 
   let playerNameUI = new TextUI({
     text: () => {
@@ -247,24 +246,22 @@ export function createPlayScene(playerName, opponentName, teban, roomId, servert
   playScene.add(opponentNameUI)
   playScene.add(timeText);
 
-
-
-  function backToTitle() {
-    resultOverlay.style.display = "none";
-    setScene(createTitleScene());
-  }
-
-  //ゲームマネージャーのイベントを受け取る
-  emitter.on("endGame", (data) => {
-    playScene.add(background);
-    if (data.winPlayer === gameManager.teban) {
-      playScene.add(winText);
-    } else {
-      playScene.add(loseText);
-    }
-    resultOverlay.style.display = "block";
-    toTitleButton.addEventListener("click", () => { backToTitle(); });
-  });
-
   return playScene;
+}
+
+export function backToTitle() {
+  resultOverlay.style.display = "none";
+  setScene(createTitleScene());
+}
+
+export function endGame(data) {
+  scene.add(background);
+  if (data.winPlayer === gameManager.teban) {
+    scene.add(winText);
+  } else {
+    scene.add(loseText);
+  }
+  resultOverlay.style.display = "block";
+  toTitleButton.addEventListener("click", () => { backToTitle(); });
+  gameManager.resetRoom();
 }

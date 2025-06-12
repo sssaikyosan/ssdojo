@@ -2,8 +2,6 @@ import { BOARD_SIZE, MOVETIME, PIECE_MOVES, UNPROMODED_TYPES } from "./const.js"
 import { getPromotedType, getUnPromotedType } from "./utils.js";
 
 export class Board {
-  emitter;
-  pieces = []; // すべての駒を保持する配列
   map = [[null, null, null, null, null, null, null, null, null],
   [null, null, null, null, null, null, null, null, null],
   [null, null, null, null, null, null, null, null, null],
@@ -23,10 +21,6 @@ export class Board {
   starttime = 0;
   time = 0;
 
-  constructor(emitter) {
-    this.emitter = emitter
-  }
-
 
   // 盤面の初期化
   init(servertime, time) {
@@ -38,6 +32,15 @@ export class Board {
       sente: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 },
       gote: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 }
     };
+    this.map = [[null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null]];
     this.initPieces(1);
     this.initPieces(-1);
   }
@@ -72,12 +75,6 @@ export class Board {
   //無から駒を配置する関数
   setPiece(x, y, type, teban) {
     this.map[x][y] = { type: type, teban: teban, lastmovetime: this.serverstarttime, lastmoveptime: this.starttime };
-  }
-
-  //駒を駒台へ移動させる関数
-  returnToKomadai(type, teban) {
-    this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type]++;
-    return;
   }
 
   //指定したマスへの移動が合法手か判定
@@ -170,54 +167,52 @@ export class Board {
     const { x, y, nx, ny, type, nari, teban, roomId, servertime } = data;
     const lmp = performance.now();
     if (this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type] <= 0) return { res: false, capture: null };
-
     if (!this.canPut(nx, ny, type, teban)) return { res: false, capture: null };
     this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type]--;
 
     this.map[nx][ny] = { type: type, teban: teban, lastmovetime: servertime, lastmoveptime: lmp };
-    this.kifu.push({ x: -2 + teban, y: -2 + teban, nx: nx, ny: ny })
-
+    this.kifu.push({ x: -2 + teban, y: -2 + teban, nx: nx, ny: ny });
     return { res: true, capture: null };
   }
 
   //サーバーから手（移動）を受け取ったときに起動する関数
   movePieceLocal(data) {
     const { x, y, nx, ny, type, nari, teban, roomId, servertime } = data;
+
     if (x === -1) {
       return this.putPieceLocal(data);
     }
     const lmp = performance.now();
+
     const result = this.getCanMovePiece(x, y, nx, ny, nari, teban, servertime);
-    console.log('res', result);
-    if (result.length === 0) return { res: false, capture: null };
-    const [piece, capturePiece] = result;
+    if (!result.res) return { res: false, capture: null };
 
-    this.movePiece(data, piece, capturePiece, lmp);
+    this.movePiece(data, result.capture, lmp);
 
-    return { res: true, capture: capturePiece };
+    return result;
   }
 
   //指定した位置の駒が移動かどうか判定
   getCanMovePiece(x, y, nx, ny, nari, teban, servertime) {
     //盤上の駒を動かす場合
-    if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) return [];
+    if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) return { res: false, capture: null };
     const piece = this.map[x][y];
-    console.log('piece', piece);
-    console.log('time', servertime);
+    let capturePiece = null;
 
     //nullチェック
-    if (!piece) return [];
-    if (teban !== piece.teban) return [];
+    if (!piece) return { res: false, capture: null };
+    if (teban !== piece.teban) return { res: false, capture: null };
     //時間チェック
     if (servertime - piece.lastmovetime < MOVETIME) {
-      return [];
+      return { res: false, capture: null };
     }
     //成りチェック
-    if (nari && !this.canPromote(x, y, ny)) return [];
+    if (nari && !this.canPromote(x, y, ny)) return { res: false, capture: null };
     //駒の移動が可能かどうかを判定  // エラーチェック: ここでreturn
-    if (!this.canMove(x, y, nx, ny, nari, teban)) return [];
+    if (!this.canMove(x, y, nx, ny, nari, teban)) return { res: false, capture: null };
 
-    return [piece, this.map[nx][ny]];
+    if (this.map[nx][ny]) capturePiece = this.map[nx][ny].type;
+    return { res: true, capture: capturePiece };
   }
 
   // 駒が相手陣に入ったかどうかを判定
@@ -233,32 +228,25 @@ export class Board {
   }
 
   //駒を移動させる時の処理
-  movePiece({ x, y, nx, ny, nari, teban, servertime }, piece, capturePiece, lmp) {
+  movePiece(data, capturePiece, lmp) {
+    const { x, y, nx, ny, type, nari, teban, roomId, servertime } = data;
     let captime = -1;
     if (capturePiece) {
-      captime = capturePiece.lastmovetime;
-      const unPromotedType = getUnPromotedType(capturePiece.type);
-      let t = '';
-      if (teban === 1) {
-        t = 'sente';
-      } else if (teban === -1) {
-        t = 'gote';
-      } else {
-        return false;
-      }
+      captime = this.map[nx][ny].lastmovetime;
+      const unPromotedType = getUnPromotedType(capturePiece);
       this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][unPromotedType]++
     }
 
-    let type = piece.type;
+    let pieceType = this.map[x][y].type;
     if (nari) {
-      type = getPromotedType(piece.type);
+      pieceType = getPromotedType(this.map[x][y].type);
     }
 
-    this.map[nx][ny] = { type: type, teban: piece.teban, lastmovetime: servertime, lastmoveptime: lmp };
+    this.map[nx][ny] = { type: pieceType, teban: this.map[x][y].teban, lastmovetime: servertime, lastmoveptime: lmp };
     this.map[x][y] = null;
 
     //棋譜更新
-    const captype = capturePiece ? capturePiece.type : null;
-    this.kifu.push({ x, y, nx, ny, nari, teban, captype, time: servertime, captime: captime });
+    this.kifu.push({ x, y, nx, ny, nari, teban, capturePiece, time: servertime, captime: captime });
+    return true;
   }
 }

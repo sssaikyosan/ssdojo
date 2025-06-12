@@ -2,7 +2,7 @@ import { Keyboard } from "./keyboard.js";
 import { GameManager } from "./game_manager.js";
 import { Board } from './board.js';
 import { Emitter } from './emitter.js'
-import { createPlayScene, createTitleScene, Scene } from "./scene.js";
+import { createPlayScene, createTitleScene, endGame, Scene } from "./scene.js";
 
 export let pieceImages = {};
 export let canvas = null;
@@ -14,7 +14,7 @@ export let scene = null;
 /**@type {Board} */
 export let board = new Board();
 export let playerName = "";
-export let serverStatus = { online: 0, playing: 0 };
+export let serverStatus = { online: 0, roomCount: 0 };
 /**@type {Keyboard} */
 export let keyboard = null;
 
@@ -29,14 +29,6 @@ export function setPlayerName(name) {
   playerName = name;
 }
 
-export function setGameManager() {
-  gameManager = new GameManager(socket, emitter);
-}
-
-export function resetGameManager() {
-  gameManager = null;
-}
-
 // 初期化関数
 function init() {
   // キャンバスの初期化
@@ -45,7 +37,7 @@ function init() {
   ctx = canvas.getContext('2d');
 
   emitter = new Emitter();
-  keyboard = new Keyboard(emitter);
+  keyboard = new Keyboard();
 
   // Socket.IOの初期化
   //@ts-ignore
@@ -57,7 +49,7 @@ function init() {
 
   resizeCanvas();
 
-  gameManager = new GameManager(socket, emitter);
+  gameManager = new GameManager(socket);
   addEventListeners();
   scene = createTitleScene();
   roop();
@@ -106,8 +98,6 @@ function setupSocket() {
 
   // マッチングが成立したときの処理
   socket.on('matchFound', (data) => {
-    console.log('matchFound', data.time);
-    gameManager = new GameManager(socket, emitter);
     scene = createPlayScene(
       playerName,
       data.name,
@@ -119,17 +109,14 @@ function setupSocket() {
 
   // 新しい駒の移動を受信
   socket.on('newMove', (data) => {
-    scene = createResultScene(
-      playerName,
-      data.name,
-      data.teban,
-      data.roomId,
-      data.servertime
-    );
+    if (gameManager) {
+      gameManager.receiveMove(data);
+    }
   });
 
+  // ゲーム終了を受信
   socket.on('endGame', (data) => {
-    emitter.emit("endGame", data);
+    endGame(data);
   });
 }
 
@@ -162,7 +149,5 @@ function roop() {
 }
 
 init();
-function createResultScene(playerName, name, teban, roomId, servertime) {
-  throw new Error("Function not implemented.");
-}
+
 

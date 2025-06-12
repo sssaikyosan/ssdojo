@@ -2,7 +2,6 @@ import { BOARD_SIZE, MOVETIME, PIECE_MOVES, UNPROMODED_TYPES } from "./const.js"
 import { getPromotedType, getUnPromotedType } from "./utils.js";
 
 export class Board {
-  emitter;
   pieces = []; // すべての駒を保持する配列
   map = [[null, null, null, null, null, null, null, null, null],
   [null, null, null, null, null, null, null, null, null],
@@ -23,10 +22,6 @@ export class Board {
   starttime = 0;
   time = 0;
 
-  constructor(emitter) {
-    this.emitter = emitter
-  }
-
 
   // 盤面の初期化
   init(servertime, time) {
@@ -34,10 +29,6 @@ export class Board {
     this.starttime = time;
     this.time = time;
     this.currentMove = 0;
-    this.komadaiPieces = {
-      sente: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 },
-      gote: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 }
-    };
     this.initPieces(1);
     this.initPieces(-1);
   }
@@ -167,27 +158,25 @@ export class Board {
 
   //サーバーから手（打つ）を受け取ったときに起動する関数
   putPieceLocal(data) {
-    const lmp = performance.now();
     const { x, y, nx, ny, type, nari, teban, roomId, servertime } = data;
+    const lmp = performance.now();
     if (this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type] <= 0) return { res: false, capture: null };
-
     if (!this.canPut(nx, ny, type, teban)) return { res: false, capture: null };
     this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type]--;
 
     this.map[nx][ny] = { type: type, teban: teban, lastmovetime: servertime, lastmoveptime: lmp };
-    this.kifu.push({ x: -2 + teban, y: -2 + teban, nx: nx, ny: ny })
-
+    this.kifu.push({ x: -2 + teban, y: -2 + teban, nx: nx, ny: ny });
     return { res: true, capture: null };
   }
 
   //サーバーから手（移動）を受け取ったときに起動する関数
   movePieceLocal(data) {
-    const lmp = performance.now();
     const { x, y, nx, ny, type, nari, teban, roomId, servertime } = data;
 
     if (x === -1) {
       return this.putPieceLocal(data);
     }
+    const lmp = performance.now();
 
     const result = this.getCanMovePiece(x, y, nx, ny, nari, teban, servertime);
     if (!result.res) return { res: false, capture: null };
@@ -203,8 +192,6 @@ export class Board {
     if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) return { res: false, capture: null };
     const piece = this.map[x][y];
     let capturePiece = null;
-    console.log('piece', piece);
-    console.log('time', servertime);
 
     //nullチェック
     if (!piece) return { res: false, capture: null };
@@ -239,16 +226,8 @@ export class Board {
     const { x, y, nx, ny, type, nari, teban, roomId, servertime } = data;
     let captime = -1;
     if (capturePiece) {
-      captime = capturePiece.lastmovetime;
-      const unPromotedType = getUnPromotedType(capturePiece.type);
-      let t = '';
-      if (teban === 1) {
-        t = 'sente';
-      } else if (teban === -1) {
-        t = 'gote';
-      } else {
-        return false;
-      }
+      captime = this.map[nx][ny].lastmovetime;
+      const unPromotedType = getUnPromotedType(capturePiece);
       this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][unPromotedType]++
     }
 
@@ -261,19 +240,16 @@ export class Board {
     this.map[x][y] = null;
 
     //棋譜更新
-    const captype = capturePiece ? capturePiece : null;
-    this.kifu.push({ x, y, nx, ny, nari, teban, captype, time: servertime, captime: captime });
+    this.kifu.push({ x, y, nx, ny, nari, teban, capturePiece, time: servertime, captime: captime });
     return true;
   }
 
   //勝敗判定
-  checkGameEnd(data, capture) {
+  checkGameEnd(data) {
     const { x, y, nx, ny, type, nari, teban, roomId, servertime } = data;
 
-    if (capture) {
-      if (capture.type === "king" || capture.type === "king2") {
-        return { player: teban, text: "勝利" };
-      }
+    if (this.komadaiPieces["sente"]["king2"] > 0 || this.komadaiPieces["gote"]["king"] > 0) {
+      return { player: teban, text: "勝利" };
     }
     if (this.map[nx][ny].type === "king" && teban === 1 && nx === 4 && ny === 0) {
       return { player: teban, text: "トライ勝ち" };

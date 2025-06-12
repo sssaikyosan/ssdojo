@@ -1,5 +1,7 @@
+import { sendPutPiece } from "./emit.js";
+import { gameManager } from "./main.js";
+
 export class Keyboard {
-  emitter;
   keys = {
     ' ': 'pawn',
     'q': 'lance',
@@ -12,10 +14,6 @@ export class Keyboard {
     'x': 'king2',
   }
 
-  constructor(emitter) {
-    this.emitter = emitter;
-  }
-
   init(canvas) {
     canvas.focus();
     canvas.addEventListener('keydown', (e) => {
@@ -25,6 +23,12 @@ export class Keyboard {
 
   onKeyDown(e) {
     const piecetype = this.keys[e.key];
-    if (piecetype) this.emitter.emit("keydown", piecetype);
+    if (piecetype) {
+      const pos = gameManager.boardUI.hoveredCell;
+      if (!pos) return false;
+      if (!gameManager.board.canPut(pos.x, pos.y, piecetype, gameManager.teban)) return false;
+      sendPutPiece(pos.x, pos.y, piecetype);
+      return true;
+    };
   }
 }

@@ -39,7 +39,7 @@ ioSetup();
 // HTTPSサーバーを起動
 const PORT = 5000;
 server.listen(PORT, () => {
-  console.log(`HTTPS Server is running on port ${PORT})`);
+  console.log(new Date(), `HTTPS Server is running on port ${PORT})`);
 });
 
 //切断による勝利通知
@@ -52,18 +52,29 @@ function disconnectWin(roomId, losePlayer) {
   }
 }
 
+function gameFinished(roomId, win, text) {
+  const senteName = serverState.players[serverState.rooms[roomId].sente].name;
+  const goteName = serverState.players[serverState.rooms[roomId].gote].name;
+  if (win === 1) {
+    console.log(new Date(), text, `win:`, senteName, '  lose:', goteName);
+  } else if (win === -1) {
+    console.log(new Date(), text, `win:`, goteName, '  lose:', senteName);
+  }
+  emitToRoom("endGame", { winPlayer: win, text: text }, roomId);
+  serverState.deleteRoom(roomId);
+}
 
 
 //部屋への通知
 function emitToRoom(type, data, roomId) {
   if (serverState.rooms[roomId].sente && serverState.players[serverState.rooms[roomId].sente]) {
-    io.to(serverState.players[serverState.rooms[roomId].sente].socket).emit(type, data);
+    io.to(serverState.players[serverState.rooms[roomId].sente].socket.id).emit(type, data);
   }
   if (serverState.rooms[roomId].gote && serverState.players[serverState.rooms[roomId].gote]) {
-    io.to(serverState.players[serverState.rooms[roomId].gote].socket).emit(type, data);
+    io.to(serverState.players[serverState.rooms[roomId].gote].socket.id).emit(type, data);
   }
   for (const spectator in serverState.rooms[roomId].spectators) {
-    io.to(serverState.players[spectator].socket).emit(type, data);
+    io.to(serverState.players[spectator].socket.id).emit(type, data);
   }
 }
 
@@ -84,33 +95,28 @@ function ioSetup() {
       if (serverState.rooms[data.roomId].sente === socket.id && data.teban === 1) validPlayer = true;
       if (serverState.rooms[data.roomId].gote === socket.id && data.teban === -1) validPlayer = true;
       if (validPlayer) result = serverState.rooms[data.roomId].board.movePieceLocal({ ...data, servertime });
-      if (result.res) {
-        serverState.rooms[data.roomId].kihu.push({ ...data, servertime });
-        emitToRoom("newMove", { ...data, servertime });
-        let gameEnd = serverState.rooms[data.roomId].board.checkGameEnd(data, result.capture);
-        if (gameEnd.player !== 0) {
-          emitToRoom("endGame", { winPlayer: gameEnd.player, text: gameEnd.text }, data.roomId);
-          serverState.deleteRoom(data.roomId);
+      if (result && result.res) {
+        emitToRoom("newMove", { ...data, servertime }, data.roomId);
+        let endGame = serverState.rooms[data.roomId].board.checkGameEnd(data);
+        if (endGame.player !== 0) {
+          gameFinished(data.roomId, endGame.player, endGame.text);
         }
       }
     });
 
     // 切断時の処理
     socket.on("disconnect", () => {
-      if (this.players[socket.id].state === "playing") {
-        disconnectWin(this.players[socket.id].roomId, socket.id);
+      if (serverState.players[socket.id] && serverState.players[socket.id].state === "playing") {
+        disconnectWin(serverState.players[socket.id].roomId, socket.id);
       }
       serverState.deletePlayer(socket.id);
     });
   });
 }
 
-
-
-
-
-
 const serverState = new ServerState(io);
+
+
 
 // 1秒ごとにマッチメイキングを実行
 setInterval(() => {
