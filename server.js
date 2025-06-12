@@ -1,59 +1,44 @@
-import dotenv from "dotenv";
-import express from "express";
-import fs from "fs";
-import http from "http";
-import https from "https";
-import path from "path";
-import { Server, type Socket } from "socket.io";
-import uuid from "uuid-random";
+import 'dotenv/config';
 
-dotenv.config();
+import express from 'express';
+import https from 'https';
+import http from 'http';
+import { Server } from 'socket.io';
+import fs from 'fs';
+import path from 'path';
+import uuid from 'uuid-random';
+import { fileURLToPath } from 'url';
 
-// 環境変数に応じて設定を切り替え
-const isProduction = process.env.NODE_ENV !== "development";
-const PORT = isProduction ? 443 : 5000;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
-const server = createServer();
-const io = new Server(server);
+
+// SSL証明書の読み込みオプション
+const options = {
+  key: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/fullchain.pem')
+};
+
+const server = https.createServer(options, app);
+
+const socketOptions = {
+  cors: {
+    origin: ['https://ssdojo.net', 'https://ssdojo.net:5000'], // 許可するオリジンを具体的に指定
+    credentials: true
+  }
+};
+
+
+const io = new Server(server, socketOptions);
 
 ioSetup();
 
-
-if (isProduction) {
-  // 静的ファイルを配信
-  app.use(express.static(path.join(__dirname, "public")));
-  // HTTPサーバーを起動
-  const httpServer = http.createServer((req, res) => {
-    const host = req.headers.host;
-    res.writeHead(301, { "Location": `https://${host}${req.url}` });
-    res.end();
-  });
-
-  httpServer.listen(80, () => {
-  });
-} else {
-  // vite を利用して配信
-  const ViteExpress: typeof import("vite-express") = require("vite-express");
-  ViteExpress.config({ viteConfigFile: "./vite.config.ts", mode: "development" });
-  ViteExpress.bind(app, server);
-}
-
+// HTTPSサーバーを起動
+const PORT = 5000;
 server.listen(PORT, () => {
+  console.log(`HTTPS Server is running on port ${PORT})`);
 });
-
-
-function createServer() {
-  if (isProduction) {
-    // SSL証明書の読み込み
-    const options = {
-      key: fs.readFileSync("/etc/letsencrypt/live/ssdojo.net/privkey.pem"),
-      cert: fs.readFileSync("/etc/letsencrypt/live/ssdojo.net/fullchain.pem")
-    };
-    return https.createServer(options, app);
-  } else {
-    return http.createServer(app);
-  }
-}
 
 function ioSetup() {
   io.on("connection", (socket) => {
@@ -70,16 +55,17 @@ function ioSetup() {
 
     // 駒の配置を転送
     socket.on("putPiece", (data) => {
-      data.hrtime = process.hrtime();
+      console.log('onputpiece', data);
+      const servertime = performance.now();
       // 移動したプレイヤーと対戦相手に駒の移動と手数を通知
-      io.to(data.roomId).emit("newPut", { ...data });
+      io.to(data.roomId).emit("newPut", { ...data, servertime });
     });
 
     // 駒の移動を転送
     socket.on("movePiece", (data) => {
-      data.hrtime = process.hrtime();
+      const servertime = performance.now();
       // 移動したプレイヤーと対戦相手に駒の移動と手数を通知
-      io.to(data.roomId).emit("newMove", { ...data });
+      io.to(data.roomId).emit("newMove", { ...data, servertime });
     });
 
     socket.on("leaveRoom", (data) => {
@@ -94,7 +80,7 @@ function ioSetup() {
       if (index != -1) {
         serverState.matchMakingPlayers.splice(index, 1);
       }
-      const opponent: Player = serverState.players[socket.id];
+      const opponent = serverState.players[socket.id];
       if (opponent.opponent != null) {
         opponent.opponent = null;
         opponent.socket.emit("opponentDisconnected");
@@ -105,22 +91,21 @@ function ioSetup() {
   });
 }
 
-// 
-// アプリケーションコード
-// 
 
 class ServerState {
-  players: Record<string, Player> = {};
-  matchMakingPlayers: Player[] = [];
+  players = {};
+  matchMakingPlayers = [];
 }
 
-class Player {
-  name: string = "";
-  roomId: string = "";
-  socket: Socket;
-  opponent: Socket | null = null;
 
-  constructor(socket: Socket) {
+
+class Player {
+  name = "";
+  roomId = "";
+  teban = 0;
+  socket = null;
+  opponent = null;
+  constructor(socket) {
     this.socket = socket;
   }
 }
@@ -132,35 +117,36 @@ setInterval(() => {
   sendServerStatus();
 }, 1000); // 1秒ごとに実行
 
-
 function matchMaking() {
   if (serverState.matchMakingPlayers.length >= 2) {
 
     // マッチング処理
     while (serverState.matchMakingPlayers.length >= 2) {
-      const player1 = serverState.matchMakingPlayers.shift()!;
-      const player2 = serverState.matchMakingPlayers.shift()!;
+      const player1 = serverState.matchMakingPlayers.shift();
+      const player2 = serverState.matchMakingPlayers.shift();
 
       const roomId = uuid();  // ルームIDを生成
 
       player1.socket.join(roomId);  // ルームに参加
       player2.socket.join(roomId);  // ルームに参加
 
-      let hrtime = process.hrtime();
+      let time = performance.now();
 
       // 両プレイヤーにマッチング完了を通知
       io.to(player1.socket.id).emit("matchFound", {
         roomId: roomId,
         teban: 1,
-        hrtime: hrtime,
+        servertime: time,
         name: player2.name
       });
       io.to(player2.socket.id).emit("matchFound", {
         roomId: roomId,
         teban: -1,
-        hrtime: hrtime,
+        servertime: time,
         name: player1.name
       });
+
+      console.log(`Matched players: (先手:${player1.name}) vs (後手:${player2.name})`);
 
       serverState.players[player1.socket.id].opponent = player2.socket;
       serverState.players[player2.socket.id].opponent = player1.socket;
@@ -169,6 +155,7 @@ function matchMaking() {
   }
 }
 
+//#region 関数
 function sendServerStatus() {
   const online = Object.keys(serverState.players).length;
   const playing = Object.keys(serverState.players).filter(x => serverState.players[x].opponent != null).length;

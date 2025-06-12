@@ -1,19 +1,18 @@
-import { UI, UiParams } from "./ui";
-
-interface UiLoadingParams extends UiParams {
-  radius: number;
-}
+import { UI } from "./ui.js";
 
 export class LoadingUI extends UI {
-  radius: number;
-  loadingAngle: number = 0;
-
-  constructor(params: UiLoadingParams) {
+  constructor(params) {
     super(params);
+    this.x = params.x;
+    this.y = params.y;
+    this.width = 0;
+    this.height = 0;
+    this.scale = params.scale;
     this.radius = params.radius;
+    this.loadingAngle = 0;
   }
 
-  draw(ctx: CanvasRenderingContext2D, scale: number) {
+  draw(ctx, scale) {
     ctx.save();
     const x = this.x * scale;
     const y = this.y * scale;
