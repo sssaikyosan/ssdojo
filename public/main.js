@@ -1,7 +1,6 @@
 import { Keyboard } from "./keyboard.js";
 import { GameManager } from "./game_manager.js";
 import { Board } from './board.js';
-import { Emitter } from './emitter.js'
 import { createPlayScene, createTitleScene, endGame, Scene } from "./scene.js";
 
 export let pieceImages = {};
@@ -35,8 +34,6 @@ function init() {
   canvas = document.getElementById('shogiCanvas');
   //@ts-ignore
   ctx = canvas.getContext('2d');
-
-  emitter = new Emitter();
   keyboard = new Keyboard();
 
   // Socket.IOの初期化
