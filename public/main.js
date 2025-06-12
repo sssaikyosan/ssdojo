@@ -40,8 +40,12 @@ function init() {
   keyboard = new Keyboard();
 
   // Socket.IOの初期化
+  const socketUrl = window.location.hostname === 'localhost' ?
+    'http://localhost:5000' :
+    'https://ssdojo.net:5000';
+
   //@ts-ignore
-  socket = io('https://ssdojo.net:5000', { withCredentials: true });
+  socket = io(socketUrl, { withCredentials: true });
   setupSocket();
 
   // イベントリスナーの追加
@@ -149,5 +153,3 @@ function roop() {
 }
 
 init();
-
-

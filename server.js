@@ -16,17 +16,23 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// SSL証明書の読み込みオプション
-const options = {
-  key: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/fullchain.pem')
-};
 
-const server = https.createServer(options, app);
+// SSL証明書の読み込みオプション
+let server;
+if (process.env.NODE_ENV === 'development') {
+  app.use(express.static(path.join(__dirname, 'public')));
+  server = http.createServer(app);
+} else {
+  const options = {
+    key: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/fullchain.pem')
+  };
+  server = https.createServer(options, app);
+}
 
 const socketOptions = {
   cors: {
-    origin: ['https://ssdojo.net', 'https://ssdojo.net:5000'], // 許可するオリジンを具体的に指定
+    origin: ['https://ssdojo.net', 'http://localhost:5000'], // 許可するオリジンを具体的に指定
     credentials: true
   }
 };
