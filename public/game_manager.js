@@ -51,31 +51,40 @@ export class GameManager {
 
     sendPutPiece(nx, ny, type) {
         if (this.cpu === null) {
-            this.socket.emit("putPiece", {
+            this.socket.emit("movePiece", {
+                x: -1,
+                y: -1,
                 nx: nx,
                 ny: ny,
                 type: type,
+                nari: false,
                 teban: this.teban,
                 roomId: this.roomId,
             });
             return true;
         }
-        const put = {
+        const move = {
+            x: -1,
+            y: -1,
             nx: nx,
             ny: ny,
             type: type,
+            nari: false,
             teban: this.teban,
             servertime: performance.now(),
         };
-        this.receivePut(put);
+        this.receiveMove(move);
         return true;
     }
 
     sendMovePiece(x, y, nx, ny, nari) {
         if (this.cpu === null) {
             this.socket.emit("movePiece", {
-                x: x, y: y,
-                nx: nx, ny: ny,
+                x: x,
+                y: y,
+                nx: nx,
+                ny: ny,
+                type: null,
                 nari: nari,
                 teban: this.teban,
                 roomId: this.roomId,
@@ -87,6 +96,7 @@ export class GameManager {
             y: y,
             nx: nx,
             ny: ny,
+            type: null,
             nari: nari,
             teban: this.teban,
             servertime: performance.now(),
@@ -97,20 +107,11 @@ export class GameManager {
 
     receiveMove(move) {
         const result = this.board.movePieceLocal(move);
-        if (result[0]) {
-            if (result[1] === this.boardUI.draggingPiece) {
+        if (result.res) {
+            if (result.capture === this.boardUI.draggingPiece) {
                 this.boardUI.draggingPiece = null;
                 this.boardUI.draggingPiecePos = null;
             }
-            playSound("sound");
-            return true;
-        };
-        return false;
-    }
-
-    receivePut(put) {
-        const result = this.board.putPieceLocal(put);
-        if (result) {
             playSound("sound");
             return true;
         };

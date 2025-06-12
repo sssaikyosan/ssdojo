@@ -255,10 +255,9 @@ export function createPlayScene(playerName, opponentName, teban, roomId, servert
   }
 
   //ゲームマネージャーのイベントを受け取る
-  emitter.on("endGame", (result) => {
-    socket.emit("leaveRoom", { roomId: gameManager.roomId });
+  emitter.on("endGame", (data) => {
     playScene.add(background);
-    if (result === gameManager.teban) {
+    if (data.winPlayer === gameManager.teban) {
       playScene.add(winText);
     } else {
       playScene.add(loseText);

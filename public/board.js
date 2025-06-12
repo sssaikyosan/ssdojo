@@ -42,11 +42,13 @@ export class Board {
     this.initPieces(-1);
   }
 
+  //初期配置作成用関数（歩）
   initPawnPiece(teban) {
     let y = 4 + teban * 2;
     for (let x = 0; x < 9; x++) this.setPiece(x, y, 'pawn', teban);
   }
 
+  //初期配置作成関数
   initPieces(teban) {
     this.initPawnPiece(teban);
     let y = 4 + teban * 4;
@@ -67,32 +69,30 @@ export class Board {
     this.setPiece(4 - teban * 3, y - teban, 'bishop', teban);
   }
 
+  //無から駒を配置する関数
   setPiece(x, y, type, teban) {
     this.map[x][y] = { type: type, teban: teban, lastmovetime: this.serverstarttime, lastmoveptime: this.starttime };
   }
 
+  //駒を駒台へ移動させる関数
   returnToKomadai(type, teban) {
     this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type]++;
     return;
   }
 
-  checkMyPiece(xx, yy, teban, type, nari, nteban) {
+  //指定したマスへの移動が合法手か判定
+  checkMove(xx, yy, teban, type, nari, nteban) {
     if (this.map[xx][yy] && this.map[xx][yy].teban === nteban) return false;
     if (nari) {
       if (teban === 1 && yy > 2) return false;
       if (teban === -1 && yy < 6) return false;
     } else {
-      if (type === 'pawn' || type === 'lance') {
-        if (teban === 1 && yy === 0) return false;
-        if (teban === -1 && yy === 8) return false;
-      } else if (type === 'knight') {
-        if (teban === 1 && yy <= 1) return false;
-        if (teban === -1 && yy >= 7) return false;
-      }
+      if (this.isTopCell(xx, yy, type, teban)) return false;
     }
     return true;
   }
 
+  //移動可能かどうか判定
   canMove(x, y, nx, ny, nari, nteban) {
     const dx = nx - x;
     const dy = ny - y;
@@ -104,7 +104,7 @@ export class Board {
 
     for (const move of moves) {
       if (move.dx === dx && move.dy === dy * nteban) {
-        return this.checkMyPiece(x + move.dx, y + move.dy * nteban, piece.teban, piece.type, nari, nteban);
+        return this.checkMove(x + move.dx, y + move.dy * nteban, piece.teban, piece.type, nari, nteban);
       }
 
       // 再帰的に動きを計算
@@ -113,7 +113,7 @@ export class Board {
         let currentY = y + move.dy * nteban;
         while (currentX >= 0 && currentX < BOARD_SIZE && currentY >= 0 && currentY < BOARD_SIZE) {
           if (this.map[currentX][currentY] && this.map[currentX][currentY].teban === nteban) break;
-          if (currentX === nx && currentY === ny) return this.checkMyPiece(currentX, currentY, piece.teban, piece.type, nari, nteban);
+          if (currentX === nx && currentY === ny) return this.checkMove(currentX, currentY, piece.teban, piece.type, nari, nteban);
           if (this.map[currentX][currentY] && this.map[currentX][currentY].teban !== nteban) break;
           currentX += move.dx;
           currentY += move.dy * nteban;
@@ -125,6 +125,7 @@ export class Board {
     return false;
   }
 
+  //指定した位置に駒を打てるか判定
   canPut(x, y, type, teban) {
     if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE || this.map[x][y]) return false;
     if (this.isTopCell(x, y, type, teban)) return false;
@@ -132,6 +133,7 @@ export class Board {
     return true;
   }
 
+  //歩、香、桂は最上段（２段目）に移動できないためこの関数で判定
   isTopCell(x, y, type, teban) {
     if (type === 'pawn' || type === 'lance') {
       if (teban === 1 && y === 0 || teban === -1 && y === 8) return true;
@@ -142,6 +144,7 @@ export class Board {
     return false;
   }
 
+  //二歩判定
   isNihu(x, y, type, teban) {
     if (type === 'pawn') {
       for (let i = 0; i < BOARD_SIZE; i++) {
@@ -151,6 +154,7 @@ export class Board {
     return false;
   }
 
+  //成り可能判定
   canPromote(x, y, ny) {
     const piece = this.map[x][y];
     if (!UNPROMODED_TYPES.includes(piece.type)) return false;
@@ -161,38 +165,39 @@ export class Board {
     return false;
   }
 
+  //サーバーから手（打つ）を受け取ったときに起動する関数
   putPieceLocal(data) {
+    const { x, y, nx, ny, type, nari, teban, roomId, servertime } = data;
     const lmp = performance.now();
-    const { nx, ny, type, teban, roomId, servertime } = data;
-    if (this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type] <= 0) return false;
+    if (this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type] <= 0) return { res: false, capture: null };
 
-    if (!this.canPut(nx, ny, type, teban)) return false;
+    if (!this.canPut(nx, ny, type, teban)) return { res: false, capture: null };
     this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type]--;
 
     this.map[nx][ny] = { type: type, teban: teban, lastmovetime: servertime, lastmoveptime: lmp };
     this.kifu.push({ x: -2 + teban, y: -2 + teban, nx: nx, ny: ny })
 
-    return true;
+    return { res: true, capture: null };
   }
 
+  //サーバーから手（移動）を受け取ったときに起動する関数
   movePieceLocal(data) {
+    const { x, y, nx, ny, type, nari, teban, roomId, servertime } = data;
+    if (x === -1) {
+      return this.putPieceLocal(data);
+    }
     const lmp = performance.now();
-    const { x, y, nx, ny, nari, teban, roomId, servertime } = data;
-
     const result = this.getCanMovePiece(x, y, nx, ny, nari, teban, servertime);
     console.log('res', result);
-    if (result.length === 0) return [false, null];
+    if (result.length === 0) return { res: false, capture: null };
     const [piece, capturePiece] = result;
 
-    // 駒を移動する
     this.movePiece(data, piece, capturePiece, lmp);
 
-    //勝敗判定
-    this.checkGameEnd(piece, capturePiece, nx, ny);
-
-    return [true, capturePiece];
+    return { res: true, capture: capturePiece };
   }
 
+  //指定した位置の駒が移動かどうか判定
   getCanMovePiece(x, y, nx, ny, nari, teban, servertime) {
     //盤上の駒を動かす場合
     if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) return [];
@@ -227,7 +232,7 @@ export class Board {
     return false;
   }
 
-
+  //駒を移動させる時の処理
   movePiece({ x, y, nx, ny, nari, teban, servertime }, piece, capturePiece, lmp) {
     let captime = -1;
     if (capturePiece) {
@@ -255,19 +260,5 @@ export class Board {
     //棋譜更新
     const captype = capturePiece ? capturePiece.type : null;
     this.kifu.push({ x, y, nx, ny, nari, teban, captype, time: servertime, captime: captime });
-  }
-
-  checkGameEnd(piece, npiece, nx, ny) {
-    // 勝敗判定
-    if (npiece) {
-      if (npiece.type === "king" || npiece.type === "king2") {
-        this.emitter.emit("endGame", piece.teban);
-      }
-    }
-    if (piece.type === "king" && piece.teban === 1 && nx === 4 && ny === 0) {
-      this.emitter.emit("endGame", 1);
-    } else if (piece.type === "king2" && piece.teban === -1 && nx === 4 && ny === 8) {
-      this.emitter.emit("endGame", -1);
-    }
   }
 }

@@ -121,3 +121,12 @@ export function getUnPromotedType(type) {
   };
   return promotedTypes[type] || type;
 }
+/**
+ * 文字列の配列から指定した文字を削除した新しい配列を返します。
+ * @param {string[]} arr - 処理対象の文字列の配列
+ * @param {string} charToRemove - 削除したい文字
+ * @returns {string[]} 指定した文字が削除された新しい配列
+ */
+export function removeCharFromArray(arr, charToRemove) {
+  return arr.filter(char => char !== charToRemove);
+}

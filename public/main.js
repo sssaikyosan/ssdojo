@@ -117,25 +117,19 @@ function setupSocket() {
     );
   });
 
-  socket.on('resign', (data) => {
-    if (gameManager) {
-      if (data.winner === gameManager.teban) {
-      }
-    }
-  });
-
   // 新しい駒の移動を受信
   socket.on('newMove', (data) => {
-    if (gameManager) {
-      gameManager.receiveMove(data);
-    }
+    scene = createResultScene(
+      playerName,
+      data.name,
+      data.teban,
+      data.roomId,
+      data.servertime
+    );
   });
 
-  // 新しい駒の配置を受信
-  socket.on('newPut', (data) => {
-    if (gameManager) {
-      gameManager.receivePut(data);
-    }
+  socket.on('endGame', (data) => {
+    emitter.emit("endGame", data);
   });
 }
 
@@ -168,3 +162,7 @@ function roop() {
 }
 
 init();
+function createResultScene(playerName, name, teban, roomId, servertime) {
+  throw new Error("Function not implemented.");
+}
+
