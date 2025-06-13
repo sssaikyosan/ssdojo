@@ -2,6 +2,7 @@ import { Keyboard } from "./keyboard.js";
 import { GameManager } from "./game_manager.js";
 import { Board } from './board.js';
 import { createPlayScene, createTitleScene, endGame, Scene } from "./scene.js";
+import { playSound } from "utils.js";
 
 export let pieceImages = {};
 export let canvas = null;
@@ -128,6 +129,7 @@ function setupSocket() {
 
   // マッチングが成立したときの処理
   socket.on('matchFound', (data) => {
+    playSound("match");
     scene = createPlayScene(
       playerName,
       data.name,

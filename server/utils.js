@@ -1,11 +1,3 @@
-import { UNPROMODED_TYPES } from "./const.js";
-
-export function playSound(filename) {
-  const audio = new Audio(`/sounds/${filename}.mp3`);
-  audio.play().catch(error => {
-    console.error('効果音の再生に失敗しました:', error);
-  });
-}
 
 /**
  * テキストを描画する
