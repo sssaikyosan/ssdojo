@@ -106,6 +106,3 @@ export class ServerState {
     }
 }
 
-function getRating(elorate, games) {
-    return elorate - (100 - games) * 5;
-}

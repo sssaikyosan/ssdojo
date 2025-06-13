@@ -62,6 +62,12 @@
       flex-shrink: 0;
       /* ボタンのサイズが縮まないように */
     }
+
+    .whiteText {
+      font-size: 16px;
+      color: white;
+      border-top: -6;
+    }
   </style>
 </head>
 
@@ -74,6 +80,7 @@
   </div>
   <div id="resultOverlay" class="overlay"
     style="display: none; position: absolute; top: 70%; left: 50%; transform: translate(-50%, -50%);">
+    <p id="changeRating" class="whiteText">レート変動 なし</p>
     <button id="toTitleButton" class="blueButton">タイトルに戻る</button>
   </div>
 

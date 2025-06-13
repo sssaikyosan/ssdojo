@@ -80,26 +80,33 @@ function gameFinished(roomId, win, text) {
   const winPlayerId = win === 1 ? serverState.players[serverState.rooms[roomId].sente].userId : serverState.players[serverState.rooms[roomId].gote].userId;
   const losePlayerId = win === 1 ? serverState.players[serverState.rooms[roomId].gote].userId : serverState.players[serverState.rooms[roomId].sente].userId;
 
+  let winRating = -9999;
+  let loseRating = -9999;
+  let newWinRating = -9999;
+  let newLoseRating = -9999;
+  let winGames = -1;
+  let loseGames = -1;
+
   if (winPlayerId !== undefined && losePlayerId !== undefined && serverState.ratings[winPlayerId] && serverState.ratings[losePlayerId]) {
-    const winRating = serverState.ratings[winPlayerId].rating;
-    const loseRating = serverState.ratings[losePlayerId].rating;
+    winRating = serverState.ratings[winPlayerId].rating;
+    loseRating = serverState.ratings[losePlayerId].rating;
 
     // イロレーティング計算
     let winkFactor = 20;
     let losekFactor = 20;
-    const winGames = serverState.ratings[winPlayerId].games;
-    const loseGames = serverState.ratings[losePlayerId].games;
+    winGames = serverState.ratings[winPlayerId].games;
+    loseGames = serverState.ratings[losePlayerId].games;
     if (winGames < 100) winkFactor = 20 + (2 * (100 - winGames) / 5);
     if (loseGames < 100) losekFactor = 20 + (2 * (100 - loseGames) / 5);
 
     const expectedWin = 1 / (1 + Math.pow(10, (loseRating - winRating) / 400));
     const expectedLose = 1 / (1 + Math.pow(10, (winRating - loseRating) / 400));
 
-    const newWinRating = winRating + winkFactor * (1 - expectedWin);
-    const newLoseRating = loseRating + losekFactor * (0 - expectedLose);
+    newWinRating = winRating + winkFactor * (1 - expectedWin);
+    newLoseRating = loseRating + losekFactor * (0 - expectedLose);
 
-    serverState.ratings[winPlayerId].rating = Math.round(newWinRating);
-    serverState.ratings[losePlayerId].rating = Math.round(newLoseRating);
+    serverState.ratings[winPlayerId].rating = newWinRating;
+    serverState.ratings[losePlayerId].rating = newLoseRating;
 
     // 対局数をインクリメント
     if (!serverState.ratings[winPlayerId].games) serverState.ratings[winPlayerId].games = 0;
@@ -118,7 +125,16 @@ function gameFinished(roomId, win, text) {
     console.error(`レーティング情報が見つかりませんでした。Win Player ID: ${winPlayerId}, Lose Player ID: ${losePlayerId}`);
   }
 
-  emitToRoom("endGame", { winPlayer: win, text: text }, roomId);
+  const data = {
+    winPlayer: win,
+    text: text,
+    winRating: getRating(winRating, winGames),
+    newWinRating: getRating(winRating, winGames + 1),
+    loseRating: getRating(loseRating, loseGames),
+    newLoseRating: getRating(loseRating, loseGames + 1),
+  }
+
+  emitToRoom("endGame", data, roomId);
   serverState.deleteRoom(roomId);
 }
 

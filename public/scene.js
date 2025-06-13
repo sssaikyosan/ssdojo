@@ -63,7 +63,7 @@ const nameInputOverlay = document.getElementById("nameInputOverlay");
 const nameInput = /** @type {HTMLInputElement} */ (document.getElementById("nameInput"));
 
 const submitNameButton = document.getElementById("submitNameButton");
-const backButton = document.getElementById("backButton");
+const changeRating = document.getElementById("changeRating");
 
 const resultOverlay = document.getElementById("resultOverlay");
 const toTitleButton = document.getElementById("toTitleButton");
@@ -216,6 +216,9 @@ export function createPlayScene(playerName, opponentName, teban, roomId, servert
   let playScene = new Scene();
   gameManager.setRoom(roomId, teban, servertime);
 
+  const roundRating = Math.round(rating);
+  const opponentRoundRating = Math.round(opponentRating);
+
   let playerNameUI = new TextUI({
     text: () => {
       return `${playerName}`;
@@ -231,7 +234,7 @@ export function createPlayScene(playerName, opponentName, teban, roomId, servert
   let playerRatingUI = new TextUI({
     text: () => {
       // main.jsで計算された表示用レーティングを使用
-      return `Rating: ${rating}`;
+      return `Rating: ${roundRating}`;
     },
     x: -0.42,
     y: 0.44, // プレイヤー名の下に表示するためにy座標を調整
@@ -256,7 +259,7 @@ export function createPlayScene(playerName, opponentName, teban, roomId, servert
   let opponentRatingUI = new TextUI({
     text: () => {
       // main.jsで計算された表示用レーティングを使用
-      return `Rating: ${opponentRating}`;
+      return `Rating: ${opponentRoundRating}`;
     },
     x: 0.42,
     y: -0.44, // プレイヤー名の下に表示するためにy座標を調整
@@ -283,9 +286,13 @@ export function backToTitle() {
 
 export function endGame(data) {
   scene.add(background);
-  if (data.winPlayer === gameManager.teban) {
+  if (gameManager.teban === 0) {
+    changeRating.textContent = "レート変動 なし(観戦)";
+  } else if (data.winPlayer === gameManager.teban) {
+    changeRating.textContent = "レート変動 " + Math.round(data.winRating) + " → " + Math.round(data.newWinRating);
     scene.add(winText);
   } else {
+    changeRating.textContent = "レート変動 " + Math.round(data.loseRating) + " → " + Math.round(data.newLoseRating);
     scene.add(loseText);
   }
   resultOverlay.style.display = "block";

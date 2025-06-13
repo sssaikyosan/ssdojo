@@ -130,3 +130,7 @@ export function getUnPromotedType(type) {
 export function removeCharFromArray(arr, charToRemove) {
   return arr.filter(char => char !== charToRemove);
 }
+
+export function getRating(elorate, games) {
+  return elorate - (100 - games) * 5;
+}
