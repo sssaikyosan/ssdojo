@@ -13,12 +13,23 @@ export let scene = null;
 /**@type {Board} */
 export let board = new Board();
 export let playerName = "";
+export let rating = 0;
+export let userId = null;
 export let serverStatus = { online: 0, roomCount: 0 };
 /**@type {Keyboard} */
 export let keyboard = null;
 
 export let gameManager = null;
 
+
+// ユニークなIDを生成する関数
+function generateUniqueId() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 
 export function setScene(s) {
   scene = s;
@@ -35,6 +46,14 @@ function init() {
   //@ts-ignore
   ctx = canvas.getContext('2d');
   keyboard = new Keyboard();
+
+  // ユーザーIDの読み込みまたは生成
+  userId = localStorage.getItem('shogiUserId');
+  if (!userId) {
+    userId = generateUniqueId(); // 後で実装する関数
+    localStorage.setItem('shogiUserId', userId);
+  }
+  console.log(`User ID: ${userId}`); // 確認用
 
   // Socket.IOの初期化
   const socketUrl = window.location.hostname === 'localhost' ?
@@ -92,10 +111,20 @@ function addEventListeners() {
 }
 
 function setupSocket() {
+  // ユーザーIDをサーバーに送信
+  socket.emit('sendUserId', { userId: userId });
+
   // 待機人数の更新
   socket.on('serverStatus', (data) => {
     serverStatus = data;
   })
+
+  // レーティングを受信
+  socket.on('receiveRating', (data) => {
+    // サーバーから受け取った内部レーティングを保持
+    rating = data.rating;
+  });
+
 
   // マッチングが成立したときの処理
   socket.on('matchFound', (data) => {
@@ -104,7 +133,9 @@ function setupSocket() {
       data.name,
       data.teban,
       data.roomId,
-      data.servertime
+      data.servertime,
+      data.rating,
+      data.opponentRating
     );
   });
 

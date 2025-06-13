@@ -6,6 +6,7 @@ export class ServerState {
     timecount = 0;
     rooms = {};
     players = {};
+    ratings = {};
 
     constructor(io) {
         this.io = io;
@@ -51,12 +52,20 @@ export class ServerState {
                 this.rooms[roomId].board.init(time, time);
 
                 // 両プレイヤーにマッチング完了を通知
+                const rate1 = this.ratings[this.players[player1].userId];
+                const rate2 = this.ratings[this.players[player2].userId];
+
+                const player1rating = getRating(rate1.rating, rate1.games);
+                const player2rating = getRating(rate2.rating, rate2.games);
+
                 this.players[player1].goToPlay(roomId);
                 this.io.to(this.players[player1].socket.id).emit("matchFound", {
                     roomId: roomId,
                     teban: 1,
                     servertime: time,
-                    name: this.players[player2].name
+                    name: this.players[player2].name,
+                    rating: player1rating,
+                    opponentRating: player2rating
                 });
 
                 this.players[player2].goToPlay(roomId);
@@ -64,7 +73,9 @@ export class ServerState {
                     roomId: roomId,
                     teban: -1,
                     servertime: time,
-                    name: this.players[player1].name
+                    name: this.players[player1].name,
+                    rating: player2rating,
+                    opponentRating: player1rating
                 });
 
                 console.log(new Date(), `Matched players: (先手:${this.players[player1].name}) vs (後手:${this.players[player2].name})`);
@@ -93,4 +104,8 @@ export class ServerState {
         this.io.emit("serverStatus", { online: online, roomCount: roomCount });
         this.timecount++;
     }
+}
+
+function getRating(elorate, games) {
+    return elorate - (100 - games) * 5;
 }

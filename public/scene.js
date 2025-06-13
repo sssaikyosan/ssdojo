@@ -1,9 +1,7 @@
-import { BoardUI } from "./ui_board.js";
-import { canvas, emitter, gameManager, playerName, scene, serverStatus, setPlayerName, setScene, socket } from "./main.js";
-import { Background, UI } from "./ui.js";
+import { canvas, gameManager, playerName, scene, serverStatus, setPlayerName, setScene, socket, userId } from "./main.js";
+import { Background } from "./ui.js";
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
-import { GameManager } from "./game_manager.js";
 
 export class Scene {
   scale = 0;
@@ -185,7 +183,7 @@ export function createTitleScene() {
     localStorage.setItem("playerName", playerName);
     if (playerName == "") setPlayerName("名無しの棋士");
     // マッチングを開始
-    socket.emit("requestMatch", { name: playerName });
+    socket.emit("requestMatch", { name: playerName, userId: userId });
     nameInputOverlay.style.display = "none";
     titleScene.add(matchingText);
     titleScene.add(loading);
@@ -214,7 +212,7 @@ export function createTitleScene() {
 
 
 //ゲームシーン
-export function createPlayScene(playerName, opponentName, teban, roomId, servertime, cpu = false) {
+export function createPlayScene(playerName, opponentName, teban, roomId, servertime, rating, opponentRating, cpu = false) {
   let playScene = new Scene();
   gameManager.setRoom(roomId, teban, servertime);
 
@@ -229,6 +227,20 @@ export function createPlayScene(playerName, opponentName, teban, roomId, servert
     textBaseline: 'bottom',
     position: 'right'
   })
+
+  let playerRatingUI = new TextUI({
+    text: () => {
+      // main.jsで計算された表示用レーティングを使用
+      return `Rating: ${rating}`;
+    },
+    x: -0.42,
+    y: 0.44, // プレイヤー名の下に表示するためにy座標を調整
+    size: 0.025, // プレイヤー名より少し小さく
+    colors: ["#FFFFFF"],
+    textBaseline: 'bottom', // プレイヤー名の下に揃える
+    position: 'right'
+  })
+
   let opponentNameUI = new TextUI({
     text: () => {
       return `${opponentName}`;
@@ -241,9 +253,24 @@ export function createPlayScene(playerName, opponentName, teban, roomId, servert
     position: 'left'
   })
 
+  let opponentRatingUI = new TextUI({
+    text: () => {
+      // main.jsで計算された表示用レーティングを使用
+      return `Rating: ${opponentRating}`;
+    },
+    x: 0.42,
+    y: -0.44, // プレイヤー名の下に表示するためにy座標を調整
+    size: 0.025, // プレイヤー名より少し小さく
+    colors: ["#FFFFFF"],
+    textBaseline: 'top', // プレイヤー名の下に揃える
+    position: 'left'
+  })
+
   playScene.add(gameManager.boardUI);
   playScene.add(playerNameUI);
+  playScene.add(playerRatingUI); // レーティング表示UIを追加
   playScene.add(opponentNameUI)
+  playScene.add(opponentRatingUI); // レーティング表示UIを追加
   playScene.add(timeText);
 
   return playScene;
