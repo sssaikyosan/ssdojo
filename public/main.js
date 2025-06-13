@@ -2,7 +2,7 @@ import { Keyboard } from "./keyboard.js";
 import { GameManager } from "./game_manager.js";
 import { Board } from './board.js';
 import { createPlayScene, createTitleScene, endGame, Scene } from "./scene.js";
-import { playSound } from "utils.js";
+import { playSound } from "./utils.js";
 
 export let pieceImages = {};
 export let canvas = null;
