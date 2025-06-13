@@ -130,9 +130,9 @@ function gameFinished(roomId, win, text) {
     winPlayer: win,
     text: text,
     winRating: getRating(winRating, winGames),
-    newWinRating: getRating(winRating, winGames + 1),
+    newWinRating: getRating(newWinRating, winGames + 1),
     loseRating: getRating(loseRating, loseGames),
-    newLoseRating: getRating(loseRating, loseGames + 1),
+    newLoseRating: getRating(newLoseRating, loseGames + 1),
   }
 
   emitToRoom("endGame", data, roomId);
