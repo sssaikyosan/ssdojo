@@ -9,6 +9,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import { ServerState } from './serverstate.js'
+import { getRating } from './utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

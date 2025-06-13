@@ -1,6 +1,7 @@
 import { Player } from './player.js'
 import uuid from 'uuid-random';
 import { Board } from './board.js'
+import { getRating } from './utils.js';
 
 export class ServerState {
     timecount = 0;
