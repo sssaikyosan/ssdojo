@@ -14,6 +14,12 @@ export const KOMADAI_WIDTH = 0.27;
 export const KOMADAI_HEIGHT = 0.36;
 export const KOMADAI_PIECE_OFFSET = 0.8;
 
+export const KOMADAI_TIMER_SIZE = 0.09;
+export const KOMADAI_TIMER_LINEWITH = 0.8;
+export const KOMADAI_TIMER_OFFSET_X = 0.55;
+export const KOMADAI_TIMER_OFFSET_Y = 0.24;
+export const KOMADAI_TIMER_COLOR = 'rgba(31, 63, 221,0.5)';
+
 export const TIMER_RADIUS = 0.1;
 export const TIMER_LINEWIDTH = 0.1;
 export const TIMER_OFFSET_X = 0.2;

@@ -69,8 +69,7 @@ export class BoardUI extends UI {
     ctx.restore()
 
     ctx.save();
-
-    this.komadai.draw(ctx, scale, this.draggingPiece, this.teban);
+    this.komadai.draw(ctx, scale, this.draggingPiece, this.teban, this.board.komadaipTime);
     ctx.restore();
 
     ctx.save();
@@ -311,6 +310,8 @@ export class BoardUI extends UI {
       return false;
     }
 
+    if (this.draggingPiece.x < 0) return;
+
     for (const move of PIECE_MOVES[this.draggingPiece.type]) {
       let moveX = this.draggingPiece.x + move.dx * this.teban;
       let moveY = this.draggingPiece.y + move.dy * this.teban;
@@ -324,8 +325,5 @@ export class BoardUI extends UI {
         moveY += move.dy * this.teban;
       }
     }
-
-
-
   }
 }

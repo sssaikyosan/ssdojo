@@ -1,4 +1,4 @@
-import { CELL_SIZE, KOMADAI_WIDTH, KOMADAI_HEIGHT, BOARD_SIZE, KOMADAI_OFFSET_RATIO, BOARD_COLOR, LINE_COLOR } from "./const.js";
+import { CELL_SIZE, KOMADAI_WIDTH, KOMADAI_HEIGHT, BOARD_SIZE, KOMADAI_OFFSET_RATIO, BOARD_COLOR, LINE_COLOR, KOMADAI_TIMER_SIZE, KOMADAI_TIMER_LINEWITH, MOVETIME, KOMADAI_TIMER_COLOR, KOMADAI_TIMER_OFFSET_X, KOMADAI_TIMER_OFFSET_Y } from "./const.js";
 import { ctx, pieceImages } from "./main.js";
 import { drawTextWithDoubleOutline } from "./utils.js";
 
@@ -15,15 +15,15 @@ export class KomadaiUI {
     ['silver', 'gold', 'bishop'],
     ['king', 'king2', null]];
 
-  draw(ctx, scale, draggingPiece, viewteban) {
+  draw(ctx, scale, draggingPiece, viewteban, komadaipTime) {
     this.width = KOMADAI_WIDTH * scale;
     this.height = KOMADAI_HEIGHT * scale;
-    this.drawKomadai(ctx, scale, 'sente', draggingPiece, viewteban);
-    this.drawKomadai(ctx, scale, 'gote', draggingPiece, viewteban);
+    this.drawKomadai(ctx, scale, 'sente', draggingPiece, viewteban, komadaipTime);
+    this.drawKomadai(ctx, scale, 'gote', draggingPiece, viewteban, komadaipTime);
   }
 
 
-  drawKomadai(ctx, scale, teban, draggingPiece, viewteban) {
+  drawKomadai(ctx, scale, teban, draggingPiece, viewteban, komadaipTime) {
     const x = BOARD_SIZE * CELL_SIZE * scale / 2 + CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
     const y = BOARD_SIZE * CELL_SIZE * scale / 2 - KOMADAI_HEIGHT * scale;
     const myteban = viewteban === 1 ? 'sente' : 'gote';
@@ -33,6 +33,8 @@ export class KomadaiUI {
     ctx.strokeStyle = LINE_COLOR;
     ctx.fillRect(x, y, this.width, this.height);
     ctx.strokeRect(x, y, this.width, this.height);
+    const ptimeDiff = performance.now() - komadaipTime[teban];
+    this.drawKomadaiTimer(ctx, scale, ptimeDiff);
     this.drawKomadaiPieces(x, y, scale, this.board.komadaiPieces[teban], draggingPiece, teban, viewteban);
     ctx.restore();
   }
@@ -79,5 +81,23 @@ export class KomadaiUI {
         }
       }
     }
+  }
+
+  drawKomadaiTimer(ctx, scale, ptimeDiff) {
+    console.log(ptimeDiff);
+    if (ptimeDiff >= MOVETIME) return;
+    const radius = Math.max(0, KOMADAI_TIMER_SIZE * scale);
+    const lineWidth = KOMADAI_TIMER_SIZE * KOMADAI_TIMER_LINEWITH * scale;
+    const progress = ptimeDiff / MOVETIME;
+    // タイマーの進捗（青い円弧）
+    ctx.beginPath();
+    ctx.arc(
+      KOMADAI_TIMER_OFFSET_X * scale,
+      KOMADAI_TIMER_OFFSET_Y * scale,
+      radius, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * progress, false
+    );
+    ctx.strokeStyle = KOMADAI_TIMER_COLOR;
+    ctx.lineWidth = lineWidth;
+    ctx.stroke();
   }
 }
