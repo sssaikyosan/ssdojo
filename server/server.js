@@ -14,7 +14,7 @@ import { getDisplayRating, calRating } from './utils.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const RATING_FILE = path.join(__dirname, 'ratings.json');
+const RATING_FILE = path.join(__dirname, '../Data/ratings.json');
 
 
 const app = express();
