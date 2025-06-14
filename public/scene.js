@@ -1,4 +1,4 @@
-import { canvas, gameManager, playerName, scene, serverStatus, setPlayerName, setScene, socket, userId } from "./main.js";
+import { canvas, gameManager, playerName, scene, serverStatus, setPlayerName, setScene, setStatus, socket, userId } from "./main.js";
 import { Background } from "./ui.js";
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
@@ -59,6 +59,7 @@ export class Scene {
 
 
 const nameInputOverlay = document.getElementById("nameInputOverlay");
+const statusOverlay = document.getElementById("statusOverlay");
 
 const nameInput = /** @type {HTMLInputElement} */ (document.getElementById("nameInput"));
 
@@ -189,11 +190,6 @@ export function createTitleScene() {
     titleScene.add(loading);
   }
 
-  function handleBack(nameInputOverlay, cpulevelOverlay) {
-    nameInputOverlay.style.display = "block";
-    cpulevelOverlay.style.display = "none";
-  }
-
   nameInput.addEventListener("input", () => { limitInputLength(nameInput); });
   submitNameButton.addEventListener("click", () => { handleNameSubmit(nameInputOverlay, nameInput); });
 
@@ -234,7 +230,7 @@ export function createPlayScene(playerName, opponentName, teban, roomId, servert
   let playerRatingUI = new TextUI({
     text: () => {
       // main.jsで計算された表示用レーティングを使用
-      return `Rating: ${roundRating}`;
+      return `レート: ${roundRating}`;
     },
     x: -0.42,
     y: 0.44, // プレイヤー名の下に表示するためにy座標を調整
@@ -259,7 +255,7 @@ export function createPlayScene(playerName, opponentName, teban, roomId, servert
   let opponentRatingUI = new TextUI({
     text: () => {
       // main.jsで計算された表示用レーティングを使用
-      return `Rating: ${opponentRoundRating}`;
+      return `レート: ${opponentRoundRating}`;
     },
     x: 0.42,
     y: -0.44, // プレイヤー名の下に表示するためにy座標を調整
@@ -269,6 +265,7 @@ export function createPlayScene(playerName, opponentName, teban, roomId, servert
     position: 'left'
   })
 
+  statusOverlay.style.display = "none";
   playScene.add(gameManager.boardUI);
   playScene.add(playerNameUI);
   playScene.add(playerRatingUI); // レーティング表示UIを追加
@@ -281,6 +278,7 @@ export function createPlayScene(playerName, opponentName, teban, roomId, servert
 
 export function backToTitle() {
   resultOverlay.style.display = "none";
+  statusOverlay.style.display = "block";
   setScene(createTitleScene());
 }
 
@@ -289,12 +287,19 @@ export function endGame(data) {
   if (gameManager.teban === 0) {
     changeRating.textContent = "レート変動 なし(観戦)";
   } else if (data.winPlayer === gameManager.teban) {
-    changeRating.textContent = "レート変動 " + Math.round(data.winRating) + " → " + Math.round(data.newWinRating);
+    const oldrate = Math.round(data.winRating);
+    const newrate = Math.round(data.newWinRating);
+    changeRating.textContent = "レート変動 " + oldrate + " → " + newrate;
     scene.add(winText);
+    setStatus(newrate, data.winGames);
   } else {
-    changeRating.textContent = "レート変動 " + Math.round(data.loseRating) + " → " + Math.round(data.newLoseRating);
+    const oldrate = Math.round(data.loseRating);
+    const newrate = Math.round(data.newLoseRating);
+    changeRating.textContent = "レート変動 " + oldrate + " → " + newrate;
     scene.add(loseText);
+    setStatus(newrate, data.loseGames);
   }
+
   resultOverlay.style.display = "block";
   toTitleButton.addEventListener("click", () => { backToTitle(); });
   gameManager.resetRoom();

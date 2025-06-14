@@ -9,7 +9,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import { ServerState } from './serverstate.js'
-import { getRating } from './utils.js';
+import { getDisplayRating, calRating } from './utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,10 +61,11 @@ ioSetup();
 //切断による勝利通知
 function disconnectWin(roomId, losePlayer) {
   if (serverState.rooms[roomId].sente === losePlayer) {
-    emitToRoom("endGame", { winPlayer: -1, text: "disconnected" }, roomId);
-  }
-  if (serverState.rooms[roomId].gote === losePlayer) {
-    emitToRoom("endGame", { winPlayer: 1, text: "disconnected" }, roomId);
+    gameFinished(roomId, -1, "disconnected")
+  } else if (serverState.rooms[roomId].gote === losePlayer) {
+    gameFinished(roomId, 1, "disconnected")
+  } else {
+    console.log("losePlayer", losePlayer, "is not player");
   }
 }
 
@@ -81,61 +82,43 @@ function gameFinished(roomId, win, text) {
   const winPlayerId = win === 1 ? serverState.players[serverState.rooms[roomId].sente].userId : serverState.players[serverState.rooms[roomId].gote].userId;
   const losePlayerId = win === 1 ? serverState.players[serverState.rooms[roomId].gote].userId : serverState.players[serverState.rooms[roomId].sente].userId;
 
-  let winRating = -9999;
-  let loseRating = -9999;
-  let newWinRating = -9999;
-  let newLoseRating = -9999;
-  let winGames = -1;
-  let loseGames = -1;
+  if (winPlayerId && losePlayerId && serverState.ratings[winPlayerId] && serverState.ratings[losePlayerId]) {
+    const winEloRating = serverState.ratings[winPlayerId].rating;
+    const loseEloRating = serverState.ratings[losePlayerId].rating;
 
-  if (winPlayerId !== undefined && losePlayerId !== undefined && serverState.ratings[winPlayerId] && serverState.ratings[losePlayerId]) {
-    winRating = serverState.ratings[winPlayerId].rating;
-    loseRating = serverState.ratings[losePlayerId].rating;
+    const winGames = serverState.ratings[winPlayerId].games;
+    const loseGames = serverState.ratings[losePlayerId].games;
 
-    // イロレーティング計算
-    let winkFactor = 20;
-    let losekFactor = 20;
-    winGames = serverState.ratings[winPlayerId].games;
-    loseGames = serverState.ratings[losePlayerId].games;
-    if (winGames < 100) winkFactor = 20 + (2 * (100 - winGames) / 5);
-    if (loseGames < 100) losekFactor = 20 + (2 * (100 - loseGames) / 5);
+    const rateData = calRating(winEloRating, winGames, loseEloRating, loseGames);
 
-    const expectedWin = 1 / (1 + Math.pow(10, (loseRating - winRating) / 400));
-    const expectedLose = 1 / (1 + Math.pow(10, (winRating - loseRating) / 400));
+    serverState.ratings[winPlayerId].rating = rateData.newWinRating;
+    serverState.ratings[losePlayerId].rating = rateData.newLoseRating;
 
-    newWinRating = winRating + winkFactor * (1 - expectedWin);
-    newLoseRating = loseRating + losekFactor * (0 - expectedLose);
+    saveRatings(); // レーティングを保存
+    console.log(`レーティング更新: ${winPlayerId}: ${serverState.ratings[winPlayerId].rating} (${winEloRating}), ${losePlayerId}: ${serverState.ratings[losePlayerId].rating} (${loseEloRating})`);
 
-    serverState.ratings[winPlayerId].rating = newWinRating;
-    serverState.ratings[losePlayerId].rating = newLoseRating;
-
-    // 対局数をインクリメント
-    if (!serverState.ratings[winPlayerId].games) serverState.ratings[winPlayerId].games = 0;
-    if (!serverState.ratings[losePlayerId].games) serverState.ratings[losePlayerId].games = 0;
     serverState.ratings[winPlayerId].games++;
     serverState.ratings[losePlayerId].games++;
 
-    saveRatings(); // レーティングを保存
-    console.log(`レーティング更新: ${winPlayerId}: ${serverState.ratings[winPlayerId].rating} (${winRating}), ${losePlayerId}: ${serverState.ratings[losePlayerId].rating} (${loseRating})`);
+    const data = {
+      winPlayer: win,
+      text: text,
+      winRating: getDisplayRating(winEloRating, winGames),
+      newWinRating: getDisplayRating(rateData.newWinRating, winGames),
+      winGames: serverState.ratings[winPlayerId].games,
+      loseRating: getDisplayRating(loseEloRating, loseGames),
+      newLoseRating: getDisplayRating(rateData.newLoseRating, loseGames),
+      loseGames: serverState.ratings[losePlayerId].games
+    }
 
-    // クライアントに更新されたレーティングと対局数を通知
-    io.to(serverState.players[serverState.rooms[roomId].sente].socket.id).emit('receiveRating', { userId: winPlayerId, rating: serverState.ratings[winPlayerId].rating, games: serverState.ratings[winPlayerId].games });
-    io.to(serverState.players[serverState.rooms[roomId].gote].socket.id).emit('receiveRating', { userId: losePlayerId, rating: serverState.ratings[losePlayerId].rating, games: serverState.ratings[losePlayerId].games });
 
+
+    emitToRoom("endGame", data, roomId);
   } else {
     console.error(`レーティング情報が見つかりませんでした。Win Player ID: ${winPlayerId}, Lose Player ID: ${losePlayerId}`);
   }
 
-  const data = {
-    winPlayer: win,
-    text: text,
-    winRating: getRating(winRating, winGames),
-    newWinRating: getRating(newWinRating, winGames + 1),
-    loseRating: getRating(loseRating, loseGames),
-    newLoseRating: getRating(newLoseRating, loseGames + 1),
-  }
 
-  emitToRoom("endGame", data, roomId);
   serverState.deleteRoom(roomId);
 }
 
@@ -195,8 +178,9 @@ function ioSetup() {
         serverState.ratings[data.userId] = { rating: 1500, games: 0, lastLogin: new Date() }; // 初期レーティングを1500に設定し、対局数を0に
         saveRatings(); // 新しいユーザーのレーティングを保存
       }
+      const displayRating = getDisplayRating(serverState.ratings[data.userId].rating, serverState.ratings[data.userId].games)
       // クライアントにレーティングと対局数を返す
-      socket.emit('receiveRating', { userId: data.userId, rating: serverState.ratings[data.userId].rating, games: serverState.ratings[data.userId].games });
+      socket.emit('receiveRating', { userId: data.userId, rating: displayRating, games: serverState.ratings[data.userId].games });
     });
 
     // プレイヤーがマッチングを要求
@@ -206,6 +190,7 @@ function ioSetup() {
 
     // 駒の移動を転送
     socket.on("movePiece", (data) => {
+      if (!serverState.rooms[data.roomId]) return
       const servertime = performance.now();
       let validPlayer = false;
       let result = null;

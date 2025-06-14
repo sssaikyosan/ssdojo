@@ -1,7 +1,7 @@
 import { Player } from './player.js'
 import uuid from 'uuid-random';
 import { Board } from './board.js'
-import { getRating } from './utils.js';
+import { getDisplayRating } from './utils.js';
 
 export class ServerState {
     timecount = 0;
@@ -56,8 +56,8 @@ export class ServerState {
                 const rate1 = this.ratings[this.players[player1].userId];
                 const rate2 = this.ratings[this.players[player2].userId];
 
-                const player1rating = getRating(rate1.rating, rate1.games);
-                const player2rating = getRating(rate2.rating, rate2.games);
+                const player1rating = getDisplayRating(rate1.rating, rate1.games);
+                const player2rating = getDisplayRating(rate2.rating, rate2.games);
 
                 this.players[player1].goToPlay(roomId);
                 this.io.to(this.players[player1].socket.id).emit("matchFound", {

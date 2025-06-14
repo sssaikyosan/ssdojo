@@ -123,6 +123,25 @@ export function removeCharFromArray(arr, charToRemove) {
   return arr.filter(char => char !== charToRemove);
 }
 
-export function getRating(elorate, games) {
+export function getDisplayRating(elorate, games) {
   return elorate - (100 - games) * 5;
+}
+
+export function calRating(winEloRating, winGames, loseEloRating, loseGames) {
+  let winkFactor = 20;
+  let losekFactor = 20;
+
+  if (winGames < 100) winkFactor = 20 + (2 * (100 - winGames) / 5);
+  if (loseGames < 100) losekFactor = 20 + (2 * (100 - loseGames) / 5);
+
+  const expectedWin = 1 / (1 + Math.pow(10, (loseEloRating - winEloRating) / 400));
+  const expectedLose = 1 / (1 + Math.pow(10, (winEloRating - loseEloRating) / 400));
+
+  const newWinRating = winEloRating + winkFactor * (1 - expectedWin);
+  const newLoseRating = loseEloRating + losekFactor * (0 - expectedLose);
+
+  return {
+    newWinRating: newWinRating,
+    newLoseRating: newLoseRating
+  }
 }

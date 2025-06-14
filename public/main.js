@@ -14,14 +14,15 @@ export let scene = null;
 /**@type {Board} */
 export let board = new Board();
 export let playerName = "";
-export let rating = 0;
 export let userId = null;
 export let serverStatus = { online: 0, roomCount: 0 };
+
+export let playerRatingElement = null;
+export let gamesPlayedElement = null;
 /**@type {Keyboard} */
 export let keyboard = null;
 
 export let gameManager = null;
-
 
 // ユニークなIDを生成する関数
 function generateUniqueId() {
@@ -40,11 +41,23 @@ export function setPlayerName(name) {
   playerName = name;
 }
 
+export function setStatus(rating, games) {
+  if (playerRatingElement) {
+    playerRatingElement.textContent = `レート: ${Math.round(rating)}`;
+  }
+  if (gamesPlayedElement) {
+    gamesPlayedElement.textContent = `試合数: ${games}`;
+  }
+}
+
 // 初期化関数
 function init() {
   // キャンバスの初期化
   canvas = document.getElementById('shogiCanvas');
   //@ts-ignore
+  // HTML要素の取得
+  playerRatingElement = document.getElementById('playerRating');
+  gamesPlayedElement = document.getElementById('gamesPlayedText');
   ctx = canvas.getContext('2d');
   keyboard = new Keyboard();
 
@@ -119,13 +132,10 @@ function setupSocket() {
   socket.on('serverStatus', (data) => {
     serverStatus = data;
   })
-
   // レーティングを受信
   socket.on('receiveRating', (data) => {
-    // サーバーから受け取った内部レーティングを保持
-    rating = data.rating;
+    setStatus(data.rating, data.games);
   });
-
 
   // マッチングが成立したときの処理
   socket.on('matchFound', (data) => {
