@@ -1,6 +1,6 @@
 import { CELL_SIZE, KOMADAI_WIDTH, KOMADAI_HEIGHT, BOARD_SIZE, KOMADAI_OFFSET_RATIO, BOARD_COLOR, LINE_COLOR, KOMADAI_TIMER_SIZE, KOMADAI_TIMER_LINEWITH, MOVETIME, KOMADAI_TIMER_COLOR, KOMADAI_TIMER_OFFSET_X, KOMADAI_TIMER_OFFSET_Y } from "./const.js";
 import { ctx, pieceImages } from "./main.js";
-import { drawTextWithDoubleOutline } from "./utils.js";
+import { drawText, drawTextWithDoubleOutline } from "./utils.js";
 
 export class KomadaiUI {
   cellSize = CELL_SIZE;
@@ -33,13 +33,15 @@ export class KomadaiUI {
     ctx.strokeStyle = LINE_COLOR;
     ctx.fillRect(x, y, this.width, this.height);
     ctx.strokeRect(x, y, this.width, this.height);
+
+    if (myteban === teban) this.drawKeyText(ctx, scale, x, y);
     const ptimeDiff = performance.now() - komadaipTime[teban];
     this.drawKomadaiTimer(ctx, scale, ptimeDiff);
-    this.drawKomadaiPieces(x, y, scale, this.board.komadaiPieces[teban], draggingPiece, teban, viewteban);
+    this.drawKomadaiPieces(x, y, scale, this.board.komadaiPieces[teban], draggingPiece, teban, myteban);
     ctx.restore();
   }
 
-  drawKomadaiPieces(x, y, scale, komadai, draggingPiece, teban, viewteban) {
+  drawKomadaiPieces(x, y, scale, komadai, draggingPiece, teban, myteban) {
     const komadaiOffsetX = x + CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
     const komadaiOffsetY = y + CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
     ctx.translate(komadaiOffsetX, komadaiOffsetY);
@@ -47,7 +49,7 @@ export class KomadaiUI {
       ctx.save();
       for (let j = 0; j < 3; j++) {
         if (this.types[i][j]) {
-          this.drawKomadaiPiece(this.types[i][j], komadai, scale, draggingPiece, teban, viewteban);
+          this.drawKomadaiPiece(this.types[i][j], komadai, scale, draggingPiece, teban, myteban);
           ctx.translate(CELL_SIZE * scale, 0);
         };
       }
@@ -57,12 +59,12 @@ export class KomadaiUI {
   }
 
   // 駒台の駒を描画
-  drawKomadaiPiece(type, komadai, scale, draggingPiece, teban, viewteban) {
+  drawKomadaiPiece(type, komadai, scale, draggingPiece, teban, myteban) {
     const img = pieceImages[type];
     const pieceSize = CELL_SIZE * 0.8 * scale;
     const padding = CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
     let drag = 0;
-    if (draggingPiece !== null && draggingPiece.x === -1 && draggingPiece.type === type && teban === viewteban) {
+    if (draggingPiece !== null && draggingPiece.x === -1 && draggingPiece.type === type && teban === myteban) {
       drag = 1;
     };
     for (let i = 0; i < (komadai[type] - drag); i++) {
@@ -98,5 +100,19 @@ export class KomadaiUI {
     ctx.strokeStyle = KOMADAI_TIMER_COLOR;
     ctx.lineWidth = lineWidth;
     ctx.stroke();
+  }
+
+  drawKeyText(ctx, scale, x, y) {
+    const textColor = "rgb(227, 191, 91)"
+    const offsetX = x + CELL_SIZE * scale * 0.5;
+    const offsetY = y + CELL_SIZE * scale * 0.5;
+    const textCell = CELL_SIZE * scale;
+    drawText(ctx, "Space", offsetX + textCell * 0.5, offsetY, textCell * 0.5, [textColor], 'middle', 'center');
+    drawText(ctx, "Q", offsetX, y + textCell * 1.5, CELL_SIZE * scale * 0.5, [textColor], 'middle', 'center');
+    drawText(ctx, "W", offsetX + textCell, y + textCell * 1.5, CELL_SIZE * scale * 0.5, [textColor], 'middle', 'center');
+    drawText(ctx, "E", offsetX + textCell * 2, y + textCell * 1.5, CELL_SIZE * scale * 0.5, [textColor], 'middle', 'center');
+    drawText(ctx, "A", offsetX, y + textCell * 2.5, CELL_SIZE * scale * 0.5, [textColor], 'middle', 'center');
+    drawText(ctx, "S", offsetX + textCell, y + textCell * 2.5, CELL_SIZE * scale * 0.5, [textColor], 'middle', 'center');
+    drawText(ctx, "D", offsetX + textCell * 2, y + textCell * 2.5, CELL_SIZE * scale * 0.5, [textColor], 'middle', 'center');
   }
 }
