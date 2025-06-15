@@ -60,6 +60,7 @@ function init() {
   gamesPlayedElement = document.getElementById('gamesPlayedText');
   ctx = canvas.getContext('2d');
   keyboard = new Keyboard();
+  keyboard.init(canvas);
 
   // ユーザーIDの読み込みまたは生成
   userId = localStorage.getItem('shogiUserId');
@@ -120,8 +121,6 @@ function addEventListeners() {
   canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
   });
-
-  keyboard = new Keyboard();
 }
 
 function setupSocket() {

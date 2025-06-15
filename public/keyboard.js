@@ -22,11 +22,12 @@ export class Keyboard {
   }
 
   onKeyDown(e) {
+    console.log(e);
     const piecetype = this.keys[e.key];
     if (piecetype) {
       const pos = gameManager.boardUI.hoveredCell;
       if (!pos) return false;
-      if (!gameManager.board.canPut(pos.x, pos.y, piecetype, gameManager.teban)) return false;
+      if (!gameManager.board.canPutPlace(pos.x, pos.y, piecetype, gameManager.teban)) return false;
       sendPutPiece(pos.x, pos.y, piecetype);
       return true;
     };

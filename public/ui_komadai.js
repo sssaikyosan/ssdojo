@@ -84,7 +84,6 @@ export class KomadaiUI {
   }
 
   drawKomadaiTimer(ctx, scale, ptimeDiff) {
-    console.log(ptimeDiff);
     if (ptimeDiff >= MOVETIME) return;
     const radius = Math.max(0, KOMADAI_TIMER_SIZE * scale);
     const lineWidth = KOMADAI_TIMER_SIZE * KOMADAI_TIMER_LINEWITH * scale;

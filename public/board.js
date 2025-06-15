@@ -135,6 +135,13 @@ export class Board {
     return true;
   }
 
+  canPutPlace(x, y, type, teban) {
+    if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE || this.map[x][y]) return false;
+    if (this.isTopCell(x, y, type, teban)) return false;
+    if (this.isNihu(x, y, type, teban)) return false;
+    return true;
+  }
+
   //歩、香、桂は最上段（２段目）に移動できないためこの関数で判定
   isTopCell(x, y, type, teban) {
     if (type === 'pawn' || type === 'lance') {
