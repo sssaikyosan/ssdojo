@@ -36,7 +36,7 @@ export class KomadaiUI {
 
     if (myteban === teban) this.drawKeyText(ctx, scale, x, y);
     const ptimeDiff = performance.now() - komadaipTime[teban];
-    this.drawKomadaiTimer(ctx, scale, ptimeDiff);
+    // this.drawKomadaiTimer(ctx, scale, ptimeDiff);
     this.drawKomadaiPieces(x, y, scale, this.board.komadaiPieces[teban], draggingPiece, teban, myteban);
     ctx.restore();
   }

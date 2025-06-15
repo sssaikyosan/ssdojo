@@ -15,8 +15,8 @@ export class Board {
     sente: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 },
     gote: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 }
   };
-  komadaiServerTime = { sente: 0, gote: 0 };
-  komadaipTime = { sente: 0, gote: 0 };
+  // komadaiServerTime = { sente: 0, gote: 0 };
+  // komadaipTime = { sente: 0, gote: 0 };
   kifu = [];
 
   serverstarttime = 0;
@@ -27,8 +27,8 @@ export class Board {
   // 盤面の初期化
   init(servertime, time) {
     this.serverstarttime = servertime;
-    this.komadaiServerTime = { sente: servertime, gote: servertime };
-    this.komadaipTime = { sente: time, gote: time };
+    // this.komadaiServerTime = { sente: servertime, gote: servertime };
+    // this.komadaipTime = { sente: time, gote: time };
     this.starttime = time;
     this.time = time;
     this.currentMove = 0;
@@ -128,7 +128,7 @@ export class Board {
 
   //指定した位置に駒を打てるか判定
   canPut(x, y, type, teban, servertime) {
-    if (servertime - (teban === 1 ? this.komadaiServerTime.sente : this.komadaiServerTime.gote) < MOVETIME) return false;
+    // if (servertime - (teban === 1 ? this.komadaiServerTime.sente : this.komadaiServerTime.gote) < MOVETIME) return false;
     if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE || this.map[x][y]) return false;
     if (this.isTopCell(x, y, type, teban)) return false;
     if (this.isNihu(x, y, type, teban)) return false;
@@ -183,8 +183,8 @@ export class Board {
     this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type]--;
 
     this.map[nx][ny] = { type: type, teban: teban, lastmovetime: servertime, lastmoveptime: lmp };
-    this.komadaiServerTime[teban === 1 ? 'sente' : 'gote'] = servertime;
-    this.komadaipTime[teban === 1 ? 'sente' : 'gote'] = lmp;
+    // this.komadaiServerTime[teban === 1 ? 'sente' : 'gote'] = servertime;
+    // this.komadaipTime[teban === 1 ? 'sente' : 'gote'] = lmp;
     this.kifu.push({ x: -2 + teban, y: -2 + teban, nx: nx, ny: ny });
     return { res: true, capture: null };
   }
