@@ -69,7 +69,7 @@ export class BoardUI extends UI {
     ctx.restore()
 
     ctx.save();
-    this.komadai.draw(ctx, scale, this.draggingPiece, this.teban, this.board.komadaipTime);
+    this.komadai.draw(ctx, scale, this.draggingPiece, this.teban);
     ctx.restore();
 
     ctx.save();

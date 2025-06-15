@@ -15,15 +15,15 @@ export class KomadaiUI {
     ['silver', 'gold', 'bishop'],
     ['king', 'king2', null]];
 
-  draw(ctx, scale, draggingPiece, viewteban, komadaipTime) {
+  draw(ctx, scale, draggingPiece, viewteban) {
     this.width = KOMADAI_WIDTH * scale;
     this.height = KOMADAI_HEIGHT * scale;
-    this.drawKomadai(ctx, scale, 'sente', draggingPiece, viewteban, komadaipTime);
-    this.drawKomadai(ctx, scale, 'gote', draggingPiece, viewteban, komadaipTime);
+    this.drawKomadai(ctx, scale, 'sente', draggingPiece, viewteban);
+    this.drawKomadai(ctx, scale, 'gote', draggingPiece, viewteban);
   }
 
 
-  drawKomadai(ctx, scale, teban, draggingPiece, viewteban, komadaipTime) {
+  drawKomadai(ctx, scale, teban, draggingPiece, viewteban) {
     const x = BOARD_SIZE * CELL_SIZE * scale / 2 + CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
     const y = BOARD_SIZE * CELL_SIZE * scale / 2 - KOMADAI_HEIGHT * scale;
     const myteban = viewteban === 1 ? 'sente' : 'gote';
@@ -35,7 +35,7 @@ export class KomadaiUI {
     ctx.strokeRect(x, y, this.width, this.height);
 
     if (myteban === teban) this.drawKeyText(ctx, scale, x, y);
-    const ptimeDiff = performance.now() - komadaipTime[teban];
+    // const ptimeDiff = performance.now() - komadaipTime[teban];
     // this.drawKomadaiTimer(ctx, scale, ptimeDiff);
     this.drawKomadaiPieces(x, y, scale, this.board.komadaiPieces[teban], draggingPiece, teban, myteban);
     ctx.restore();
