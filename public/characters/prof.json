@@ -1,7 +1,7 @@
 {
   "characters": [
     {
-      "image": "0001_Rei.png",
+      "image": "0001_Rei",
       "name_jp": "緋月 零",
       "name_romanji": "Hizuki Rei",
       "profile": {
@@ -60,7 +60,7 @@
       "image_description_hint": "銀髪ショート、赤いメッシュ、金色の瞳、黒いチャイナ服風のミリタリージャケット、夜の街、ネオン"
     },
     {
-      "image": "00002_Karen.png",
+      "image": "00002_Karen",
       "name_jp": "天宮院 華恋",
       "name_romanji": "Amamiyain Karen",
       "profile": {
@@ -113,7 +113,7 @@
       "image_description_hint": "金髪縦ロール、緑色の瞳、赤い大きなリボン、白いフリルドレス、腕組み、豪華な洋室、ティーカップ"
     },
     {
-      "image": "00003_Mifuyu.png",
+      "image": "00003_Mifuyu",
       "name_jp": "月詠 深冬",
       "name_romanji": "Tsukiyomi Mifuyu",
       "profile": {
@@ -166,7 +166,7 @@
       "image_description_hint": "銀髪ロング、オッドアイ(赤と青)、猫耳フード付き黒ローブ、杖、カード、ミステリアスな森"
     },
     {
-      "image": "00004_Kureha.png",
+      "image": "00004_Kureha",
       "name_jp": "紅刃 椿",
       "name_romanji": "Kureha Tsubaki",
       "profile": {
@@ -219,7 +219,7 @@
       "image_description_hint": "黒髪ショート赤メッシュ、赤い瞳、露出度高めのパンクファッション、背中に刀、路地裏、ネオン"
     },
     {
-      "image": "00005_Setsuna.png",
+      "image": "00005_Setsuna",
       "name_jp": "柊 雪菜",
       "name_romanji": "Hiiragi Setsuna",
       "profile": {
@@ -272,7 +272,7 @@
       "image_description_hint": "銀髪ポニーテール、青い瞳、ゴーグル、作業着、メカ、ホログラム、SF風"
     },
     {
-      "image": "00006_Kirisaki.png",
+      "image": "00006_Kirisaki",
       "name_jp": "霧咲 透子",
       "name_romanji": "Kirisaki Touko",
       "profile": {
@@ -325,7 +325,7 @@
       "image_description_hint": "黒髪ショートボブ、グレーの瞳、眼鏡、黒いトレンチコート、白いシャツ、ネクタイ、懐中時計、夜の路地、図書館"
     },
     {
-      "image": "00007_Sylvie.png",
+      "image": "00007_Sylvie",
       "name_jp": "シルヴァン・月桂樹（げっけいじゅ）",
       "name_romanji": "Sylvain Gekkeiju",
       "profile": {
@@ -376,7 +376,7 @@
       "image_description_hint": "銀髪（やや緑がかった）の編み込みロング、緑色の瞳、エルフ耳、緑のケープ、弓と矢、森の中、木漏れ日"
     },
     {
-      "image": "00008_Red.png",
+      "image": "00008_Red",
       "name_jp": "スカーレット・“レッドストーム”・ドレイク",
       "name_romanji": "Scarlett \"Red Storm\" Drake",
       "profile": {
@@ -429,7 +429,7 @@
       "image_description_hint": "赤髪の編み込みロング、赤い瞳、眼帯、海賊の船長服、カットラス、海賊船の甲板、荒れた海"
     },
     {
-      "image": "00009_Hawk.png",
+      "image": "00009_Hawk",
       "name_jp": "シエラ・“ナイトホーク”・アームストロング",
       "name_romanji": "Sierra \"Nighthawk\" Armstrong",
       "profile": {
@@ -481,7 +481,7 @@
       "image_description_hint": "グレー系のショートヘア、青い瞳、ゴーグル、ヘッドセット、迷彩服、スナイパーライフル、都市の屋上、夕焼け"
     },
     {
-      "image": "00010_Shizuru.png",
+      "image": "00010_Shizuru",
       "name_jp": "神楽月 詩鶴（かぐらづき しづる）",
       "name_romanji": "Kagurazuki Shizuru",
       "profile": {
@@ -534,7 +534,7 @@
       "image_description_hint": "黒髪ロング、紫の瞳、白いリボン、巫女服（白衣に緋袴）、神社の境内、鳥居、木漏れ日"
     },
     {
-      "image": "00011_Kanade.png",
+      "image": "00011_Kanade",
       "name_jp": "音羽 奏（おとわ かなで）",
       "name_romanji": "Otowa Kanade",
       "profile": {
@@ -587,7 +587,7 @@
       "image_description_hint": "赤茶色のロングヘア、緑色の瞳、青いロングドレス、ヴァイオリン演奏、コンサートホール、スポットライト"
     },
     {
-      "image": "00012_Komugi.png",
+      "image": "00012_Komugi",
       "name_jp": "麦畑 こむぎ（むぎばたけ こむぎ）",
       "name_romanji": "Mugibatake Komugi",
       "profile": {
@@ -640,7 +640,7 @@
       "image_description_hint": "薄茶色のツインテール、青い瞳、チェックのリボン、エプロン、パンの入ったカゴ、パン屋の店内"
     },
     {
-      "image": "00013_Chris.png",
+      "image": "00013_Chris",
       "name_jp": "クリスタリア・フロストハート",
       "name_romanji": "Crystalia Frostheart",
       "profile": {
@@ -693,7 +693,7 @@
       "image_description_hint": "水色/銀色のロングヘア、青い瞳、白いファー付きのドレス、氷の結晶、氷の魔法、氷雪地帯"
     },
     {
-      "image": "00014_Lily.png",
+      "image": "00014_Lily",
       "name_jp": "リリアン・ドールハート",
       "name_romanji": "Lilian Dollheart",
       "profile": {
@@ -746,7 +746,7 @@
       "image_description_hint": "黒髪ロング（姫カット）、赤い瞳、ゴシックロリータドレス（紫と黒）、アンティークドールを抱える、薄暗いアンティークな部屋、蝋燭"
     },
     {
-      "image": "00015_Coco.png",
+      "image": "00015_Coco",
       "name_jp": "コレット・“スカイホッパー”・ギアウィンド",
       "name_romanji": "Colette \"Skyhopper\" Gearwind",
       "profile": {
@@ -799,7 +799,7 @@
       "image_description_hint": "赤銅色のショートヘア、緑色の瞳、ゴーグル、革のジャケット、配達物、スチームパンク風の都市、飛行機械"
     },
     {
-      "image": "00016_Minorin.png",
+      "image": "00016_Minorin",
       "name_jp": "豊穣 みのり（ほうじょう みのり）",
       "name_romanji": "Houjou Minori",
       "profile": {
@@ -852,7 +852,7 @@
       "image_description_hint": "茶髪おさげ、オレンジ色の瞳、麦わら帽子、チェックシャツにオーバーオール、野菜の入ったカゴ、麦畑、農家"
     },
     {
-      "image": "00017_Kochou.png",
+      "image": "00017_Kochou",
       "name_jp": "胡蝶（こちょう）",
       "name_romanji": "Kochou",
       "profile": {
@@ -905,7 +905,7 @@
       "image_description_hint": "黒髪の日本髪、赤い瞳、豪華な簪、黒地に金の模様が入った着物、扇子、煙管、和室、行灯"
     },
     {
-      "image": "00018_K.png",
+      "image": "00018_K",
       "name_jp": "コードネーム：ゼロ・ケルヴィン (本名不明)",
       "name_romanji": "Codename: Zero Kelvin (Real name unknown)",
       "profile": {
@@ -958,7 +958,7 @@
       "image_description_hint": "銀髪ショート（やや青みがかった）、青い瞳、片目にサイバーな眼帯、白いラボコート、黒いインナー、銃のような医療器具、サイバーパンクな機械に囲まれた部屋、ネオン"
     },
     {
-      "image": "00019_Astra.png",
+      "image": "00019_Astra",
       "name_jp": "アストラ・セレネフィカ",
       "name_romanji": "Astra Selenephica",
       "profile": {
@@ -1011,7 +1011,7 @@
       "image_description_hint": "青いロングヘア、青い瞳、フード付きのローブ、アストロラーベ、望遠鏡、天文台、星空の見える窓"
     },
     {
-      "image": "00020_Hina.png",
+      "image": "00020_Hina",
       "name_jp": "夏海 陽菜（なつみ ひな）",
       "name_romanji": "Natsumi Hina",
       "profile": {

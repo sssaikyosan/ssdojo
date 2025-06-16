@@ -1,5 +1,5 @@
-import { canvas, gameManager, playerName, scene, serverStatus, setPlayerName, setScene, setStatus, socket, userId } from "./main.js";
-import { Background } from "./ui.js";
+import { canvas, characterImages, gameManager, playerName, scene, selectedCharacterName, serverStatus, setPlayerName, setScene, setStatus, socket, userId } from "./main.js";
+import { Background, CharacterImageUI } from "./ui.js";
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
 
@@ -73,24 +73,26 @@ const toTitleButton = document.getElementById("toTitleButton");
 const title = new TextUI({
   text: () => "リアルタイム将棋",
   x: 0,
-  y: -0.25,
+  y: -0.3,
   size: 0.12,
   colors: ["#c2a34f", "#000000", "#ffffff"]
 });
 const onlineText = new TextUI({
-  text: () => `オンライン: ${serverStatus.online}人`,
+  text: () => `部屋数: ${serverStatus.roomCount}, オンライン: ${serverStatus.online}人`,
   x: 0,
-  y: 0.25,
+  y: 0.46,
   size: 0.035,
-  colors: ["#ffffff", "#00000000", "#00000000"]
+  colors: ["#ffffff", "#00000000", "#00000000"],
+  position: 'left'
 });
 
 const playingText = new TextUI({
-  text: () => `部屋数: ${serverStatus.roomCount}`,
-  x: 0,
-  y: 0.30,
+  text: () => ``,
+  x: 0.6,
+  y: 0.46,
   size: 0.035,
-  colors: ["#ffffff", "#00000000", "#00000000"]
+  colors: ["#ffffff", "#00000000", "#00000000"],
+  position: 'left'
 });
 
 //暗い背景
@@ -138,15 +140,23 @@ const matchingText = new TextUI({
   text: () => {
     return "マッチング中...";
   },
-  x: 0.0,
+  x: 0.3,
   y: 0.0,
   size: 0.05,
   colors: ["#ffffff", "#00000000", "#00000000"]
 });
 const loading = new LoadingUI({
-  x: 0.0,
+  x: 0.3,
   y: 0.1,
   radius: 0.05,
+});
+
+let titleCharacter = new CharacterImageUI({
+  image: "",
+  x: 0,
+  y: 0,
+  width: 0.66,
+  height: 0.66
 });
 
 //タイトルシーン
@@ -159,6 +169,8 @@ export function createTitleScene() {
     let currentText = nameInput.value;
     let newText = "";
     let currentLength = 0;
+
+
 
     for (let i = 0; i < currentText.length; i++) {
       const char = currentText.charAt(i);
@@ -190,19 +202,23 @@ export function createTitleScene() {
     titleScene.add(loading);
   }
 
+
+
   nameInput.addEventListener("input", () => { limitInputLength(nameInput); });
   submitNameButton.addEventListener("click", () => { handleNameSubmit(nameInputOverlay, nameInput); });
 
+  titleCharacter.image = selectedCharacterName;
   titleScene.add(title);
   titleScene.add(onlineText);
   titleScene.add(playingText);
+  titleScene.add(titleCharacter);
 
   const savedName = localStorage.getItem("playerName");
 
   if (savedName) {
     nameInput.value = savedName;
   }
-  nameInputOverlay.style.display = "block";
+  nameInputOverlay.style.display = "flex";
   return titleScene;
 }
 

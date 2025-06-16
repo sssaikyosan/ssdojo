@@ -1,3 +1,5 @@
+import { characterImages } from "./main.js";
+
 export class UI {
   globalX;
   globalY;
@@ -32,7 +34,7 @@ export class UI {
   }
 
   /**
-   * @param {CanvasRenderingContext2D} ctx 
+   * @param {CanvasRenderingContext2D} ctx
    */
   draw(ctx, scale) {
     // コンテキストの座標変換を保存
@@ -110,7 +112,7 @@ export class UI {
     return false;
   }
   /**
-   * @param {{x: number, y: number}} pos 
+   * @param {{x: number, y: number}} pos
    */
 
 }
@@ -125,5 +127,23 @@ export class Background extends UI {
   renderSelf(ctx, scale) {
     ctx.fillStyle = this.color;
     ctx.fillRect(-window.innerWidth * 127, -window.innerHeight * 127, window.innerWidth * 255, window.innerHeight * 255);
+  }
+}
+
+// キャラクター画像を表示するためのUIクラス
+export class CharacterImageUI extends UI { // export キーワードを追加
+  image; // Imageオブジェクト
+  constructor(params) {
+    super(params);
+    this.image = params.image;
+    this.width = params.width || this.image.width;
+    this.height = params.height || this.image.height;
+  }
+
+  renderSelf(ctx, scale) {
+    if (this.image) {
+      // 画像を中央揃えで描画
+      ctx.drawImage(characterImages[this.image], -0.8 * scale, 0.48 * scale - this.height * scale, this.width * scale, this.height * scale);
+    }
   }
 }

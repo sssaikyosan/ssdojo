@@ -31,40 +31,46 @@
     }
 
     .overlay {
+      padding: 15px 20px;
       background-color: #222222;
-      padding: 20px;
+      margin: 10px;
       border-radius: 10px;
+      gap: 10px;
       text-align: center;
     }
 
     #nameInput {
+      margin: 0px;
+      padding: 10px;
       flex: 1;
       pointer-events: auto;
       z-index: 1;
       background-color: #f0f0f0;
       color: #000000;
       border: none;
-      border-radius: 5px;
-      padding: 10px;
-      font-size: 16px;
-      margin-bottom: 0;
+      border-radius: 10px;
+
+      font-size: 32px;
+      white-space: nowrap;
     }
 
     .blueButton {
-      padding: 10px 20px;
-      font-size: 16px;
+      margin: 0px;
+      padding: 15px 20px;
+      font-size: 32px;
       background-color: #3241c9;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 10px;
       cursor: pointer;
       white-space: nowrap;
       flex-shrink: 0;
-      /* ボタンのサイズが縮まないように */
     }
 
     .whiteText {
-      font-size: 16px;
+      margin: 0px;
+      padding: 0px 0px;
+      font-size: 24px;
       color: white;
       border-top: -6;
     }
@@ -74,7 +80,7 @@
 <body>
   <canvas id="shogiCanvas" tabindex="0"></canvas>
   <div id="nameInputOverlay" class="overlay"
-    style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    style="display: none; position: absolute; top: 85%; left: 75%; transform: translate(-50%, -50%);">
     <input type="text" id="nameInput" placeholder="名前" maxlength="20">
     <button id="submitNameButton" class="blueButton">オンライン対戦</button>
   </div>
@@ -84,7 +90,7 @@
     <button id="toTitleButton" class="blueButton">タイトルに戻る</button>
   </div>
   <div id="statusOverlay" class="overlay"
-    style="display: block; position: absolute; bottom: 30px; left: 30px; text-align: left;">
+    style="display: block;  margin:10px; position: absolute; bottom: 30px; left: 30px; text-align: left;">
     <p id="gamesPlayedText" class="whiteText">試合数: -</p>
     <p id="playerRating" class="whiteText">レート: -</p>
   </div>

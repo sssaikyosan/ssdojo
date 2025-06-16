@@ -5,12 +5,13 @@ import { createPlayScene, createTitleScene, endGame, Scene } from "./scene.js";
 import { playSound } from "./utils.js";
 
 export let pieceImages = {};
+export let characterImages = {}; // キャラクター画像用オブジェクトを追加
 export let canvas = null;
 /** @type {CanvasRenderingContext2D} */
 export let ctx = null;
 export let emitter = null;
 export let socket = null;
-export let scene = null;
+export let scene = null; // scene変数はmain.jsで管理
 /**@type {Board} */
 export let board = new Board();
 export let playerName = "";
@@ -24,6 +25,16 @@ export let keyboard = null;
 
 export let gameManager = null;
 
+// キャラクター画像ファイル名のリスト (prof.jsonから抽出)
+const characterFiles = [
+  "00001_Rei", "00002_Karen", "00003_Mifuyu", "00004_Kureha", "00005_Setsuna",
+  "00006_Kirisaki", "00007_Sylvie", "00008_Red", "00009_Hawk", "00010_Shizuru",
+  "00011_Kanade", "00012_Komugi", "00013_Chris", "00014_Lily", "00015_Coco",
+  "00016_Minorin", "00017_Kochou", "00018_K", "00019_Astra", "00020_Hina"
+];
+
+export let selectedCharacterName = null; // 選択されたキャラクターの名前
+
 // ユニークなIDを生成する関数
 function generateUniqueId() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -32,6 +43,22 @@ function generateUniqueId() {
     return v.toString(16);
   });
 }
+
+// ストレージからキャラクターを読み込む、またはランダムに選択する関数
+function loadOrSelectCharacter() {
+  const storedCharacter = localStorage.getItem('selectedCharacter');
+  if (storedCharacter && characterFiles.some(file => file === storedCharacter)) {
+    selectedCharacterName = storedCharacter;
+    console.log(`Loaded character from storage: ${selectedCharacterName}`);
+  } else {
+    // ストレージにない場合、または無効な場合はランダムに選択
+    const randomIndex = Math.floor(Math.random() * characterFiles.length);
+    selectedCharacterName = characterFiles[randomIndex];
+    localStorage.setItem('selectedCharacter', selectedCharacterName);
+    console.log(`Randomly selected character: ${selectedCharacterName}`);
+  }
+}
+
 
 export function setScene(s) {
   scene = s;
@@ -70,6 +97,9 @@ function init() {
   }
   console.log(`User ID: ${userId}`); // 確認用
 
+  // キャラクターの読み込みまたは選択
+  loadOrSelectCharacter();
+
   // Socket.IOの初期化
   const socketUrl = window.location.hostname === 'localhost' ?
     'http://localhost:5000' :
@@ -85,8 +115,7 @@ function init() {
   resizeCanvas();
 
   gameManager = new GameManager(socket);
-  addEventListeners();
-  scene = createTitleScene();
+  scene = createTitleScene(); // タイトルシーン作成時に選択されたキャラクターを使用
   roop();
 }
 
@@ -101,6 +130,10 @@ function addEventListeners() {
   // ウィンドウサイズ変更時のリスナーを追加
   window.addEventListener('resize', () => {
     resizeCanvas();
+    // シーンのリサイズ処理を呼び出す
+    if (scene && scene.resize) {
+      scene.resize({ scale: 1 }); // 仮のスケール値
+    }
   });
 
   canvas.addEventListener('mousedown', (event) => {
@@ -167,8 +200,8 @@ function setupSocket() {
 const pieceTypes = ['pawn', 'lance', 'knight', 'silver', 'gold', 'king', 'king2', 'rook', 'bishop',
   'prom_pawn', 'prom_lance', 'prom_knight', 'prom_silver', 'horse', 'dragon'];
 
-// 画像読み込みのPromiseを作成
-const imagePromises = pieceTypes.map(type =>
+// 駒画像読み込みのPromiseを作成
+const pieceImagePromises = pieceTypes.map(type =>
   new Promise((resolve, reject) => {
     const img = new Image();
     img.src = `/pieces/${type}.png`;
@@ -183,6 +216,24 @@ const imagePromises = pieceTypes.map(type =>
   })
 );
 
+// キャラクター画像読み込みのPromiseを作成
+const characterImagePromises = characterFiles.map(file =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = `/characters/${file}.png`;
+    img.onload = () => {
+      const name = file; // 拡張子を除いたファイル名をキーとする
+      characterImages[name] = img;
+      resolve();
+    };
+    img.onerror = () => {
+      console.error(`Failed to load image: ${file}`);
+      reject(new Error(`Failed to load image: ${file}`));
+    };
+  })
+);
+
+
 function roop() {
   if (gameManager) {
     gameManager.update();
@@ -191,4 +242,13 @@ function roop() {
   requestAnimationFrame(roop);
 }
 
-init();
+// 全ての画像読み込みが完了したら初期化処理を実行
+Promise.all([...pieceImagePromises, ...characterImagePromises])
+  .then(() => {
+    console.log("全ての画像が読み込まれました。");
+    init(); // 画像読み込み完了後にinitを呼び出す
+  })
+  .catch(error => {
+    console.error("画像の読み込み中にエラーが発生しました:", error);
+    // エラーハンドリング: 例としてエラーメッセージを表示するなど
+  });

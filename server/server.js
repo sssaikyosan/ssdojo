@@ -94,11 +94,13 @@ function gameFinished(roomId, win, text) {
     serverState.ratings[winPlayerId].rating = rateData.newWinRating;
     serverState.ratings[losePlayerId].rating = rateData.newLoseRating;
 
-    saveRatings(); // レーティングを保存
+
     console.log(`レーティング更新: ${winPlayerId}: ${serverState.ratings[winPlayerId].rating} (${winEloRating}), ${losePlayerId}: ${serverState.ratings[losePlayerId].rating} (${loseEloRating})`);
 
     serverState.ratings[winPlayerId].games++;
     serverState.ratings[losePlayerId].games++;
+
+    saveRatings(); // レーティングを保存
 
     const data = {
       winPlayer: win,
