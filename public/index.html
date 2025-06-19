@@ -31,7 +31,7 @@
     }
 
     .overlay {
-      padding: 15px 20px;
+      padding: 10px 10px;
       background-color: #222222;
       margin: 10px;
       border-radius: 10px;
@@ -40,7 +40,7 @@
     }
 
     #nameInput {
-      margin: 0px;
+      margin: 5px 5px 5px 10px;
       padding: 10px;
       flex: 1;
       pointer-events: auto;
@@ -55,7 +55,7 @@
     }
 
     .blueButton {
-      margin: 0px;
+      margin: 5px 10px 5px 5px;
       padding: 15px 20px;
       font-size: 32px;
       background-color: #3241c9;
@@ -67,8 +67,21 @@
       flex-shrink: 0;
     }
 
-    .whiteText {
+    .charaButton {
       margin: 0px;
+      padding: 10px 15px;
+      font-size: 24px;
+      background-color: #3241c9;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .whiteText {
+      margin: 0px 10px;
       padding: 0px 0px;
       font-size: 24px;
       color: white;
@@ -85,8 +98,8 @@
     <button id="submitNameButton" class="blueButton">オンライン対戦</button>
   </div>
   <div id="charaSelectOverlay" class="overlay"
-    style="display: none; position: absolute; top: 88%; left: 40%; transform: translate(-100%, -50%);">
-    <button id="charaSelectButton" class="blueButton">キャラ変更</button>
+    style="display: none; position: absolute; bottom: 120px;  left: 20px; transform: translate(0%, 0%);">
+    <button id="charaSelectButton" class="charaButton">キャラ変更</button>
   </div>
   <div id="resultOverlay" class="overlay"
     style="display: none; position: absolute; top: 70%; left: 50%; transform: translate(-50%, -50%);">
@@ -94,7 +107,7 @@
     <button id="toTitleButton" class="blueButton">タイトルに戻る</button>
   </div>
   <div id="statusOverlay" class="overlay"
-    style="display: block;  margin:10px; position: absolute; bottom: 30px; left: 30px; text-align: left;">
+    style="display: block;  margin:10px; position: absolute; bottom: 20px; left: 20px; text-align: left;">
     <p id="gamesPlayedText" class="whiteText">試合数: -</p>
     <p id="playerRating" class="whiteText">レート: -</p>
   </div>
