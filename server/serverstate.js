@@ -59,12 +59,16 @@ export class ServerState {
                 const player1rating = getDisplayRating(rate1.rating, rate1.games);
                 const player2rating = getDisplayRating(rate2.rating, rate2.games);
 
+                console.log("matched", this.players[player1].characterName);
+                console.log("matched", this.players[player2].characterName);
+
                 this.players[player1].goToPlay(roomId);
                 this.io.to(this.players[player1].socket.id).emit("matchFound", {
                     roomId: roomId,
                     teban: 1,
                     servertime: time,
                     name: this.players[player2].name,
+                    characterName: this.players[player2].characterName,
                     rating: player1rating,
                     opponentRating: player2rating
                 });
@@ -75,6 +79,7 @@ export class ServerState {
                     teban: -1,
                     servertime: time,
                     name: this.players[player1].name,
+                    characterName: this.players[player1].characterName,
                     rating: player2rating,
                     opponentRating: player1rating
                 });

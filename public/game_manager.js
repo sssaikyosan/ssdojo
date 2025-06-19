@@ -9,7 +9,7 @@ export class GameManager {
     cpu = null;
 
     board;
-    bortdUI;
+    boardUI;
 
     constructor(socket) {
         this.socket = socket;

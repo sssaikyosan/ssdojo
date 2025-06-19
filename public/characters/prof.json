@@ -1,7 +1,8 @@
 {
   "characters": [
     {
-      "image": "0001_Rei",
+      "image": "0001_rei",
+      "voice": "A female voice, cool and precise, with a notably low, almost monotone pitch that rarely fluctuates. Her words are delivered with a clipped, efficient cadence, each syllable sharp and devoid of overt emotion. The expressive tone, if any, is one of subtle, steely resolve or a hint of weariness beneath the surface.",
       "name_jp": "緋月 零",
       "name_romanji": "Hizuki Rei",
       "profile": {
@@ -60,7 +61,8 @@
       "image_description_hint": "銀髪ショート、赤いメッシュ、金色の瞳、黒いチャイナ服風のミリタリージャケット、夜の街、ネオン"
     },
     {
-      "image": "00002_Karen",
+      "image": "0002_karen",
+      "voice": "A female voice, high-pitched and imperious, carrying a distinct aristocratic lilt. Her words are delivered with a sharp, somewhat rapid tempo, often punctuated by indignant huffs or flustered stammers when her true feelings are exposed. The expressive tone veはい、承知いたしました！",
       "name_jp": "天宮院 華恋",
       "name_romanji": "Amamiyain Karen",
       "profile": {
@@ -113,7 +115,8 @@
       "image_description_hint": "金髪縦ロール、緑色の瞳、赤い大きなリボン、白いフリルドレス、腕組み、豪華な洋室、ティーカップ"
     },
     {
-      "image": "00003_Mifuyu",
+      "image": "0003_mifuyu",
+      "voice": "A female voice that is calm, serene, and possesses a subtly low, soothing pitch. Her delivery is unhurried and deliberate, each word spoken with a gentle yet profound clarity, as if revealing ancient truths. The tone carries a mysterious depth, like the tranquil gaze of a night sky, subtly hinting at hidden knowledge and a timeless wisdom. There's a delicate balance between a soft, almost whisper-like quality and an underlying resonance that makes her words feel both ethereal and deeply grounded. Her voice is like the gentle rustle of leaves in a moonlit forest, both present and elusive.",
       "name_jp": "月詠 深冬",
       "name_romanji": "Tsukiyomi Mifuyu",
       "profile": {
@@ -166,7 +169,8 @@
       "image_description_hint": "銀髪ロング、オッドアイ(赤と青)、猫耳フード付き黒ローブ、杖、カード、ミステリアスな森"
     },
     {
-      "image": "00004_Kureha",
+      "image": "0004_kureha",
+      "voice": "A female voice with a distinctive medium-low pitch, carrying a raw, slightly husky edge that suggests a life lived on the streets. Her delivery is often direct and sharp, with a confident, almost defiant cadence. Each word is imbued with a blunt force and an underlying air of challenge, occasionally bordering on a sneer when provoked. Her tone can shift between a casual, rough-and-tumble quality and a powerful, unyielding roar, reflecting her fiery spirit and battle-hardened nature. There's an undeniable \"don't mess with me\" attitude that resonates in her every utterance.",
       "name_jp": "紅刃 椿",
       "name_romanji": "Kureha Tsubaki",
       "profile": {
@@ -219,7 +223,8 @@
       "image_description_hint": "黒髪ショート赤メッシュ、赤い瞳、露出度高めのパンクファッション、背中に刀、路地裏、ネオン"
     },
     {
-      "image": "00005_Setsuna",
+      "image": "0005_setsuna",
+      "voice": "A female voice with a clear, precise, and medium pitch. Her delivery is calm and measured, often bordering on a cool detachment, yet capable of conveying intense focus and a subtle passion when discussing technical subjects. Each word is articulated with a clean, analytical quality, reflecting her logical mind. While generally unexpressive, there's an underlying confidence and authority that makes her statements feel absolute and unarguable. Her tone is efficient and direct, like a perfectly calibrated machine, with minimal wasted energy, yet occasionally a hint of impatience or exasperation can be detected in her otherwise composed delivery.",
       "name_jp": "柊 雪菜",
       "name_romanji": "Hiiragi Setsuna",
       "profile": {
@@ -272,7 +277,8 @@
       "image_description_hint": "銀髪ポニーテール、青い瞳、ゴーグル、作業着、メカ、ホログラム、SF風"
     },
     {
-      "image": "00006_Kirisaki",
+      "image": "0006_kirisaki",
+      "voice": "A female voice with a clear, precise, and medium-high pitch, conveying an air of calm intelligence and keen observation. Her delivery is measured and deliberate, with each word articulated distinctly and without unnecessary embellishment, reflecting a highly logical mind. The tone is cool and composed, almost devoid of overt emotion, yet carries an undeniable undercurrent of quiet confidence and unshakeable conviction. Her voice suggests someone who is constantly analyzing, processing, and arriving at irrefutable conclusions, making her words feel both authoritative and subtly distant.",
       "name_jp": "霧咲 透子",
       "name_romanji": "Kirisaki Touko",
       "profile": {
@@ -325,7 +331,8 @@
       "image_description_hint": "黒髪ショートボブ、グレーの瞳、眼鏡、黒いトレンチコート、白いシャツ、ネクタイ、懐中時計、夜の路地、図書館"
     },
     {
-      "image": "00007_Sylvie",
+      "image": "0007_sylvie",
+      "voice": "A female voice that is clear, serene, and possesses a refined, medium pitch, imbued with a timeless, ethereal quality. Her delivery is calm and measured, each word articulated with a gentle yet firm cadence, as if carrying the wisdom of ages and the tranquility of the forest. The tone is deeply resonant and pure, evoking images of sunlight filtering through leaves and the quiet strength of ancient trees. Her voice conveys both profound gentleness and an unwavering resolve, often accompanied by a subtle, almost melodic undertone that speaks of harmony with nature.",
       "name_jp": "シルヴァン・月桂樹（げっけいじゅ）",
       "name_romanji": "Sylvain Gekkeiju",
       "profile": {
@@ -376,7 +383,8 @@
       "image_description_hint": "銀髪（やや緑がかった）の編み込みロング、緑色の瞳、エルフ耳、緑のケープ、弓と矢、森の中、木漏れ日"
     },
     {
-      "image": "00008_Red",
+      "image": "0008_red",
+      "voice": "A female voice that is powerful, rich, and resonates with a commanding medium-low pitch. Her delivery is bold and energetic, capable of booming across a deck or settling into a more intimate, yet still confident, tone. There's a slight huskiness or a hint of a gravelly edge, suggesting a life spent braving the elements and hearty shouts. Her voice embodies a spirit of adventure and unyielding resolve, often carrying a boisterous cheerfulness, but with an underlying steel that demands respect and implies no-nonsense leadership. It's a voice that can inspire loyalty, strike fear into enemies, and lead a rousing sea shanty with equal ease.",
       "name_jp": "スカーレット・“レッドストーム”・ドレイク",
       "name_romanji": "Scarlett \"Red Storm\" Drake",
       "profile": {
@@ -415,7 +423,7 @@
           "ハッタリと交渉術"
         ],
         "catchphrases_quotes": [
-          "ヨーソロー！お宝目指して出航だ！",
+          "お宝目指して出航だ！",
           "アタシの船に手出しするヤツは、海の藻屑にしてやるよ！",
           "自由こそが、海賊の生きる道さ！"
         ],
@@ -429,7 +437,8 @@
       "image_description_hint": "赤髪の編み込みロング、赤い瞳、眼帯、海賊の船長服、カットラス、海賊船の甲板、荒れた海"
     },
     {
-      "image": "00009_Hawk",
+      "image": "0009_hawk",
+      "voice": "A female voice with a clear, calm, and composed medium-low pitch. Her delivery is remarkably steady and precise, often minimalistic and devoid of overt emotional inflection, reflecting her focused and analytical mind. Each word is articulated with clean, efficient clarity, conveying a professional detachment. There's an underlying tautness or quiet intensity, like a finely tuned instrument, that hints at immense concentration and an unyielding will. Her voice rarely wavers, embodying a silent strength and the absolute certainty of a skilled sniper.",
       "name_jp": "シエラ・“ナイトホーク”・アームストロング",
       "name_romanji": "Sierra \"Nighthawk\" Armstrong",
       "profile": {
@@ -481,7 +490,8 @@
       "image_description_hint": "グレー系のショートヘア、青い瞳、ゴーグル、ヘッドセット、迷彩服、スナイパーライフル、都市の屋上、夕焼け"
     },
     {
-      "image": "00010_Shizuru",
+      "image": "0010_shizuru",
+      "voice": "A female voice with a clear, gentle, and medium-high pitch. Her delivery is calm, soft, and unhurried, reflecting her serene and polite demeanor. The tone is pure and exquisitely refined, evoking a sense of tranquil elegance and spiritual grace, like the gentle chime of a temple bell. While inherently gentle, there's a subtle underlying warmth and sincere earnestness that conveys her pure heart and deep compassion, making her words feel both ethereal and deeply comforting.",
       "name_jp": "神楽月 詩鶴（かぐらづき しづる）",
       "name_romanji": "Kagurazuki Shizuru",
       "profile": {
@@ -534,7 +544,8 @@
       "image_description_hint": "黒髪ロング、紫の瞳、白いリボン、巫女服（白衣に緋袴）、神社の境内、鳥居、木漏れ日"
     },
     {
-      "image": "00011_Kanade",
+      "image": "0011_kanade",
+      "voice": "A female voice that is clear, refined, and possesses a beautiful, resonant medium pitch, akin to the elegant notes of a violin. Her delivery is typically calm and composed, with a delicate grace that suggests artistic precision and deep introspection. While usually serene and poised, her voice holds an underlying current of profound passion that surfaces when she speaks of music, allowing for moments of soaring emotional intensity or a quiet, vibrant warmth. Her tone is both intellectually sharp and profoundly expressive, capable of conveying complex emotions with an understated yet captivating beauty.",
       "name_jp": "音羽 奏（おとわ かなで）",
       "name_romanji": "Otowa Kanade",
       "profile": {
@@ -587,7 +598,8 @@
       "image_description_hint": "赤茶色のロングヘア、緑色の瞳、青いロングドレス、ヴァイオリン演奏、コンサートホール、スポットライト"
     },
     {
-      "image": "00012_Komugi",
+      "image": "0012_komugi",
+      "voice": "A female voice that is notably bright, effervescent, and sweet with a high, clear pitch. Her delivery is cheerfully eager, often carrying a slight, endearing lilt and an upward inflection at the end of phrases that conveys youthful innocence and an earnest, almost slightly flustered charm. The tone is exceptionally warm and inviting, akin to the comforting aroma of freshly baked bread, consistently radiating optimism and genuine kindness. Her voice is infused with a bubbly enthusiasm that makes her instantly approachable and heartwarming.",
       "name_jp": "麦畑 こむぎ（むぎばたけ こむぎ）",
       "name_romanji": "Mugibatake Komugi",
       "profile": {
@@ -640,7 +652,8 @@
       "image_description_hint": "薄茶色のツインテール、青い瞳、チェックのリボン、エプロン、パンの入ったカゴ、パン屋の店内"
     },
     {
-      "image": "00013_Chris",
+      "image": "0013_chris",
+      "voice": "A female voice that is clear, calm, and possesses a refined, medium-low pitch, with an ethereal, almost crystalline quality. Her delivery is measured and deliberate, each word articulated with a cool precision that suggests immense control and deep thought. While often devoid of overt emotion, there is a subtle, almost fragile undertone of profound depth or hidden sorrow, like the faint echo in an ice cave. Her voice conveys both a serene detachment and a quiet, ancient power, capable of chilling and, for those who listen closely, a delicate, hidden warmth.",
       "name_jp": "クリスタリア・フロストハート",
       "name_romanji": "Crystalia Frostheart",
       "profile": {
@@ -693,7 +706,8 @@
       "image_description_hint": "水色/銀色のロングヘア、青い瞳、白いファー付きのドレス、氷の結晶、氷の魔法、氷雪地帯"
     },
     {
-      "image": "00014_Lily",
+      "image": "0014_lily",
+      "voice": "A female voice that is exquisitely clear, soft, and possesses a delicate, medium-high pitch. Her delivery is unhurried and gracefully measured, with each word articulated with meticulous precision, as if each syllable is a precious, fragile ornament. The tone is refined and subtle, carrying an ethereal, almost doll-like perfection, yet beneath this pristine surface lies a profound, melancholic beauty and a hint of hidden, deeply held emotions. Her voice embodies a mysterious elegance, like the delicate chime of an antique music box, both enchanting and slightly otherworldly.",
       "name_jp": "リリアン・ドールハート",
       "name_romanji": "Lilian Dollheart",
       "profile": {
@@ -746,7 +760,8 @@
       "image_description_hint": "黒髪ロング（姫カット）、赤い瞳、ゴシックロリータドレス（紫と黒）、アンティークドールを抱える、薄暗いアンティークな部屋、蝋燭"
     },
     {
-      "image": "00015_Coco",
+      "image": "0015_coco",
+      "voice": "A female voice that is notably bright, energetic, and possesses a high, eager pitch. Her delivery is fast-paced and effervescent, brimming with cheerful enthusiasm and an adventurous spirit, often carrying a slight, endearing hurriedness. The tone is consistently optimistic, friendly, and lively, conveying a sense of genuine excitement and a readiness for action. There's a subtle, almost playful bounce to her voice, hinting at her occasional absent-mindedness or spirited recklessness, making her sound incredibly dynamic and approachable.",
       "name_jp": "コレット・“スカイホッパー”・ギアウィンド",
       "name_romanji": "Colette \"Skyhopper\" Gearwind",
       "profile": {
@@ -799,7 +814,8 @@
       "image_description_hint": "赤銅色のショートヘア、緑色の瞳、ゴーグル、革のジャケット、配達物、スチームパンク風の都市、飛行機械"
     },
     {
-      "image": "00016_Minorin",
+      "image": "0016_minorin",
+      "voice": "A female voice that is warm, wholesome, and possesses a cheerful, medium-high pitch. Her delivery is bright and earnest, often with a gentle, unhurried cadence that suggests a life in harmony with nature and a positive outlook. The tone is comforting and inviting, like sun-warmed earth or freshly picked produce, consistently conveying a sense of genuine kindness and a down-to-earth spirit. There's a subtle, resilient strength beneath her mild demeanor, like a sturdy sapling, making her sound both gentle and reliably grounded.",
       "name_jp": "豊穣 みのり（ほうじょう みのり）",
       "name_romanji": "Houjou Minori",
       "profile": {
@@ -838,7 +854,7 @@
           "手先が器用（わら細工など）"
         ],
         "catchphrases_quotes": [
-          "今日も一日、畑仕事がんばるぞー！",
+          "今日も一日、仕事がんばるぞー！",
           "見て見て！こんなに立派な野菜が採れたよ！",
           "大地の恵みに感謝だね！"
         ],
@@ -852,7 +868,8 @@
       "image_description_hint": "茶髪おさげ、オレンジ色の瞳、麦わら帽子、チェックシャツにオーバーオール、野菜の入ったカゴ、麦畑、農家"
     },
     {
-      "image": "00017_Kochou",
+      "image": "0017_kochou",
+      "voice": "A female voice that is clear and deeply resonant, with a refined, calm low pitch. Her delivery is slow and exceptionally gentle, flowing with an unhurried cadence. The tone is profoundly melancholic and wistful, hinting at a timeless, hidden depth.",
       "name_jp": "胡蝶（こちょう）",
       "name_romanji": "Kochou",
       "profile": {
@@ -905,7 +922,8 @@
       "image_description_hint": "黒髪の日本髪、赤い瞳、豪華な簪、黒地に金の模様が入った着物、扇子、煙管、和室、行灯"
     },
     {
-      "image": "00018_K",
+      "image": "0018_k",
+      "voice": "A female voice that is clear, calm, and precisely articulated, with a distinctly low pitch. Her delivery is nearly monotone and devoid of emotional inflection, conveying an unnervingly detached and clinical quality. The tone carries a subtle cynical edge and an unwavering, quiet authority, with a faint, almost synthetic clarity, making her sound cold and commanding.",
       "name_jp": "コードネーム：ゼロ・ケルヴィン (本名不明)",
       "name_romanji": "Codename: Zero Kelvin (Real name unknown)",
       "profile": {
@@ -958,7 +976,8 @@
       "image_description_hint": "銀髪ショート（やや青みがかった）、青い瞳、片目にサイバーな眼帯、白いラボコート、黒いインナー、銃のような医療器具、サイバーパンクな機械に囲まれた部屋、ネオン"
     },
     {
-      "image": "00019_Astra",
+      "image": "0019_astra",
+      "voice": "A female voice that is clear, serene, and possesses a refined, low pitch, imbued with a timeless, ethereal quality. Her delivery is slow, measured, and deliberate, each word articulated with a profound yet gentle clarity. The tone carries a mysterious, resonant depth, like the quiet vastness of the cosmos, hinting at ancient wisdom and a subtle, melancholic solitude.",
       "name_jp": "アストラ・セレネフィカ",
       "name_romanji": "Astra Selenephica",
       "profile": {
@@ -1011,7 +1030,8 @@
       "image_description_hint": "青いロングヘア、青い瞳、フード付きのローブ、アストロラーベ、望遠鏡、天文台、星空の見える窓"
     },
     {
-      "image": "00020_Hina",
+      "image": "0020_hina",
+      "voice": "A female voice that is bright, energetic, and possesses a high to medium-high pitch. Her delivery is fast-paced and enthusiastic, often with a spirited, almost boisterous quality that radiates youthful vitality. The tone is unmistakably cheerful and optimistic, carrying an underlying current of fierce determination. Her voice embodies an unwavering confidence and a vibrant, sun-drenched warmth, making her sound both invigorating and genuinely heartwarming.",
       "name_jp": "夏海 陽菜（なつみ ひな）",
       "name_romanji": "Natsumi Hina",
       "profile": {

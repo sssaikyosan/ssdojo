@@ -1,4 +1,5 @@
-import { characterImages } from "./main.js";
+import { characterImages, gameManager, scene } from "./main.js";
+import { playVoice } from "./utils.js"; // playSound関数をインポート
 
 export class UI {
   globalX;
@@ -82,8 +83,8 @@ export class UI {
   }
 
   isTouched(pos) {
-    if (this.x - this.width / 2 < pos.x && pos.x < this.x + this.width / 2 &&
-      this.y - this.height / 2 < pos.y && pos.y < this.y + this.height / 2) {
+    if (-this.width / 2 < pos.x && pos.x < this.width / 2 &&
+      -this.height / 2 < pos.y && pos.y < this.height / 2) {
       return true;
     }
     return false;
@@ -92,22 +93,23 @@ export class UI {
   touchCheck(pos, str) {
     const cpos = { x: pos.x - this.x, y: pos.y - this.y };
     this.childs.forEach(ui => ui.touchCheck(cpos, str));
-    switch (str) {
-      case 'mousedown':
-        this.onMouseDown(cpos);
-        break;
-      case 'mousemove':
-        this.onMouseMove(cpos);
-        break;
-      case 'mouseup':
-        this.onMouseUp(cpos);
-        break;
-      case 'mouseup-right':
-        this.onMouseUpRight(cpos);
-        break;
-    }
     if (this.isTouched(cpos)) {
       this.onTouch(cpos);
+      switch (str) {
+        case 'mousedown':
+          this.onMouseDown(cpos);
+          break;
+        case 'mousemove':
+          this.onMouseMove(cpos);
+          break;
+        case 'mouseup':
+          this.onMouseUp(cpos);
+          break;
+        case 'mouseup-right':
+          this.onMouseUpRight(cpos);
+          break;
+      }
+
     }
     return false;
   }
@@ -133,6 +135,7 @@ export class Background extends UI {
 // キャラクター画像を表示するためのUIクラス
 export class CharacterImageUI extends UI { // export キーワードを追加
   image; // Imageオブジェクト
+
   constructor(params) {
     super(params);
     this.image = params.image;
@@ -143,7 +146,39 @@ export class CharacterImageUI extends UI { // export キーワードを追加
   renderSelf(ctx, scale) {
     if (this.image) {
       // 画像を中央揃えで描画
-      ctx.drawImage(characterImages[this.image], -0.8 * scale, 0.48 * scale - this.height * scale, this.width * scale, this.height * scale);
+      ctx.drawImage(characterImages[this.image], this.x * scale - this.width / 2 * scale, this.y * scale - this.height / 2 * scale, this.width * scale, this.height * scale);
     }
+  }
+
+  onMouseDown(pos) {
+    const randomIndex = Math.floor(Math.random() * 3);
+    const randomVoiceFile = `/characters/${this.image}/voice00${randomIndex + 1}.wav`;
+    playVoice(randomVoiceFile);
+  }
+}
+
+// キャラクター画像を表示するためのUIクラス
+export class CharacterInGameUI extends UI { // export キーワードを追加
+  image; // Imageオブジェクト
+
+  constructor(params) {
+    super(params);
+    this.image = params.image;
+    this.width = params.width || this.image.width;
+    this.height = params.height || this.image.height;
+  }
+
+  renderSelf(ctx, scale) {
+    if (this.image) {
+      ctx.drawImage(characterImages[this.image], this.x * scale - this.width / 2 * scale, this.y * scale - this.height / 2 * scale, this.width * scale, this.height * scale);
+    }
+  }
+
+  onMouseDown(pos) {
+    const mousePos = gameManager.boardUI.getBoardPosition({ x: pos.x + this.x, y: pos.y + this.y });
+    if (mousePos.x >= 0 && mousePos.y >= 0) return;
+    const randomIndex = Math.floor(Math.random() * 3);
+    const randomVoiceFile = `/characters/${this.image}/voice00${randomIndex + 1}.wav`;
+    playVoice(randomVoiceFile);
   }
 }

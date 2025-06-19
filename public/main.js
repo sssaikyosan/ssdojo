@@ -25,15 +25,21 @@ export let keyboard = null;
 
 export let gameManager = null;
 
-// キャラクター画像ファイル名のリスト (prof.jsonから抽出)
-const characterFiles = [
-  "00001_Rei", "00002_Karen", "00003_Mifuyu", "00004_Kureha", "00005_Setsuna",
-  "00006_Kirisaki", "00007_Sylvie", "00008_Red", "00009_Hawk", "00010_Shizuru",
-  "00011_Kanade", "00012_Komugi", "00013_Chris", "00014_Lily", "00015_Coco",
-  "00016_Minorin", "00017_Kochou", "00018_K", "00019_Astra", "00020_Hina"
+// キャラクター画像フォルダ名のリスト (prof.jsonから抽出)
+export const characterFiles = [ // exportを追加
+  "0001_rei", "0002_karen", "0003_mifuyu", "0004_kureha", "0005_setsuna",
+  "0006_kirisaki", "0007_sylvie", "0008_red", "0009_hawk", "0010_shizuru",
+  "0011_kanade", "0012_komugi", "0013_chris", "0014_lily", "0015_coco",
+  "0016_minorin", "0017_kochou", "0018_k", "0019_astra", "0020_hina"
 ];
 
 export let selectedCharacterName = null; // 選択されたキャラクターの名前
+
+// selectedCharacterNameを設定する関数を追加
+export function setSelectedCharacterName(name) {
+  selectedCharacterName = name;
+}
+
 
 // ユニークなIDを生成する関数
 function generateUniqueId() {
@@ -175,6 +181,7 @@ function setupSocket() {
     scene = createPlayScene(
       playerName,
       data.name,
+      data.characterName,
       data.teban,
       data.roomId,
       data.servertime,
@@ -220,7 +227,7 @@ const pieceImagePromises = pieceTypes.map(type =>
 const characterImagePromises = characterFiles.map(file =>
   new Promise((resolve, reject) => {
     const img = new Image();
-    img.src = `/characters/${file}.png`;
+    img.src = `/characters/${file}/image.png`;
     img.onload = () => {
       const name = file; // 拡張子を除いたファイル名をキーとする
       characterImages[name] = img;

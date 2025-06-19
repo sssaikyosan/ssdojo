@@ -1,8 +1,25 @@
+let currentVoice = null;
+
 export function playSound(filename) {
   const audio = new Audio(`/sounds/${filename}.mp3`);
   audio.play().catch(error => {
     console.error('効果音の再生に失敗しました:', error);
   });
+}
+
+export function playVoice(filename) {
+  // 現在再生中の音声があれば停止
+  if (currentVoice) {
+    currentVoice.pause();
+    currentVoice.currentTime = 0; // 再生位置をリセット
+  }
+
+  const audio = new Audio(filename);
+  audio.play().catch(error => {
+    console.error('効果音の再生に失敗しました:', error);
+  });
+
+  currentVoice = audio; // 新しい音声を保持
 }
 
 /**
@@ -41,7 +58,7 @@ export function drawTextWithOutline(ctx, text, x, y, fontSize, colors, textBasel
   ctx.textAlign = position;
   // 縁取りを描画
   ctx.strokeStyle = colors[1];
-  ctx.lineWidth = fontSize * 0.16;
+  ctx.lineWidth = fontSize * 0.1;
   ctx.strokeText(text, x, y);
 
   // テキスト本体を描画

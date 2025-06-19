@@ -4,6 +4,7 @@ import { drawText, drawTextWithDoubleOutline, drawTextWithOutline } from "./util
 export class TextUI extends UI {
   constructor(params) {
     super(params);
+
     this.width = 0;
     this.height = 0;
 
@@ -24,12 +25,16 @@ export class TextUI extends UI {
     switch (this.colors.length) {
       case 1:
         drawText(ctx, this.text(), x, y, size, this.colors[0], this.textBaseline, this.position);
+        break;
       case 2:
         drawTextWithOutline(ctx, this.text(), x, y, size, this.colors, this.textBaseline, this.position);
+        break;
       case 3:
         drawTextWithDoubleOutline(ctx, this.text(), x, y, size, this.colors, this.textBaseline, this.position);
+        break;
       default:
         drawText(ctx, this.text(), x, y, size, this.colors[0], this.textBaseline, this.position);
+        break;
     }
     ctx.restore();
   }

@@ -1,7 +1,8 @@
-import { canvas, characterImages, gameManager, playerName, scene, selectedCharacterName, serverStatus, setPlayerName, setScene, setStatus, socket, userId } from "./main.js";
-import { Background, CharacterImageUI } from "./ui.js";
+import { canvas, characterImages, gameManager, playerName, scene, selectedCharacterName, serverStatus, setPlayerName, setScene, setStatus, socket, userId, setSelectedCharacterName } from "./main.js";
+import { Background, CharacterImageUI, CharacterInGameUI } from "./ui.js";
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
+import { characterFiles } from "./main.js"; // characterFilesをインポート
 
 export class Scene {
   scale = 0;
@@ -59,11 +60,13 @@ export class Scene {
 
 
 const nameInputOverlay = document.getElementById("nameInputOverlay");
+const charaSelectOverlay = document.getElementById("charaSelectOverlay");
 const statusOverlay = document.getElementById("statusOverlay");
 
 const nameInput = /** @type {HTMLInputElement} */ (document.getElementById("nameInput"));
 
 const submitNameButton = document.getElementById("submitNameButton");
+const charaSelectButton = document.getElementById("charaSelectButton");
 const changeRating = document.getElementById("changeRating");
 
 const resultOverlay = document.getElementById("resultOverlay");
@@ -73,26 +76,17 @@ const toTitleButton = document.getElementById("toTitleButton");
 const title = new TextUI({
   text: () => "リアルタイム将棋",
   x: 0,
-  y: -0.3,
+  y: -0.3, // 配置を調整
   size: 0.12,
   colors: ["#c2a34f", "#000000", "#ffffff"]
 });
 const onlineText = new TextUI({
   text: () => `部屋数: ${serverStatus.roomCount}, オンライン: ${serverStatus.online}人`,
   x: 0,
-  y: 0.46,
-  size: 0.035,
+  y: 0.48,
+  size: 0.025,
   colors: ["#ffffff", "#00000000", "#00000000"],
-  position: 'left'
-});
-
-const playingText = new TextUI({
-  text: () => ``,
-  x: 0.6,
-  y: 0.46,
-  size: 0.035,
-  colors: ["#ffffff", "#00000000", "#00000000"],
-  position: 'left'
+  position: 'center'
 });
 
 //暗い背景
@@ -138,25 +132,27 @@ const timeText = new TextUI({
 
 const matchingText = new TextUI({
   text: () => {
-    return "マッチング中...";
+    return "マッチング中";
   },
-  x: 0.3,
-  y: 0.0,
+  x: 0.4,
+  y: 0.3,
   size: 0.05,
-  colors: ["#ffffff", "#00000000", "#00000000"]
+  colors: ["#ffffff", "#00000000", "#00000000"],
+  position: 'center'
 });
 const loading = new LoadingUI({
-  x: 0.3,
-  y: 0.1,
-  radius: 0.05,
+  x: 0.4,
+  y: 0.38,
+  radius: 0.03,
 });
 
 let titleCharacter = new CharacterImageUI({
-  image: "",
-  x: 0,
-  y: 0,
-  width: 0.66,
-  height: 0.66
+  image: null, // 初期表示はなし
+  x: -0.55, // 中央に配置
+  y: 0.15, // 適切なY座標に調整
+  width: 0.7,
+  height: 0.7,
+  touchable: true
 });
 
 //タイトルシーン
@@ -191,26 +187,31 @@ export function createTitleScene() {
   }
 
   //オンライン対戦
-  function handleNameSubmit(nameInputOverlay, nameInput) {
+  function handleNameSubmit() {
     setPlayerName(nameInput.value.trim());
     localStorage.setItem("playerName", playerName);
     if (playerName == "") setPlayerName("名無しの棋士");
     // マッチングを開始
-    socket.emit("requestMatch", { name: playerName, userId: userId });
+    socket.emit("requestMatch", { name: playerName, characterName: selectedCharacterName, userId: userId });
     nameInputOverlay.style.display = "none";
+    charaSelectOverlay.style.display = "none";
     titleScene.add(matchingText);
     titleScene.add(loading);
+  }
+
+  function charaSelectSubmit() {
+    setScene(createCharacterSelectScene());
   }
 
 
 
   nameInput.addEventListener("input", () => { limitInputLength(nameInput); });
-  submitNameButton.addEventListener("click", () => { handleNameSubmit(nameInputOverlay, nameInput); });
+  submitNameButton.addEventListener("click", () => { handleNameSubmit(); });
+  charaSelectButton.addEventListener("click", () => { charaSelectSubmit(); });
 
   titleCharacter.image = selectedCharacterName;
   titleScene.add(title);
   titleScene.add(onlineText);
-  titleScene.add(playingText);
   titleScene.add(titleCharacter);
 
   const savedName = localStorage.getItem("playerName");
@@ -219,12 +220,65 @@ export function createTitleScene() {
     nameInput.value = savedName;
   }
   nameInputOverlay.style.display = "flex";
+  charaSelectOverlay.style.display = "flex";
   return titleScene;
 }
 
 
+// キャラクター選択シーン
+export function createCharacterSelectScene() {
+  let selectScene = new Scene();
+
+  const selectTitle = new TextUI({
+    text: () => "キャラクター選択",
+    x: 0,
+    y: -0.3,
+    size: 0.06,
+    colors: ["#bbdd44", "#000000", "#FFFFFF"]
+  });
+  selectScene.add(selectTitle);
+
+  // キャラクター一覧を表示
+  const charactersPerRow = 5; // 1行に表示するキャラクター数
+  const characterSize = 0.15; // キャラクター画像の表示サイズ
+  const startX = -0.32; // 開始X座標
+  const startY = -0.14; // 開始Y座標
+  const padding = 0.01; // キャラクター間の余白
+
+  characterFiles.forEach((characterName, index) => {
+    const row = Math.floor(index / charactersPerRow);
+    const col = index % charactersPerRow;
+    const x = startX + col * (characterSize + padding);
+    const y = startY + row * (characterSize + padding);
+
+    const characterUI = new CharacterImageUI({
+      image: characterName,
+      x: x,
+      y: y,
+      width: characterSize,
+      height: characterSize,
+      touchable: true // クリック可能にする
+    });
+
+    // キャラクターがクリックされたときの処理
+    characterUI.onMouseDown = () => {
+      setSelectedCharacterName(characterName); // 選択されたキャラクター名を設定
+      console.log(`Selected character: ${selectedCharacterName}`);
+      setScene(createTitleScene()); // タイトル画面に戻る
+    };
+
+    selectScene.add(characterUI);
+  });
+
+  nameInputOverlay.style.display = "none";
+  charaSelectOverlay.style.display = "none";
+
+  return selectScene;
+}
+
+
 //ゲームシーン
-export function createPlayScene(playerName, opponentName, teban, roomId, servertime, rating, opponentRating, cpu = false) {
+export function createPlayScene(playerName, opponentName, opponentCharacterName, teban, roomId, servertime, rating, opponentRating, cpu = false) {
   let playScene = new Scene();
   gameManager.setRoom(roomId, teban, servertime);
 
@@ -238,7 +292,7 @@ export function createPlayScene(playerName, opponentName, teban, roomId, servert
     x: -0.42,
     y: 0.4,
     size: 0.03,
-    colors: ["#FFFFFF"],
+    colors: ["#FFFFFF", "#000000"],
     textBaseline: 'bottom',
     position: 'right'
   })
@@ -251,7 +305,7 @@ export function createPlayScene(playerName, opponentName, teban, roomId, servert
     x: -0.42,
     y: 0.44, // プレイヤー名の下に表示するためにy座標を調整
     size: 0.025, // プレイヤー名より少し小さく
-    colors: ["#FFFFFF"],
+    colors: ["#FFFFFF", "#000000"],
     textBaseline: 'bottom', // プレイヤー名の下に揃える
     position: 'right'
   })
@@ -263,7 +317,7 @@ export function createPlayScene(playerName, opponentName, teban, roomId, servert
     x: 0.42,
     y: -0.4,
     size: 0.03,
-    colors: ["#FFFFFF"],
+    colors: ["#FFFFFF", "#000000"],
     textBaseline: 'top',
     position: 'left'
   })
@@ -276,18 +330,41 @@ export function createPlayScene(playerName, opponentName, teban, roomId, servert
     x: 0.42,
     y: -0.44, // プレイヤー名の下に表示するためにy座標を調整
     size: 0.025, // プレイヤー名より少し小さく
-    colors: ["#FFFFFF"],
+    colors: ["#FFFFFF", "#000000"],
     textBaseline: 'top', // プレイヤー名の下に揃える
     position: 'left'
   })
 
+  // プレイヤーのキャラクター画像UIを追加
+  let playerCharacterUI = new CharacterInGameUI({
+    image: selectedCharacterName, // main.jsから選択されたキャラクター名を取得
+    x: -0.6, // プレイヤー名の近くに配置
+    y: 0.2, // 適切なY座標に調整
+    width: 0.48, // サイズ調整
+    height: 0.48
+  });
+
+  // 相手プレイヤーのキャラクター画像UIを追加
+  let opponentCharacterUI = new CharacterInGameUI({
+    image: opponentCharacterName, // 相手プレイヤー名からキャラクター名を生成（仮）
+    x: 0.6, // 相手プレイヤー名の近くに配置
+    y: -0.2, // 適切なY座標に調整
+    width: 0.48, // サイズ調整
+    height: 0.48
+  });
+
+
   statusOverlay.style.display = "none";
+  playScene.add(playerCharacterUI); // プレイヤーのキャラクター画像UIをシーンに追加
+  playScene.add(opponentCharacterUI); // 相手プレイヤーのキャラクター画像UIをシーンに追加
   playScene.add(gameManager.boardUI);
   playScene.add(playerNameUI);
   playScene.add(playerRatingUI); // レーティング表示UIを追加
   playScene.add(opponentNameUI)
   playScene.add(opponentRatingUI); // レーティング表示UIを追加
   playScene.add(timeText);
+
+
 
   return playScene;
 }

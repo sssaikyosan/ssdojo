@@ -187,7 +187,9 @@ function ioSetup() {
 
     // プレイヤーがマッチングを要求
     socket.on("requestMatch", (data) => {
+      console.log(data);
       serverState.players[socket.id].requestMatch(data);
+      console.log(serverState.players[socket.id].characterName);
     });
 
     // 駒の移動を転送
