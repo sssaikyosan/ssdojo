@@ -263,6 +263,7 @@ export function createCharacterSelectScene() {
     // キャラクターがクリックされたときの処理
     characterUI.onMouseDown = () => {
       setSelectedCharacterName(characterName); // 選択されたキャラクター名を設定
+      localStorage.setItem('selectedCharacter', selectedCharacterName);
       console.log(`Selected character: ${selectedCharacterName}`);
       setScene(createTitleScene()); // タイトル画面に戻る
     };
