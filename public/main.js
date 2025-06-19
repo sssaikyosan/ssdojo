@@ -234,8 +234,9 @@ const characterImagePromises = characterFiles.map(file =>
       resolve();
     };
     img.onerror = () => {
-      console.error(`Failed to load image: ${file}`);
-      reject(new Error(`Failed to load image: ${file}`));
+      console.error(`Failed to load image: /characters/${file}/image.png`);
+      // 画像のロードに失敗してもPromiseは解決済みとする
+      resolve();
     };
   })
 );

@@ -144,7 +144,8 @@ export class CharacterImageUI extends UI { // export キーワードを追加
   }
 
   renderSelf(ctx, scale) {
-    if (this.image) {
+    // 画像が存在するかチェック
+    if (this.image && characterImages[this.image]) {
       // 画像を中央揃えで描画
       ctx.drawImage(characterImages[this.image], this.x * scale - this.width / 2 * scale, this.y * scale - this.height / 2 * scale, this.width * scale, this.height * scale);
     }
@@ -169,7 +170,8 @@ export class CharacterInGameUI extends UI { // export キーワードを追加
   }
 
   renderSelf(ctx, scale) {
-    if (this.image) {
+    // 画像が存在するかチェック
+    if (this.image && characterImages[this.image]) {
       ctx.drawImage(characterImages[this.image], this.x * scale - this.width / 2 * scale, this.y * scale - this.height / 2 * scale, this.width * scale, this.height * scale);
     }
   }
