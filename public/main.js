@@ -4,6 +4,7 @@ import { Board } from './board.js';
 import { createPlayScene, createTitleScene, endGame, Scene } from "./scene.js";
 import { playSound, stopBGM } from "./utils.js"; // stopBGMをインポート
 
+
 export let pieceImages = {};
 export let characterImages = {}; // キャラクター画像用オブジェクトを追加
 export let canvas = null;
@@ -39,6 +40,12 @@ export let selectedCharacterName = null; // 選択されたキャラクターの
 export function setSelectedCharacterName(name) {
   selectedCharacterName = name;
 }
+
+export const title_img = new Image(1920, 1080)
+title_img.src = '/images/title.png';
+
+export const battle_img = new Image(1920, 1080)
+battle_img.src = '/images/battle.png';
 
 export const titleBGM = new Audio(`/music/title.mp3`);
 

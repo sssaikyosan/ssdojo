@@ -1,5 +1,5 @@
-import { canvas, characterImages, gameManager, playerName, scene, selectedCharacterName, serverStatus, setPlayerName, setScene, setStatus, socket, userId, setSelectedCharacterName, titleBGM, battleBGM } from "./main.js";
-import { Background, CharacterImageUI, CharacterInGameUI } from "./ui.js";
+import { canvas, characterImages, gameManager, playerName, scene, selectedCharacterName, serverStatus, setPlayerName, setScene, setStatus, socket, userId, setSelectedCharacterName, titleBGM, battleBGM, battle_img, title_img } from "./main.js";
+import { Background, CharacterImageUI, CharacterInGameUI, BackgroundImageUI } from "./ui.js"; // BackgroundImageUIをインポート
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
 import { characterFiles } from "./main.js"; // characterFilesをインポート
@@ -158,7 +158,10 @@ let titleCharacter = new CharacterImageUI({
 
 //タイトルシーン
 export function createTitleScene() {
+
   let titleScene = new Scene();
+  const backgroundImageUI = new BackgroundImageUI({ image: title_img });
+  titleScene.add(backgroundImageUI);
   // 初回クリックでBGMを再生するためのイベントリスナー
   const playBGMOnce = () => {
     if (currentBGM === null) {
@@ -240,6 +243,8 @@ export function createTitleScene() {
 // キャラクター選択シーン
 export function createCharacterSelectScene() {
   let selectScene = new Scene();
+  const backgroundImageUI = new BackgroundImageUI({ image: title_img });
+  selectScene.add(backgroundImageUI);
 
   const selectTitle = new TextUI({
     text: () => "キャラクター選択",
@@ -293,6 +298,11 @@ export function createCharacterSelectScene() {
 //ゲームシーン
 export function createPlayScene(playerName, opponentName, opponentCharacterName, teban, roomId, servertime, rating, opponentRating, cpu = false) {
   let playScene = new Scene();
+
+  // 背景画像UIを追加 (他のUIより前に描画されるように最初に追加)
+  const backgroundImageUI = new BackgroundImageUI({ image: battle_img });
+  playScene.add(backgroundImageUI);
+
   playBGM(battleBGM); // 対戦BGMを再生
   gameManager.setRoom(roomId, teban, servertime);
 
