@@ -3,6 +3,7 @@ import { Background, CharacterImageUI, CharacterInGameUI } from "./ui.js";
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
 import { characterFiles } from "./main.js"; // characterFilesをインポート
+import { playBGM } from "./utils.js"; // playBGMをインポート
 
 export class Scene {
   scale = 0;
@@ -158,6 +159,16 @@ let titleCharacter = new CharacterImageUI({
 //タイトルシーン
 export function createTitleScene() {
   let titleScene = new Scene();
+  // playBGM('title'); // タイトルBGMを再生 (自動再生を削除)
+
+  // 初回クリックでBGMを再生するためのイベントリスナー
+  const playBGMOnce = () => {
+    playBGM('title');
+    canvas.removeEventListener('click', playBGMOnce); // イベントリスナーを解除
+  };
+  canvas.addEventListener('click', playBGMOnce);
+
+
   // 入力欄の文字数を制限するメソッド
   function limitInputLength(nameInput) {
 
@@ -281,6 +292,7 @@ export function createCharacterSelectScene() {
 //ゲームシーン
 export function createPlayScene(playerName, opponentName, opponentCharacterName, teban, roomId, servertime, rating, opponentRating, cpu = false) {
   let playScene = new Scene();
+  playBGM('battle'); // 対戦BGMを再生
   gameManager.setRoom(roomId, teban, servertime);
 
   const roundRating = Math.round(rating);

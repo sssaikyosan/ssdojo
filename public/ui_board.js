@@ -19,8 +19,8 @@ export class BoardUI extends UI {
   constructor(params) {
     super(params);
     this.gameManager = params.gameManager;
-    this.width = CELL_SIZE * BOARD_SIZE;
-    this.height = CELL_SIZE * BOARD_SIZE;
+    this.width = 10000;
+    this.height = 10000;
     this.board = params.board;
     let komadai = new KomadaiUI({
       x: this.x,

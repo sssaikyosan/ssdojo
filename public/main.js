@@ -2,7 +2,7 @@ import { Keyboard } from "./keyboard.js";
 import { GameManager } from "./game_manager.js";
 import { Board } from './board.js';
 import { createPlayScene, createTitleScene, endGame, Scene } from "./scene.js";
-import { playSound } from "./utils.js";
+import { playSound, stopBGM } from "./utils.js"; // stopBGMをインポート
 
 export let pieceImages = {};
 export let characterImages = {}; // キャラクター画像用オブジェクトを追加
@@ -67,6 +67,9 @@ function loadOrSelectCharacter() {
 
 
 export function setScene(s) {
+  if (scene) { // 現在のシーンが存在する場合のみBGMを停止
+    stopBGM();
+  }
   scene = s;
 }
 
