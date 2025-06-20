@@ -52,7 +52,7 @@ export class GameManager {
     update() {
         const time = performance.now();
         this.board.time = time;
-        if (!this.board.started && this.board.time - this.board.starttime > 5000) {
+        if (this.board.matched && !this.board.started && this.board.time - this.board.starttime > 5000) {
             this.board.started = true;
             playSound('match');
         }

@@ -22,6 +22,7 @@ export class Board {
   serverstarttime = 0;
   starttime = 0;
   time = 0;
+  matched = false;
   started = false;
 
   // 盤面の初期化
@@ -31,6 +32,7 @@ export class Board {
     // this.komadaipTime = { sente: time, gote: time };
     this.starttime = time;
     this.time = time;
+    this.matched = true;
     this.currentMove = 0;
     this.komadaiPieces = {
       sente: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 },
