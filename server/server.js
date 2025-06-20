@@ -58,6 +58,8 @@ server.listen(PORT, () => {
 
 ioSetup();
 
+serverState.getTopPlayers();
+
 //切断による勝利通知
 function disconnectWin(roomId, losePlayer) {
   if (serverState.rooms[roomId].sente === losePlayer) {
@@ -72,6 +74,7 @@ function disconnectWin(roomId, losePlayer) {
 function gameFinished(roomId, win, text) {
   const senteName = serverState.players[serverState.rooms[roomId].sente].name;
   const goteName = serverState.players[serverState.rooms[roomId].gote].name;
+
   if (win === 1) {
     console.log(new Date(), text, `win:`, senteName, '  lose:', goteName);
   } else if (win === -1) {
@@ -94,6 +97,8 @@ function gameFinished(roomId, win, text) {
     serverState.ratings[winPlayerId].rating = rateData.newWinRating;
     serverState.ratings[losePlayerId].rating = rateData.newLoseRating;
 
+    serverState.ratings[winPlayerId]['name'] = win === 1 ? serverState.players[serverState.rooms[roomId].sente].name : serverState.players[serverState.rooms[roomId].gote].name;
+    serverState.ratings[losePlayerId]['name'] = win === 1 ? serverState.players[serverState.rooms[roomId].gote].name : serverState.players[serverState.rooms[roomId].sente].name;
 
     console.log(`レーティング更新: ${winPlayerId}: ${serverState.ratings[winPlayerId].rating} (${winEloRating}), ${losePlayerId}: ${serverState.ratings[losePlayerId].rating} (${loseEloRating})`);
 
@@ -106,10 +111,10 @@ function gameFinished(roomId, win, text) {
       winPlayer: win,
       text: text,
       winRating: getDisplayRating(winEloRating, winGames),
-      newWinRating: getDisplayRating(rateData.newWinRating, winGames),
+      newWinRating: getDisplayRating(rateData.newWinRating, winGames + 1),
       winGames: serverState.ratings[winPlayerId].games,
       loseRating: getDisplayRating(loseEloRating, loseGames),
-      newLoseRating: getDisplayRating(rateData.newLoseRating, loseGames),
+      newLoseRating: getDisplayRating(rateData.newLoseRating, loseGames + 1),
       loseGames: serverState.ratings[losePlayerId].games
     }
 
@@ -119,9 +124,8 @@ function gameFinished(roomId, win, text) {
   } else {
     console.error(`レーティング情報が見つかりませんでした。Win Player ID: ${winPlayerId}, Lose Player ID: ${losePlayerId}`);
   }
-
-
   serverState.deleteRoom(roomId);
+  serverState.getTopPlayers();
 }
 
 

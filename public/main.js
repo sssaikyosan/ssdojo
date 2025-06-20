@@ -17,7 +17,7 @@ export let scene = null; // scene変数はmain.jsで管理
 export let board = new Board();
 export let playerName = "";
 export let userId = null;
-export let serverStatus = { online: 0, roomCount: 0 };
+export let serverStatus = { online: 0, roomCount: 0, topPlayers: [] };
 
 export let playerRatingElement = null;
 export let gamesPlayedElement = null;
@@ -75,7 +75,6 @@ function loadOrSelectCharacter() {
     console.log(`Randomly selected character: ${selectedCharacterName}`);
   }
 }
-
 
 export function setScene(s) {
   scene = s;

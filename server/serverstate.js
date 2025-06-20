@@ -8,6 +8,7 @@ export class ServerState {
     rooms = {};
     players = {};
     ratings = {};
+    topPlayers = [];
 
     constructor(io) {
         this.io = io;
@@ -107,8 +108,28 @@ export class ServerState {
     sendServerStatus() {
         const online = Object.keys(this.players).length;
         const roomCount = Object.keys(this.rooms).length;
-        this.io.emit("serverStatus", { online: online, roomCount: roomCount });
+        const topPlayers = this.topPlayers;
+        this.io.emit("serverStatus", { online: online, roomCount: roomCount, topPlayers: topPlayers });
         this.timecount++;
+    }
+
+    getTopPlayers() {
+        const playersWithRating = [];
+
+        // Object.entries を for...of で反復処理し、分割代入でキーと値を取得
+        for (const [id, ratingData] of Object.entries(this.ratings)) {
+            const playerrating = getDisplayRating(ratingData.rating, ratingData.games);
+            playersWithRating.push({ name: ratingData.name, rating: playerrating });
+        }
+
+        // 評価値に基づいて降順にソート
+        playersWithRating.sort((a, b) => b.rating - a.rating);
+
+        // トップ10のプレイヤーを取得
+        const top = playersWithRating.slice(0, 10);
+        this.topPlayers = top;
+        console.log(top);
+        return top;
     }
 }
 

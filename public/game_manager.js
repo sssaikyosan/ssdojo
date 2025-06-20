@@ -61,5 +61,4 @@ export class GameManager {
             this.cpu.update(time);
         }
     }
-
 }

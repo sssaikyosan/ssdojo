@@ -3,7 +3,7 @@ import { Background, CharacterImageUI, CharacterInGameUI, BackgroundImageUI, Ove
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
 import { characterFiles } from "./main.js"; // characterFilesをインポート
-import { currentBGM, getAfterStr, playBGM } from "./utils.js"; // playBGMをインポート
+import { currentBGM, getAfterStr, playBGM, playVoice } from "./utils.js"; // playBGMをインポート
 
 export class Scene {
   scale = 0;
@@ -90,6 +90,9 @@ const onlineText = new TextUI({
   position: 'center'
 });
 
+
+
+
 //暗い背景
 let background = new Background({
   x: 0.0,
@@ -144,7 +147,7 @@ const countDownText = new TextUI({
   x: 0.0,
   y: 0.18,
   size: 0.4,
-  colors: ["#ff6666", "#000000", "#ffffff"],
+  colors: ["#ff6739", "#000000", "#ffffff"],
   textBaseline: "bottom",
 });
 
@@ -153,14 +156,14 @@ const matchingText = new TextUI({
     return "マッチング中";
   },
   x: 0.4,
-  y: 0.3,
+  y: 0.4,
   size: 0.05,
   colors: ["#ffffff", "#00000000", "#00000000"],
   position: 'center'
 });
 const loading = new LoadingUI({
-  x: 0.4,
-  y: 0.38,
+  x: 0.6,
+  y: 0.4,
   radius: 0.03,
 });
 
@@ -246,6 +249,42 @@ export function createTitleScene() {
   titleScene.add(onlineText);
   titleScene.add(titleCharacter);
 
+  console.log(serverStatus);
+
+  const rangingOverlay = new OverlayUI({
+    x: 0.58,
+    y: 0.08,
+    width: 0.4,
+    height: 0.46,
+    color: "#222222"
+  });
+  titleScene.add(rangingOverlay);
+  titleScene.add(new TextUI({
+    text: () => "ランキング",
+    x: 0.48,
+    y: -0.105,
+    size: 0.04,
+    colors: ["#ffffff", "#00000000", "#00000000"],
+    position: 'left'
+  }))
+  const ranking = [];
+  for (let i = 0; i < 10; i++) {
+    ranking.push(new TextUI({
+      text: () => {
+        if (serverStatus.topPlayers.length < i + 1) return `${i + 1}位 none`;
+        return `${i + 1}位 ${serverStatus.topPlayers[i].name} ${Math.round(serverStatus.topPlayers[i].rating)}`;
+      },
+      x: 0.4,
+      y: -0.06 + i * 0.038,
+      size: 0.03,
+      colors: ["#ffffff", "#00000000", "#00000000"],
+      position: 'left'
+    }));
+  }
+  for (let i = 0; i < ranking.length; i++) {
+    titleScene.add(ranking[i]);
+  }
+
   const savedName = localStorage.getItem("playerName");
 
   if (savedName) {
@@ -287,7 +326,7 @@ export function createCharacterSelectScene() {
     y: -0.02,
     width: 1.4,
     height: 0.7,
-    color: "#4444ffbb"
+    color: "#44668888"
   });
 
   selectScene.add(overlayUI);
@@ -326,7 +365,10 @@ export function createCharacterSelectScene() {
       setSelectedCharacterName(characterName); // 選択されたキャラクター名を設定
       localStorage.setItem('selectedCharacter', selectedCharacterName);
       console.log(`Selected character: ${selectedCharacterName}`);
-      setScene(createTitleScene()); // タイトル画面に戻る
+      const randomIndex = Math.floor(Math.random() * 3);
+      const randomVoiceFile = `/characters/${characterUI.image}/voice00${randomIndex + 1}.wav`;
+      playVoice(randomVoiceFile);
+      setScene(createTitleScene());
     };
 
     selectScene.add(characterUI);
@@ -364,7 +406,7 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
     colors: ["#FFFFFF", "#000000"],
     textBaseline: 'bottom',
     position: 'right',
-    backgroundColor: '#333333aa'
+    backgroundColor: '#000000cc'
   });
 
   let playerRatingUI = new TextUI({
@@ -378,7 +420,7 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
     colors: ["#FFFFFF", "#000000"],
     textBaseline: 'bottom', // プレイヤー名の下に揃える
     position: 'right',
-    backgroundColor: '#333333aa'
+    backgroundColor: '#000000cc'
   });
 
   let opponentNameUI = new TextUI({
@@ -391,7 +433,7 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
     colors: ["#FFFFFF", "#000000"],
     textBaseline: 'top',
     position: 'left',
-    backgroundColor: '#222222cc'
+    backgroundColor: '#000000cc'
   });
 
   let opponentRatingUI = new TextUI({
@@ -405,7 +447,7 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
     colors: ["#FFFFFF", "#000000"],
     textBaseline: 'top', // プレイヤー名の下に揃える
     position: 'left',
-    backgroundColor: '#222222cc'
+    backgroundColor: '#000000cc'
   });
 
   // プレイヤーのキャラクター画像UIを追加
