@@ -38,4 +38,18 @@ export class TextUI extends UI {
     }
     ctx.restore();
   }
+  /**
+     * テキストの描画幅を取得します。
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {number} scale
+     * @returns {number} テキストの幅 (ゲーム内座標)
+     */
+  getTextWidth(ctx, scale) {
+    ctx.save();
+    const size = this.size * scale;
+    ctx.font = `${size}px sans-serif`; // フォントを設定
+    const metrics = ctx.measureText(this.text());
+    ctx.restore();
+    return metrics.width / scale; // ゲーム内座標に変換して返す
+  }
 }

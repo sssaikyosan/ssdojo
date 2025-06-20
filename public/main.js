@@ -50,7 +50,7 @@ battle_img.src = '/images/battle.png';
 export const titleBGM = new Audio(`/music/title.mp3`);
 
 export const battleBGM = new Audio(`/music/battle.mp3`);
-titleBGM.volume = 1;
+titleBGM.volume = 0.6;
 battleBGM.volume = 0.5;
 
 // ユニークなIDを生成する関数

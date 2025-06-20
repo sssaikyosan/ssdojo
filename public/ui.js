@@ -228,3 +228,20 @@ export class BackgroundImageUI extends UI {
     }
   }
 }
+
+
+export class OverlayUI extends UI {
+  color;
+
+  constructor(params) {
+    super(params);
+    this.color = params.color;
+    this.width = params.width;
+    this.height = params.height;
+  }
+
+  renderSelf(ctx, scale) {
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x * scale - this.width / 2 * scale, this.y * scale - this.height / 2 * scale, this.width * scale, this.height * scale);
+  }
+}

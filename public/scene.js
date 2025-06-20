@@ -1,5 +1,5 @@
 import { canvas, characterImages, gameManager, playerName, scene, selectedCharacterName, serverStatus, setPlayerName, setScene, setStatus, socket, userId, setSelectedCharacterName, titleBGM, battleBGM, battle_img, title_img } from "./main.js";
-import { Background, CharacterImageUI, CharacterInGameUI, BackgroundImageUI } from "./ui.js"; // BackgroundImageUIをインポート
+import { Background, CharacterImageUI, CharacterInGameUI, BackgroundImageUI, OverlayUI } from "./ui.js"; // BackgroundImageUIをインポート
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
 import { characterFiles } from "./main.js"; // characterFilesをインポート
@@ -253,7 +253,19 @@ export function createCharacterSelectScene() {
     size: 0.06,
     colors: ["#bbdd44", "#000000", "#FFFFFF"]
   });
+
+
+  let overlayUI = new OverlayUI({
+    x: 0.0,
+    y: 0.05,
+    width: 0.85,
+    height: 0.85,
+    color: "#4444ffbb"
+  });
+
+  selectScene.add(overlayUI);
   selectScene.add(selectTitle);
+
 
   // キャラクター一覧を表示
   const charactersPerRow = 5; // 1行に表示するキャラクター数
@@ -285,6 +297,7 @@ export function createCharacterSelectScene() {
       setScene(createTitleScene()); // タイトル画面に戻る
     };
 
+
     selectScene.add(characterUI);
   });
 
@@ -309,55 +322,71 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
   const roundRating = Math.round(rating);
   const opponentRoundRating = Math.round(opponentRating);
 
+  let playerOverlayUI = new OverlayUI({
+    x: -0.51,
+    y: 0.403,
+    width: 0.2,
+    height: 0.1,
+    color: "#ffffff40"
+  });
+
   let playerNameUI = new TextUI({
     text: () => {
       return `${playerName}`;
     },
-    x: -0.42,
+    x: -0.43,
     y: 0.4,
     size: 0.03,
     colors: ["#FFFFFF", "#000000"],
     textBaseline: 'bottom',
     position: 'right'
-  })
+  });
 
   let playerRatingUI = new TextUI({
     text: () => {
       // main.jsで計算された表示用レーティングを使用
       return `レート: ${roundRating}`;
     },
-    x: -0.42,
+    x: -0.43,
     y: 0.44, // プレイヤー名の下に表示するためにy座標を調整
     size: 0.025, // プレイヤー名より少し小さく
     colors: ["#FFFFFF", "#000000"],
     textBaseline: 'bottom', // プレイヤー名の下に揃える
     position: 'right'
-  })
+  });
+
+  let opponentOverlayUI = new OverlayUI({
+    x: 0.51,
+    y: -0.403,
+    width: 0.2,
+    height: 0.08,
+    color: "#ffffff40"
+  });
 
   let opponentNameUI = new TextUI({
     text: () => {
       return `${opponentName}`;
     },
-    x: 0.42,
+    x: 0.43,
     y: -0.4,
     size: 0.03,
     colors: ["#FFFFFF", "#000000"],
     textBaseline: 'top',
     position: 'left'
-  })
+  });
 
   let opponentRatingUI = new TextUI({
     text: () => {
       // main.jsで計算された表示用レーティングを使用
       return `レート: ${opponentRoundRating}`;
     },
-    x: 0.42,
+    x: 0.43,
     y: -0.44, // プレイヤー名の下に表示するためにy座標を調整
     size: 0.025, // プレイヤー名より少し小さく
     colors: ["#FFFFFF", "#000000"],
     textBaseline: 'top', // プレイヤー名の下に揃える
     position: 'left'
-  })
+  });
 
   // プレイヤーのキャラクター画像UIを追加
   let playerCharacterUI = new CharacterInGameUI({
@@ -382,8 +411,10 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
   playScene.add(playerCharacterUI); // プレイヤーのキャラクター画像UIをシーンに追加
   playScene.add(opponentCharacterUI); // 相手プレイヤーのキャラクター画像UIをシーンに追加
   playScene.add(gameManager.boardUI);
+  playScene.add(playerOverlayUI);
   playScene.add(playerNameUI);
   playScene.add(playerRatingUI); // レーティング表示UIを追加
+  playScene.add(opponentOverlayUI);
   playScene.add(opponentNameUI)
   playScene.add(opponentRatingUI); // レーティング表示UIを追加
   playScene.add(timeText);

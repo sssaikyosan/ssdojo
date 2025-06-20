@@ -22,7 +22,6 @@ export class Keyboard {
   }
 
   onKeyDown(e) {
-    console.log(e);
     const piecetype = this.keys[e.key];
     if (piecetype) {
       const pos = gameManager.boardUI.hoveredCell;
