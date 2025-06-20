@@ -14,7 +14,7 @@ export class BoardUI extends UI {
   draggingPiece = null;
   draggingPiecePos = null;
   hoveredCell = null;
-
+  started = false;
 
   constructor(params) {
     super(params);

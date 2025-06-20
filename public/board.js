@@ -22,7 +22,7 @@ export class Board {
   serverstarttime = 0;
   starttime = 0;
   time = 0;
-
+  started = false;
 
   // 盤面の初期化
   init(servertime, time) {

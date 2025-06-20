@@ -165,3 +165,12 @@ export function getUnPromotedType(type) {
   };
   return promotedTypes[type] || type;
 }
+
+export function getAfterStr(str, chara) {
+  const index = str.indexOf(chara);
+  let afterStr = "";
+  if (index !== -1) {
+    afterStr = str.substring(index + 1); // +1で区切り文字自体を含めない
+  }
+  return afterStr;
+}

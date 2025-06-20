@@ -25,13 +25,12 @@ export let gamesPlayedElement = null;
 export let keyboard = null;
 
 export let gameManager = null;
+export let characterProfiles = null;
 
 // キャラクター画像フォルダ名のリスト (prof.jsonから抽出)
 export const characterFiles = [ // exportを追加
   "0001_rei", "0002_karen", "0003_mifuyu", "0004_kureha", "0005_setsuna",
-  "0006_kirisaki", "0007_sylvie", "0008_red", "0009_hawk", "0010_shizuru",
-  "0011_kanade", "0012_komugi", "0013_chris", "0014_lily", "0015_coco",
-  "0016_minorin", "0017_kochou", "0018_k", "0019_astra", "0020_hina"
+  "0006_kirisaki", "0007_sylvie", "0008_red", "0009_hawk", "0010_shizuru"
 ];
 
 export let selectedCharacterName = null; // 選択されたキャラクターの名前
@@ -113,7 +112,6 @@ function init() {
     userId = generateUniqueId(); // 後で実装する関数
     localStorage.setItem('shogiUserId', userId);
   }
-  console.log(`User ID: ${userId}`); // 確認用
 
   // キャラクターの読み込みまたは選択
   loadOrSelectCharacter();
@@ -189,7 +187,6 @@ function setupSocket() {
 
   // マッチングが成立したときの処理
   socket.on('matchFound', (data) => {
-    playSound("match");
     scene = createPlayScene(
       playerName,
       data.name,
@@ -265,7 +262,6 @@ function roop() {
 // 全ての画像読み込みが完了したら初期化処理を実行
 Promise.all([...pieceImagePromises, ...characterImagePromises])
   .then(() => {
-    console.log("全ての画像が読み込まれました。");
     init(); // 画像読み込み完了後にinitを呼び出す
   })
   .catch(error => {
