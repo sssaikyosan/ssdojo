@@ -40,6 +40,11 @@ export function setSelectedCharacterName(name) {
   selectedCharacterName = name;
 }
 
+export const titleBGM = new Audio(`/music/title.mp3`);
+
+export const battleBGM = new Audio(`/music/battle.mp3`);
+titleBGM.volume = 1;
+battleBGM.volume = 0.5;
 
 // ユニークなIDを生成する関数
 function generateUniqueId() {
@@ -67,9 +72,6 @@ function loadOrSelectCharacter() {
 
 
 export function setScene(s) {
-  if (scene) { // 現在のシーンが存在する場合のみBGMを停止
-    stopBGM();
-  }
   scene = s;
 }
 

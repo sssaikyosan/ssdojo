@@ -1,5 +1,5 @@
-let currentVoice = null;
-let currentBGM = null; // 現在再生中のBGMを保持する変数
+export let currentVoice = null;
+export let currentBGM = null; // 現在再生中のBGMを保持する変数
 
 export function playSound(filename) {
   const audio = new Audio(`/sounds/${filename}.mp3`);
@@ -23,7 +23,7 @@ export function playVoice(filename) {
   currentVoice = audio; // 新しい音声を保持
 }
 
-export function playBGM(filename) {
+export function playBGM(bgm) {
   // 現在再生中のBGMがあれば停止
   if (currentBGM) {
     currentBGM.pause();
@@ -32,14 +32,12 @@ export function playBGM(filename) {
     }
   }
 
-  const audio = new Audio(`/music/${filename}.mp3`);
-  audio.loop = true; // BGMはループ再生
-  audio.volume = 0.5; // BGMの音量を調整（任意）
-  audio.play().catch(error => {
+  bgm.loop = true; // BGMはループ再生
+  bgm.play().catch(error => {
     console.error('BGMの再生に失敗しました:', error);
   });
 
-  currentBGM = audio; // 新しいBGMを保持
+  currentBGM = bgm; // 新しいBGMを保持
 }
 
 export function stopBGM() {
