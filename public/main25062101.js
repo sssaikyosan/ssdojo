@@ -40,10 +40,10 @@ export function setSelectedCharacterName(name) {
   selectedCharacterName = name;
 }
 
-export const title_img = new Image(1920, 1080)
+export const title_img = new Image(1920, 1080);
 title_img.src = '/images/title.png';
 
-export const battle_img = new Image(1920, 1080)
+export const battle_img = new Image(1920, 1080);
 battle_img.src = '/images/battle.png';
 
 export const titleBGM = new Audio(`/music/title.mp3`);
