@@ -4,6 +4,8 @@ import { Board } from './board.js';
 import { createPlayScene, createTitleScene, endGame, Scene } from "./scene.js";
 import { playSound, stopBGM } from "./utils.js"; // stopBGMをインポート
 
+// 初期化フラグ
+let isInitialized = false;
 
 export let pieceImages = {};
 export let characterImages = {}; // キャラクター画像用オブジェクトを追加
@@ -95,6 +97,12 @@ export function setStatus(rating, games) {
 
 // 初期化関数
 function init() {
+  // 初期化済みであれば何もしない
+  if (isInitialized) {
+    console.warn("init関数が複数回呼び出されましたが、二重初期化を防ぎました。");
+    return;
+  }
+  isInitialized = true;
   // キャンバスの初期化
   canvas = document.getElementById('shogiCanvas');
   //@ts-ignore
