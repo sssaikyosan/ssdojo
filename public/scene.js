@@ -1,8 +1,8 @@
-import { canvas, characterImages, gameManager, playerName, scene, selectedCharacterName, serverStatus, setPlayerName, setScene, setStatus, socket, userId, setSelectedCharacterName, titleBGM, battleBGM, battle_img, title_img } from "./main25062102.js";
+import { canvas, characterImages, gameManager, playerName, scene, selectedCharacterName, serverStatus, setPlayerName, setScene, setStatus, socket, userId, setSelectedCharacterName, titleBGM, battleBGM, battle_img, title_img } from "./main25062103.js";
 import { Background, CharacterImageUI, CharacterInGameUI, BackgroundImageUI, OverlayUI } from "./ui.js"; // BackgroundImageUIをインポート
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
-import { characterFiles } from "./main25062102.js"; // characterFilesをインポート
+import { characterFiles } from "./main25062103.js"; // characterFilesをインポート
 import { currentBGM, getAfterStr, playBGM, playVoice } from "./utils.js"; // playBGMをインポート
 
 export class Scene {

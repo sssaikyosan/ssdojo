@@ -1,4 +1,4 @@
-import { characterImages, gameManager, scene, title_img } from "./main25062102.js";
+import { characterImages, gameManager, scene, title_img } from "./main25062103.js";
 import { playVoice } from "./utils.js"; // playSound関数をインポート
 
 export class UI {
