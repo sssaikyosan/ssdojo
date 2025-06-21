@@ -2,7 +2,7 @@ import { Keyboard } from "./keyboard.js";
 import { GameManager } from "./game_manager.js";
 import { Board } from './board.js';
 import { createPlayScene, createTitleScene, endGame, Scene } from "./scene.js";
-import { playSound, stopBGM } from "./utils.js"; // stopBGMをインポート
+import { playSound, stopBGM, setBGMVolume, setSoundVolume } from "./utils.js"; // setBGMVolume, setSoundVolumeをインポート
 
 // 初期化フラグ
 let isInitialized = false;
@@ -51,8 +51,8 @@ battle_img.src = '/images/battle.png';
 export const titleBGM = new Audio(`/music/title.mp3`);
 
 export const battleBGM = new Audio(`/music/battle.mp3`);
-titleBGM.volume = 0.6;
-battleBGM.volume = 0.5;
+titleBGM.volume = 0.3;
+battleBGM.volume = 0.26;
 
 // ユニークなIDを生成する関数
 function generateUniqueId() {
@@ -177,6 +177,28 @@ function addEventListeners() {
   canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
   });
+
+  // 音量スライダーのイベントリスナーを追加
+  const bgmVolumeSlider = document.getElementById('bgmVolumeSlider');
+  const soundVolumeSlider = document.getElementById('soundVolumeSlider');
+
+  if (bgmVolumeSlider) {
+    bgmVolumeSlider.addEventListener('input', (event) => {
+      if (event.target instanceof HTMLInputElement) {
+        const volume = parseInt(event.target.value, 10) / 100;
+        setBGMVolume(volume);
+      }
+    });
+  }
+
+  if (soundVolumeSlider) {
+    soundVolumeSlider.addEventListener('input', (event) => {
+      if (event.target instanceof HTMLInputElement) {
+        const volume = parseInt(event.target.value, 10) / 100;
+        setSoundVolume(volume);
+      }
+    });
+  }
 }
 
 function setupSocket() {

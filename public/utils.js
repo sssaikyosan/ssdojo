@@ -1,8 +1,31 @@
 export let currentVoice = null;
 export let currentBGM = null; // 現在再生中のBGMを保持する変数
 
+// グローバルな音量 (0.0から1.0)
+export let bgmVolume = 0.3; // BGM用音量
+export let soundVolume = 0.3; // 効果音用音量
+
+// BGM音量を設定する関数
+export function setBGMVolume(volume) {
+  bgmVolume = Math.max(0.0, Math.min(1.0, volume)); // 0.0から1.0の範囲に制限
+  // 現在再生中のBGMの音量も更新
+  if (currentBGM) {
+    currentBGM.volume = bgmVolume;
+  }
+}
+
+// 効果音音量を設定する関数
+export function setSoundVolume(volume) {
+  soundVolume = Math.max(0.0, Math.min(1.0, volume)); // 0.0から1.0の範囲に制限
+  // 現在再生中の音声の音量も更新
+  if (currentVoice) {
+    currentVoice.volume = soundVolume;
+  }
+}
+
 export function playSound(filename) {
   const audio = new Audio(`/sounds/${filename}.mp3`);
+  audio.volume = soundVolume; // 効果音音量を適用
   audio.play().catch(error => {
     console.error('効果音の再生に失敗しました:', error);
   });
@@ -16,6 +39,7 @@ export function playVoice(filename) {
   }
 
   const audio = new Audio(filename);
+  audio.volume = soundVolume; // 効果音音量を適用
   audio.play().catch(error => {
     console.error('効果音の再生に失敗しました:', error);
   });
@@ -33,6 +57,7 @@ export function playBGM(bgm) {
   }
 
   bgm.loop = true; // BGMはループ再生
+  bgm.volume = bgmVolume; // BGM音量を適用
   bgm.play().catch(error => {
     console.error('BGMの再生に失敗しました:', error);
   });

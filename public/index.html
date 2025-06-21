@@ -87,6 +87,36 @@
       color: white;
       border-top: -6;
     }
+
+    /* 音量設定UIのスタイル調整 */
+    #volumeOverlay {
+      padding: 15px 15px;
+      /* パディングを小さく */
+      margin: 5px;
+      /* マージンを小さく */
+      display: flex;
+      /* 要素を横並びにする */
+      flex-direction: column;
+      /* 要素を縦並びにする */
+      align-items: flex-start;
+      /* 左揃え */
+      gap: 5px;
+      /* 要素間の隙間を小さく */
+    }
+
+    #volumeOverlay .whiteText {
+      font-size: 16px;
+      /* フォントサイズを小さく */
+      margin: 0px;
+      /* マージンをリセット */
+    }
+
+    #volumeOverlay input[type="range"] {
+      margin: 0px 5px;
+      /* マージンを調整 */
+      vertical-align: middle;
+      /* 垂直方向中央揃え */
+    }
   </style>
 </head>
 
@@ -111,6 +141,13 @@
     style="display: block;  margin:10px; position: absolute; bottom: 20px; left: 20px; text-align: left;">
     <p id="gamesPlayedText" class="whiteText">試合数: -</p>
     <p id="playerRating" class="whiteText">レート: -</p>
+  </div>
+  <div id="volumeOverlay" class="overlay"
+    style="display: block;  margin:10px; position: absolute; top: 10px; left: 10px; text-align: left;">
+    <label for="bgmVolumeSlider" class="whiteText">BGM音量:</label>
+    <input type="range" id="bgmVolumeSlider" min="0" max="100" value="30">
+    <label for="soundVolumeSlider" class="whiteText">効果音量:</label>
+    <input type="range" id="soundVolumeSlider" min="0" max="100" value="30">
   </div>
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
