@@ -110,7 +110,6 @@ function init() {
   ctx = canvas.getContext('2d');
   keyboard = new Keyboard();
   keyboard.init(canvas);
-  audioManager.Init();
 
   // ユーザーIDの読み込みまたは生成
   userId = localStorage.getItem('shogiUserId');
@@ -193,24 +192,18 @@ function addEventListeners() {
   }
 
   if (soundVolumeSlider) {
-    soundVolumeSlider.addEventListener('input', (event) => {
+    soundVolumeSlider.addEventListener('change', (event) => {
       if (event.target instanceof HTMLInputElement) {
         const volume = parseInt(event.target.value, 10) / 100;
         audioManager.setSoundVolume(volume);
-      }
-    });
-    soundVolumeSlider.addEventListener('change', (event) => {
-      if (event.target instanceof HTMLInputElement) {
         audioManager.playSound('sound'); // 効果音を再生
       }
     });
   }
 
   if (voiceVolumeSlider) {
-    voiceVolumeSlider.addEventListener('input', (event) => {
+    voiceVolumeSlider.addEventListener('change', (event) => {
       if (event.target instanceof HTMLInputElement) {
-        const volume = parseInt(event.target.value, 10) / 100;
-        audioManager.setVoiceVolume(volume);
         // キャラクターのランダムボイス再生
         const randomIndex = Math.floor(Math.random() * 3);
         // selectedCharacterNameがnullでないことを確認

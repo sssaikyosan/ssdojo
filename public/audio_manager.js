@@ -11,12 +11,9 @@ export class AudioManager {
     voiceDict = {};
 
     constructor() {
-
-    }
-
-    Init() {
-        this.addBGM('title', 0.3);
-        this.addBGM('battle', 0.25);
+        this.loadVolumeSettings(); // アプリケーション起動時に設定を読み込む
+        this.addBGM('title', 0.6);
+        this.addBGM('battle', 0.5);
     }
 
     addBGM(filename, originalVolume) {
@@ -29,15 +26,16 @@ export class AudioManager {
         if (this.currentBGM) {
             this.bgmDict[this.currentBGM].audio.volume = this.bgmVolume * this.bgmDict[this.currentBGM].originalVolume; // 元の音量に掛け合わせる
         }
+        this.saveVolumeSettings(); // 設定変更時に保存
     }
 
     // 効果音音量を設定する関数
     setSoundVolume(volume) {
         this.soundVolume = Math.max(0.0, Math.min(1.0, volume)); // 0.0から1.0の範囲に制限
         // 現在再生中の音声の音量も更新
-        if (this.currentVoice) {
-            this.currentVoice.volume = this.soundVolume;
-        }
+        // 効果音とボイスでcurrentVoiceを共有しているため、ここではsoundVolumeのみを適用
+        // playSoundやplayVoice内でそれぞれのvolumeを適用する
+        this.saveVolumeSettings(); // 設定変更時に保存
     }
 
 
@@ -45,17 +43,15 @@ export class AudioManager {
     setVoiceVolume(volume) {
         this.voiceVolume = Math.max(0.0, Math.min(1.0, volume)); // 0.0から1.0の範囲に制限
         // 現在再生中の音声の音量も更新
-        if (this.currentVoice) {
-            this.currentVoice.volume = this.voiceVolume;
-        }
+        // 効果音とボイスでcurrentVoiceを共有しているため、ここではvoiceVolumeのみを適用
+        // playSoundやplayVoice内でそれぞれのvolumeを適用する
+        this.saveVolumeSettings(); // 設定変更時に保存
     }
 
     playSound(filename) {
         const audio = new Audio(`/sounds/${filename}.mp3`);
         audio.volume = this.soundVolume; // 効果音音量を適用
-        audio.play().catch(error => {
-            console.error('効果音の再生に失敗しました:', error);
-        });
+        audio.play();
     }
 
     playVoice(filename) {
@@ -67,9 +63,7 @@ export class AudioManager {
 
         const audio = new Audio(filename);
         audio.volume = this.voiceVolume; // キャラボイス音量を適用
-        audio.play().catch(error => {
-            console.error('効果音の再生に失敗しました:', error);
-        });
+        audio.play();
 
         this.currentVoice = audio; // 新しい音声を保持
     }
@@ -89,9 +83,7 @@ export class AudioManager {
 
         this.bgmDict[bgm].loop = true; // BGMはループ再生
         this.bgmDict[bgm].audio.volume = this.bgmVolume * this.bgmDict[bgm].originalVolume; // マスター音量と元の音量を掛け合わせる
-        this.bgmDict[bgm].audio.play().catch(error => {
-            console.error('BGMの再生に失敗しました:', error);
-        });
+        this.bgmDict[bgm].audio.play();
 
         this.currentBGM = bgm; // 新しいBGMを保持
     }
@@ -103,6 +95,51 @@ export class AudioManager {
                 this.bgmDict[this.currentBGM].audio.currentTime = 0;
             }
             this.currentBGM = null; // BGM参照をクリア
+        }
+    }
+
+    // 音量設定をローカルストレージに保存する
+    saveVolumeSettings() {
+        try {
+            const settings = {
+                bgmVolume: this.bgmVolume,
+                soundVolume: this.soundVolume,
+                voiceVolume: this.voiceVolume
+            };
+            localStorage.setItem('volumeSettings', JSON.stringify(settings));
+        } catch (e) {
+            console.error('ローカルストレージへの保存に失敗しました:', e);
+        }
+    }
+
+    // ローカルストレージから音量設定を読み込む
+    loadVolumeSettings() {
+        try {
+            const settingsString = localStorage.getItem('volumeSettings');
+            if (settingsString) {
+                const settings = JSON.parse(settingsString);
+                // 読み込んだ設定が有効な数値か確認し、一時変数に格納。無効な場合はデフォルト値を使用。
+                const loadedBgmVolume = (typeof settings.bgmVolume === 'number' && isFinite(settings.bgmVolume)) ? settings.bgmVolume : 1;
+                const loadedSoundVolume = (typeof settings.soundVolume === 'number' && isFinite(settings.soundVolume)) ? settings.soundVolume : 1;
+                const loadedVoiceVolume = (typeof settings.voiceVolume === 'number' && isFinite(settings.voiceVolume)) ? settings.voiceVolume : 1;
+
+                // 一時変数に格納した値を使って音量プロパティを設定
+                this.setBGMVolume(loadedBgmVolume);
+                this.setSoundVolume(loadedSoundVolume);
+                this.setVoiceVolume(loadedVoiceVolume);
+
+            } else {
+                // 設定がない場合はデフォルト値をセット
+                this.setBGMVolume(1);
+                this.setSoundVolume(1);
+                this.setVoiceVolume(1);
+            }
+        } catch (e) {
+            console.error('ローカルストレージからの読み込みに失敗しました:', e);
+            // 読み込み失敗時もデフォルト値をセット
+            this.setBGMVolume(1);
+            this.setSoundVolume(1);
+            this.setVoiceVolume(1);
         }
     }
 }
