@@ -1,8 +1,9 @@
 import { Keyboard } from "./keyboard.js";
 import { GameManager } from "./game_manager.js";
 import { Board } from './board.js';
-import { createPlayScene, createTitleScene, endGame, Scene } from "./scene.js";
 import { AudioManager } from "./audio_manager.js"; // audio_manager.jsからインポート
+import { createTitleScene } from "./scene_title.js";
+import { createPlayScene, endGame } from "./scene_game.js";
 
 // 初期化フラグ
 let isInitialized = false;
