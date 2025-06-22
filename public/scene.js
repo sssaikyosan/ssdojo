@@ -1,9 +1,9 @@
-import { canvas, characterImages, gameManager, playerName, scene, selectedCharacterName, serverStatus, setPlayerName, setScene, setStatus, socket, userId, setSelectedCharacterName, titleBGM, battleBGM, battle_img, title_img } from "./main25062103.js";
+import { canvas, characterImages, gameManager, playerName, scene, selectedCharacterName, serverStatus, setPlayerName, setScene, setStatus, socket, userId, setSelectedCharacterName, battle_img, title_img, audioManager } from "./main25062103.js";
 import { Background, CharacterImageUI, CharacterInGameUI, BackgroundImageUI, OverlayUI } from "./ui.js"; // BackgroundImageUIをインポート
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
 import { characterFiles } from "./main25062103.js"; // characterFilesをインポート
-import { currentBGM, getAfterStr, playBGM, playVoice } from "./utils.js"; // playBGMをインポート
+import { getAfterStr } from "./utils.js"; // utils.jsからインポート
 
 export class Scene {
   scale = 0;
@@ -184,8 +184,8 @@ export function createTitleScene() {
   titleScene.add(backgroundImageUI);
   // 初回クリックでBGMを再生するためのイベントリスナー
   const playBGMOnce = () => {
-    if (currentBGM === null) {
-      playBGM(titleBGM);
+    if (audioManager.currentBGM === null) {
+      audioManager.playBGM('title');
     }
 
     canvas.removeEventListener('click', playBGMOnce); // イベントリスナーを解除
@@ -367,7 +367,7 @@ export function createCharacterSelectScene() {
       console.log(`Selected character: ${selectedCharacterName}`);
       const randomIndex = Math.floor(Math.random() * 3);
       const randomVoiceFile = `/characters/${characterUI.image}/voice00${randomIndex + 1}.wav`;
-      playVoice(randomVoiceFile);
+      audioManager.playVoice(randomVoiceFile);
       setScene(createTitleScene());
     };
 
@@ -390,7 +390,7 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
   const backgroundImageUI = new BackgroundImageUI({ image: battle_img });
   playScene.add(backgroundImageUI);
 
-  playBGM(battleBGM); // 対戦BGMを再生
+  audioManager.playBGM('battle'); // 対戦BGMを再生
   gameManager.setRoom(roomId, teban, servertime);
 
   const roundRating = Math.round(rating);
@@ -491,7 +491,7 @@ export function backToTitle() {
   resultOverlay.style.display = "none";
   statusOverlay.style.display = "block";
   setScene(createTitleScene());
-  playBGM(titleBGM);
+  audioManager.playBGM('title');
 }
 
 export function endGame(data) {

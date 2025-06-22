@@ -2,7 +2,7 @@ import { Keyboard } from "./keyboard.js";
 import { GameManager } from "./game_manager.js";
 import { Board } from './board.js';
 import { createPlayScene, createTitleScene, endGame, Scene } from "./scene.js";
-import { playSound, stopBGM, setBGMVolume, setSoundVolume } from "./utils.js"; // setBGMVolume, setSoundVolumeをインポート
+import { AudioManager } from "./audio_manager.js"; // audio_manager.jsからインポート
 
 // 初期化フラグ
 let isInitialized = false;
@@ -15,7 +15,7 @@ export let ctx = null;
 export let emitter = null;
 export let socket = null;
 export let scene = null; // scene変数はmain.jsで管理
-/**@type {Board} */
+//@type {Board}
 export let board = new Board();
 export let playerName = "";
 export let userId = null;
@@ -25,6 +25,7 @@ export let playerRatingElement = null;
 export let gamesPlayedElement = null;
 /**@type {Keyboard} */
 export let keyboard = null;
+export let audioManager = new AudioManager();
 
 export let gameManager = null;
 export let characterProfiles = null;
@@ -48,11 +49,7 @@ title_img.src = '/images/title.png';
 export const battle_img = new Image(1920, 1080);
 battle_img.src = '/images/battle.png';
 
-export const titleBGM = new Audio(`/music/title.mp3`);
 
-export const battleBGM = new Audio(`/music/battle.mp3`);
-titleBGM.volume = 0.3;
-battleBGM.volume = 0.26;
 
 // ユニークなIDを生成する関数
 function generateUniqueId() {
@@ -112,6 +109,7 @@ function init() {
   ctx = canvas.getContext('2d');
   keyboard = new Keyboard();
   keyboard.init(canvas);
+  audioManager.Init();
 
   // ユーザーIDの読み込みまたは生成
   userId = localStorage.getItem('shogiUserId');
@@ -181,12 +179,14 @@ function addEventListeners() {
   // 音量スライダーのイベントリスナーを追加
   const bgmVolumeSlider = document.getElementById('bgmVolumeSlider');
   const soundVolumeSlider = document.getElementById('soundVolumeSlider');
+  const voiceVolumeSlider = document.getElementById('voiceVolumeSlider');
+
 
   if (bgmVolumeSlider) {
     bgmVolumeSlider.addEventListener('input', (event) => {
       if (event.target instanceof HTMLInputElement) {
         const volume = parseInt(event.target.value, 10) / 100;
-        setBGMVolume(volume);
+        audioManager.setBGMVolume(volume);
       }
     });
   }
@@ -195,7 +195,42 @@ function addEventListeners() {
     soundVolumeSlider.addEventListener('input', (event) => {
       if (event.target instanceof HTMLInputElement) {
         const volume = parseInt(event.target.value, 10) / 100;
-        setSoundVolume(volume);
+        audioManager.setSoundVolume(volume);
+      }
+    });
+    soundVolumeSlider.addEventListener('change', (event) => {
+      if (event.target instanceof HTMLInputElement) {
+        audioManager.playSound('sound'); // 効果音を再生
+      }
+    });
+  }
+
+  if (voiceVolumeSlider) {
+    voiceVolumeSlider.addEventListener('input', (event) => {
+      if (event.target instanceof HTMLInputElement) {
+        const volume = parseInt(event.target.value, 10) / 100;
+        audioManager.setVoiceVolume(volume);
+        // キャラクターのランダムボイス再生
+        const randomIndex = Math.floor(Math.random() * 3);
+        // selectedCharacterNameがnullでないことを確認
+        if (selectedCharacterName) {
+          const randomVoiceFile = `/characters/${selectedCharacterName}/voice00${randomIndex + 1}.wav`;
+          audioManager.playVoice(randomVoiceFile);
+        }
+      }
+    });
+  }
+
+  // 設定ボタンのイベントリスナーを追加
+  const settingsButton = document.getElementById('settingsButton');
+  const volumeOverlay = document.getElementById('volumeOverlay');
+
+  if (settingsButton && volumeOverlay) {
+    settingsButton.addEventListener('click', () => {
+      if (volumeOverlay.style.display === 'none') {
+        volumeOverlay.style.display = 'flex';
+      } else {
+        volumeOverlay.style.display = 'none';
       }
     });
   }

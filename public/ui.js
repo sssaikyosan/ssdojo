@@ -1,6 +1,4 @@
-import { characterImages, gameManager, scene, title_img } from "./main25062103.js";
-import { playVoice } from "./utils.js"; // playSound関数をインポート
-
+import { characterImages, gameManager, scene, title_img, audioManager } from "./main25062103.js";
 export class UI {
   globalX;
   globalY;
@@ -154,7 +152,7 @@ export class CharacterImageUI extends UI { // export キーワードを追加
   onMouseDown(pos) {
     const randomIndex = Math.floor(Math.random() * 3);
     const randomVoiceFile = `/characters/${this.image}/voice00${randomIndex + 1}.wav`;
-    playVoice(randomVoiceFile);
+    audioManager.playVoice(randomVoiceFile);
   }
 }
 
@@ -181,7 +179,7 @@ export class CharacterInGameUI extends UI { // export キーワードを追加
     if (mousePos.x >= 0 && mousePos.y >= 0) return;
     const randomIndex = Math.floor(Math.random() * 3);
     const randomVoiceFile = `/characters/${this.image}/voice00${randomIndex + 1}.wav`;
-    playVoice(randomVoiceFile);
+    audioManager.playVoice(randomVoiceFile);
   }
 }
 

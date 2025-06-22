@@ -1,5 +1,5 @@
 import { BoardUI } from './ui_board.js';
-import { playSound } from './utils.js';
+import { audioManager } from './main25062103.js'; // audio_manager.jsからインポート
 import { Board } from './board.js';
 
 export class GameManager {
@@ -43,7 +43,7 @@ export class GameManager {
                 this.boardUI.draggingPiece = null;
                 this.boardUI.draggingPiecePos = null;
             }
-            playSound("sound");
+            audioManager.playSound("sound");
             return true;
         };
         return false;
@@ -54,7 +54,7 @@ export class GameManager {
         this.board.time = time;
         if (this.board.matched && !this.board.started && this.board.time - this.board.starttime > 5000) {
             this.board.started = true;
-            playSound('match');
+            audioManager.playSound('match');
         }
 
         if (this.cpu !== null) {
