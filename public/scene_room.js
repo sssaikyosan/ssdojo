@@ -69,22 +69,24 @@ export function roomUpdate(data) {
     data.sente.forEach(name => {
         const pElement = document.createElement('p');
         pElement.textContent = name;
+        pElement.style.color = '#FFFFFF'; // テキスト色を白に設定
         senteOverlay.appendChild(pElement);
     });
 
     data.gote.forEach(name => {
         const pElement = document.createElement('p');
         pElement.textContent = name;
+        pElement.style.color = '#FFFFFF'; // テキスト色を白に設定
         goteOverlay.appendChild(pElement);
     });
 
     data.spectators.forEach(name => {
         const pElement = document.createElement('p');
         pElement.textContent = name;
+        pElement.style.color = '#FFFFFF'; // テキスト色を白に設定
         spectatorsOverlay.appendChild(pElement);
     });
 }
-
 
 
 export function createRoomScene(data) {
