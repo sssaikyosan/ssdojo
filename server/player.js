@@ -1,4 +1,4 @@
-import { serverState } from "./server";
+import { serverState } from "./server.js";
 
 export class Player {
     userId = null;
