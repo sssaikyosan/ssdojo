@@ -1,7 +1,12 @@
 import { Player } from './player.js'
 import uuid from 'uuid-random';
-import { Board } from './board.js'
-import { getDisplayRating } from './utils.js';
+import fs from 'fs';
+import { getDisplayRating, calRating, generateRandomString } from './utils.js';
+import { Room } from './room.js';
+
+import { RATING_FILE } from './server.js';
+
+
 
 export class ServerState {
     timecount = 0;
@@ -15,21 +20,19 @@ export class ServerState {
     }
 
     addPlayer(socket) {
+        if (!socket.id) return false;
         this.players[socket.id] = new Player(socket);
+        return true;
     }
 
     //プレイヤーの削除
     deletePlayer(id) {
+        if (!this.players[id]) return false;
         if (this.players[id].roomId) {
-            if (this.rooms[this.players[id].roomId].sente === id) {
-                this.deleteRoom(this.players[id].roomId);
-            } else if (this.rooms[this.players[id].roomId].gote === id) {
-                this.deleteRoom(this.players[id].roomId);
-            } else {
-                this.rooms[this.players[id].roomId].spectators.filter(char => char !== id);
-            }
+            this.rooms[this.players[id].roomId].leaveRoom(id);
         }
         delete this.players[id];
+        return true;
     }
 
     matchMaking() {
@@ -48,10 +51,12 @@ export class ServerState {
 
                 const roomId = uuid();  // ルームIDを生成
 
-                this.rooms[roomId] = { board: new Board(), sente: player1, gote: player2, spectators: [] };
+                this.rooms[roomId] = new Room(roomId, 'rating');
+                this.rooms[roomId].addPlayer(player1, 'sente');
+                this.rooms[roomId].addPlayer(player2, 'gote');
 
-                let time = performance.now();
-                this.rooms[roomId].board.init(time, time);
+                const time = performance.now();
+                this.rooms[roomId].startGame(time);
 
                 // 両プレイヤーにマッチング完了を通知
                 const rate1 = this.ratings[this.players[player1].userId];
@@ -130,6 +135,128 @@ export class ServerState {
         this.topPlayers = top;
         console.log(top);
         return top;
+    }
+
+
+    ratingProcess(win, sente, gote, text) {
+        if (!this.players[sente] || !this.players[gote]) {
+            console.log('プレイヤーが存在しません');
+            return { winPlayer: win, text: text }
+        }
+
+        const winPlayerId = win === 1 ? this.players[sente].userId : this.players[gote].userId;
+        const losePlayerId = win === 1 ? this.players[gote].userId : this.players[sente].userId;
+
+        if (winPlayerId && losePlayerId && this.ratings[winPlayerId] && this.ratings[losePlayerId]) {
+            const winEloRating = this.ratings[winPlayerId].rating;
+            const loseEloRating = this.ratings[losePlayerId].rating;
+
+            const winGames = this.ratings[winPlayerId].games;
+            const loseGames = this.ratings[losePlayerId].games;
+
+            const rateData = calRating(winEloRating, winGames, loseEloRating, loseGames);
+
+            this.ratings[winPlayerId].rating = rateData.newWinRating;
+            this.ratings[losePlayerId].rating = rateData.newLoseRating;
+
+            this.ratings[winPlayerId]['name'] = win === 1 ? this.players[sente].name : this.players[gote].name;
+            this.ratings[losePlayerId]['name'] = win === 1 ? this.players[gote].name : this.players[sente].name;
+
+            console.log(`レーティング更新: ${winPlayerId}: ${this.ratings[winPlayerId].rating} (${winEloRating}), ${losePlayerId}: ${this.ratings[losePlayerId].rating} (${loseEloRating})`);
+
+            this.ratings[winPlayerId].games++;
+            this.ratings[losePlayerId].games++;
+
+            this.saveRatings(); // レーティングを保存
+
+            const data = {
+                winPlayer: win,
+                text: text,
+                winRating: getDisplayRating(winEloRating, winGames),
+                newWinRating: getDisplayRating(rateData.newWinRating, winGames + 1),
+                winGames: this.ratings[winPlayerId].games,
+                loseRating: getDisplayRating(loseEloRating, loseGames),
+                newLoseRating: getDisplayRating(rateData.newLoseRating, loseGames + 1),
+                loseGames: this.ratings[losePlayerId].games
+            }
+            return data;
+        } else {
+            console.error(`レーティング情報が見つかりませんでした。Win Player ID: ${winPlayerId}, Lose Player ID: ${losePlayerId}`);
+            return { winPlayer: win, text: text };
+        }
+    }
+
+    saveRatings() {
+        try {
+            fs.writeFileSync(RATING_FILE, JSON.stringify(this.ratings, null, 2), 'utf8');
+            console.log('レーティングデータを保存しました');
+        } catch (error) {
+            console.error('レーティングデータの保存中にエラーが発生しました:', error);
+        }
+    }
+
+    loadRatings() {
+        try {
+            const data = fs.readFileSync(RATING_FILE, 'utf8');
+            this.ratings = JSON.parse(data);
+            console.log('レーティングデータを読み込みました');
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                console.log('レーティングファイルが見つかりませんでした。新しく作成します。');
+                this.ratings = {};
+                this.saveRatings(); // 新しいファイルを作成
+            } else {
+                console.error('レーティングデータの読み込み中にエラーが発生しました:', error);
+            }
+        }
+    }
+
+    getUserRating(userId) {
+        if (!this.ratings[userId]) return null;
+        return getDisplayRating(this.ratings[userId].rating, this.ratings[userId].games)
+    }
+
+    getUserGames(userId) {
+        if (!this.ratings[userId]) return null;
+        return this.ratings[userId].games;
+    }
+
+    makeRating(userId) {
+        if (this.ratings[userId]) return false;
+        this.ratings[userId] = { rating: 1500, games: 0, lastLogin: new Date() };
+        this.saveRatings();
+        return true;
+    }
+
+
+
+    createRoom() {
+        const roomId = generateRandomString();
+        this.rooms[roomId] = new Room(roomId, 'private');
+        return roomId;
+    }
+
+    joinRoom(id, data) {
+        if (!this.rooms[data.roomId]) return '部屋が見つかりません';
+        return this.players[id].joinRoom(data.roomId);
+    }
+
+    leaveRoom(playerId) {
+        if (!this.players[playerId]) return
+        this.players[playerId].leaveRoom();
+    }
+
+    moveTeban(id, data) {
+        if (!this.players[id]) return;
+        if (!this.players[id].roomId) return;
+        this.rooms[this.players[id].roomId].moveTeban(id, data);
+    }
+
+    readyToPlay(id) {
+        if (!this.players[id]) return;
+        if (!this.players[id].roomId) return;
+        this.players[id].readyToPlay();
+        this.rooms[this.players[id].roomId].readyToPlay();
     }
 }
 

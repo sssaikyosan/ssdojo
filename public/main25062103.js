@@ -3,7 +3,7 @@ import { GameManager } from "./game_manager.js";
 import { Board } from './board.js';
 import { AudioManager } from "./audio_manager.js"; // audio_manager.jsからインポート
 import { createTitleScene } from "./scene_title.js";
-import { createPlayScene, endGame } from "./scene_game.js";
+import { createPlayScene, createRoomPlayScene, endGame } from "./scene_game.js";
 
 // 初期化フラグ
 let isInitialized = false;
@@ -16,8 +16,6 @@ export let ctx = null;
 export let emitter = null;
 export let socket = null;
 export let scene = null; // scene変数はmain.jsで管理
-//@type {Board}
-export let board = new Board();
 export let playerName = "";
 export let userId = null;
 export let serverStatus = { online: 0, roomCount: 0, topPlayers: [] };
@@ -255,6 +253,18 @@ function setupSocket() {
       data.rating,
       data.opponentRating
     );
+  });
+
+  socket.on('startGame', (data) => {
+    scene = createRoomPlayScene(
+      data.senteName,
+      data.senteCharacter,
+      data.goteName,
+      data.goteCharacter,
+      data.roomId,
+      data.servertime,
+      data.roomteban
+    )
   });
 
   // 新しい駒の移動を受信

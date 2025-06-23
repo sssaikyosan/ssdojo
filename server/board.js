@@ -2,7 +2,6 @@ import { BOARD_SIZE, MOVETIME, PIECE_MOVES, UNPROMODED_TYPES } from "./const.js"
 import { getPromotedType, getUnPromotedType } from "./utils.js";
 
 export class Board {
-  pieces = []; // すべての駒を保持する配列
   map = [[null, null, null, null, null, null, null, null, null],
   [null, null, null, null, null, null, null, null, null],
   [null, null, null, null, null, null, null, null, null],
@@ -16,14 +15,11 @@ export class Board {
     sente: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 },
     gote: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 }
   };
-  // komadaiServerTime = { sente: 0, gote: 0 };
-  // komadaipTime = { sente: 0, gote: 0 };
   kifu = [];
 
   serverstarttime = 0;
   starttime = 0;
   time = 0;
-
 
   // 盤面の初期化
   init(servertime, time) {
@@ -32,7 +28,20 @@ export class Board {
     // this.komadaipTime = { sente: time, gote: time };
     this.starttime = time;
     this.time = time;
-    this.currentMove = 0;
+    this.map = [[null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null]];
+    this.komadaiPieces = {
+      sente: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 },
+      gote: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 }
+    };
+    this.kifu = [];
     this.initPieces(1);
     this.initPieces(-1);
   }

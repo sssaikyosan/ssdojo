@@ -1,3 +1,5 @@
+import { serverState } from "./server";
+
 export class Player {
     userId = null;
     name = "";
@@ -14,7 +16,7 @@ export class Player {
     }
 
     requestMatch(data) {
-        if (this.state === "playing") return false;
+        if (this.state === "playing" || this.state === "ready") return false;
         if (this.roomId !== null) return false;
         if (!data.name) return false;
         if (!data.characterName) return false;
@@ -28,5 +30,26 @@ export class Player {
     goToPlay(roomId) {
         this.state = "playing";
         this.roomId = roomId;
+    }
+
+    readyToPlay() {
+        this.state = "ready";
+    }
+
+    joinRoom(roomId) {
+        if (this.roomId) return 'すでに入っている部屋があります';
+        serverState.rooms[roomId].joinRoom(this.socket.id);
+    }
+
+    leaveRoom() {
+        if (!this.roomId) return;
+        serverState.rooms[roomId].leaveRoom(this.socket.id);
+        this.roomId = null;
+        this.state = 'waiting';
+    }
+
+    chat(data) {
+        if (!this.roomId) return;
+        serverState.rooms[roomId].chat(this.name, data.text);
     }
 }

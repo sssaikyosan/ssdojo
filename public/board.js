@@ -24,6 +24,7 @@ export class Board {
   time = 0;
   matched = false;
   started = false;
+  finished = false;
 
   // 盤面の初期化
   init(servertime, time) {
