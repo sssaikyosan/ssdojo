@@ -7,6 +7,9 @@ import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
 import { getAfterStr } from "./utils.js";
 
+export const rankingOverlay = document.getElementById("rankingOverlay");
+const roomMakeOverlay = document.getElementById("roomMakeOverlay");
+const playButtonOverlay = document.getElementById("playButtonOverlay");
 const nameInputOverlay = document.getElementById("nameInputOverlay");
 const charaSelectOverlay = document.getElementById("charaSelectOverlay");
 
@@ -109,6 +112,8 @@ export function createTitleScene() {
         if (playerName == "") setPlayerName("名無しの棋士");
         // マッチングを開始
         socket.emit("requestMatch", { name: playerName, characterName: selectedCharacterName, userId: userId });
+        roomMakeOverlay.style.display = "none";
+        playButtonOverlay.style.display = "none";
         nameInputOverlay.style.display = "none";
         charaSelectOverlay.style.display = "none";
         titleScene.add(matchingText);
@@ -119,6 +124,16 @@ export function createTitleScene() {
         setScene(createCharacterSelectScene());
     }
 
+    for (let i = 0; i < 10; i++) {
+        const rankElement = document.getElementById(`ranking${i}`);
+        if (rankElement) {
+            if (serverStatus.topPlayers.length < i + 1) {
+                rankElement.innerText = `${i + 1}位 none`;
+            } else {
+                rankElement.innerText = `${i + 1}位 ${serverStatus.topPlayers[i].name} ${Math.round(serverStatus.topPlayers[i].rating)}`;
+            }
+        }
+    }
 
 
     nameInput.addEventListener("input", () => { limitInputLength(nameInput); });
@@ -132,49 +147,19 @@ export function createTitleScene() {
 
     console.log(serverStatus);
 
-    const rangingOverlay = new OverlayUI({
-        x: 0.58,
-        y: 0.08,
-        width: 0.4,
-        height: 0.46,
-        color: "#222222"
-    });
-    titleScene.add(rangingOverlay);
-    titleScene.add(new TextUI({
-        text: () => "ランキング",
-        x: 0.48,
-        y: -0.105,
-        size: 0.04,
-        colors: ["#ffffff", "#00000000", "#00000000"],
-        position: 'left'
-    }))
-    const ranking = [];
-    for (let i = 0; i < 10; i++) {
-        ranking.push(new TextUI({
-            text: () => {
-                if (serverStatus.topPlayers.length < i + 1) return `${i + 1}位 none`;
-                return `${i + 1}位 ${serverStatus.topPlayers[i].name} ${Math.round(serverStatus.topPlayers[i].rating)}`;
-            },
-            x: 0.4,
-            y: -0.06 + i * 0.038,
-            size: 0.03,
-            colors: ["#ffffff", "#00000000", "#00000000"],
-            position: 'left'
-        }));
-    }
-    for (let i = 0; i < ranking.length; i++) {
-        titleScene.add(ranking[i]);
-    }
-
     const savedName = localStorage.getItem("playerName");
 
     if (savedName) {
         nameInput.value = savedName;
     }
+    rankingOverlay.style.display = "block";
+    roomMakeOverlay.style.display = "flex";
     nameInputOverlay.style.display = "flex";
+    playButtonOverlay.style.display = "flex";
     charaSelectOverlay.style.display = "flex";
     return titleScene;
 }
+
 
 
 
@@ -191,7 +176,6 @@ export function createCharacterSelectScene() {
         size: 0.06,
         colors: ["#bbdd44", "#000000", "#FFFFFF"]
     });
-
 
 
 
@@ -257,6 +241,9 @@ export function createCharacterSelectScene() {
         selectScene.add(characterNameText);
     });
 
+    rankingOverlay.style.display = "none";
+    roomMakeOverlay.style.display = "none";
+    playButtonOverlay.style.display = "none";
     nameInputOverlay.style.display = "none";
     charaSelectOverlay.style.display = "none";
 

@@ -40,24 +40,25 @@
     }
 
     #nameInput {
-      margin: 5px 5px 5px 10px;
-      padding: 10px;
+      margin: 0px;
+      padding: 10px 15px;
       flex: 1;
       pointer-events: auto;
       z-index: 1;
       background-color: #f0f0f0;
       color: #000000;
+      text-align: center;
       border: none;
       border-radius: 10px;
 
-      font-size: 32px;
+      font-size: 24px;
       white-space: nowrap;
     }
 
     .blueButton {
-      margin: 5px 10px 5px 5px;
-      padding: 15px 20px;
-      font-size: 32px;
+      margin: 0px;
+      padding: 10px 15px;
+      font-size: 28px;
       background-color: #3241c9;
       color: white;
       border: none;
@@ -122,7 +123,7 @@
     #settingsButton {
       position: absolute;
       top: 20px;
-      left: 20px;
+      right: 20px;
       padding: 10px 15px;
       font-size: 20px;
       background-color: #3241c9;
@@ -139,11 +140,38 @@
 <body>
   <canvas id="shogiCanvas" tabindex="0"></canvas>
 
-  <div id="nameInputOverlay" class="overlay"
-    style="display: none; position: absolute; top: 88%; left: 95%; transform: translate(-100%, -50%);">
-    <input type="text" id="nameInput" placeholder="名前" maxlength="20">
-    <button id="submitNameButton" class="blueButton">オンライン対戦</button>
+  <div id="rankingOverlay" class="overlay"
+    style="display: block; position: absolute; top: 10px; left: 10px; transform: translate(-0%, -0%); width: 280px;background-color: #000000b0;">
+    <p id="rankingtitle" class="whiteText" style="font-size: 24;">ランキング</p>
+    <p id="ranking0" class="whiteText" style="text-align: left; font-size: 18px;">１位: -</p>
+    <p id="ranking1" class="whiteText" style="text-align: left; font-size: 18px;">２位: -</p>
+    <p id="ranking2" class="whiteText" style="text-align: left; font-size: 18px;">３位: -</p>
+    <p id="ranking3" class="whiteText" style="text-align: left; font-size: 18px;">４位: -</p>
+    <p id="ranking4" class="whiteText" style="text-align: left; font-size: 18px;">５位: -</p>
+    <p id="ranking5" class="whiteText" style="text-align: left; font-size: 18px;">６位: -</p>
+    <p id="ranking6" class="whiteText" style="text-align: left; font-size: 18px;">７位: -</p>
+    <p id="ranking7" class="whiteText" style="text-align: left; font-size: 18px;">８位: -</p>
+    <p id="ranking8" class="whiteText" style="text-align: left; font-size: 18px;">９位: -</p>
+    <p id="ranking9" class="whiteText" style="text-align: left; font-size: 18px;">１０位: -</p>
   </div>
+
+  <div id="roomMakeOverlay" class="overlay"
+    style="display: none; position: absolute; bottom: 19%; right: 4%; transform: translate(-0%, -0%);">
+    <button id="makeRoomButton" class="blueButton" style="font-size: 20px; padding:7px 10px">部屋作成</button>
+    <button id="makeRoomButton" class="blueButton" style="font-size: 20px; padding:7px 10px">部屋参加</button>
+  </div>
+
+  <div id="nameInputOverlay" class="overlay"
+    style="display: none; position: absolute; bottom: 6%; right: 50%; transform: translate(50%, 0%);">
+    <input type="text" id="nameInput" placeholder="名前" maxlength="20">
+  </div>
+
+  <div id="playButtonOverlay" class="overlay"
+    style="display: flex; position: absolute; bottom: 6%; right: 4%; transform: translate(0%, 0%);">
+    <button id="submitNameButton" class="blueButton"
+      style="font-size: 48px; background-color: #df398c;">オンライン対戦</button>
+  </div>
+
   <div id="charaSelectOverlay" class="overlay"
     style="display: none; position: absolute; bottom: 120px;  left: 20px; transform: translate(0%, 0%);">
     <button id="charaSelectButton" class="charaButton">キャラ変更</button>
@@ -163,7 +191,7 @@
   <button id="settingsButton">音量設定</button>
 
   <div id="volumeOverlay" class="overlay"
-    style="display: none;  margin:10px; position: absolute; top: 60px; left: 10px; text-align: left;">
+    style="display: none;  margin:10px; position: absolute; top: 60px; right: 10px; text-align: left;">
     <label for="bgmVolumeSlider" class="whiteText">BGM音量:</label>
     <input type="range" id="bgmVolumeSlider" min="0" max="100" value="100">
     <label for="soundVolumeSlider" class="whiteText">効果音量:</label>

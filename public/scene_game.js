@@ -1,6 +1,6 @@
 import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus } from "./main25062103.js";
 import { Scene } from "./scene.js";
-import { createTitleScene } from "./scene_title.js";
+import { createTitleScene, rankingOverlay } from "./scene_title.js";
 import { Background, BackgroundImageUI, CharacterInGameUI } from "./ui.js";
 import { TextUI } from "./ui_text.js";
 
@@ -164,6 +164,8 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
 
 
     statusOverlay.style.display = "none";
+    rankingOverlay.style.display = "none";
+
     playScene.add(playerCharacterUI); // プレイヤーのキャラクター画像UIをシーンに追加
     playScene.add(opponentCharacterUI); // 相手プレイヤーのキャラクター画像UIをシーンに追加
     playScene.add(gameManager.boardUI);
