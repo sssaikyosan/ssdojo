@@ -30,7 +30,7 @@ export function ioSetup() {
                 const senteNames = room.sente.map(id => serverState.players[id].name);
                 const goteNames = room.gote.map(id => serverState.players[id].name);
                 const spectatorsNames = room.spectators.map(id => serverState.players[id].name);
-                socket.emit("roomJoined", { roomId: roomId, sente: senteNames, gote: goteNames, spectators: spectatorsNames, kifu: room.board.kifu });
+                socket.emit("roomJoined", { roomId: roomId, sente: senteNames, gote: goteNames, spectators: spectatorsNames, state: room.gameState, kifu: room.board.kifu });
             } else {
                 socket.emit("roomJoinFailed", { roomId: roomId, text: res })
             }
@@ -44,7 +44,7 @@ export function ioSetup() {
                 const senteNames = room.sente.map(id => serverState.players[id].name);
                 const goteNames = room.gote.map(id => serverState.players[id].name);
                 const spectatorsNames = room.spectators.map(id => serverState.players[id].name);
-                socket.emit("roomJoined", { roomId: data.roomId, sente: senteNames, gote: goteNames, spectators: spectatorsNames, kifu: room.board.kifu });
+                socket.emit("roomJoined", { roomId: data.roomId, sente: senteNames, gote: goteNames, spectators: spectatorsNames, state: room.gameState, kifu: room.board.kifu });
             } else {
                 socket.emit("roomJoinFailed", { roomId: data.roomId, text: res })
             }
@@ -74,6 +74,11 @@ export function ioSetup() {
         socket.on("movePiece", (data) => {
             if (!serverState.rooms[data.roomId]) return;
             serverState.rooms[data.roomId].handleMove(socket.id, data);
+        });
+
+        socket.on("backToRoom", () => {
+            const data = serverState.backToRoom(socket.id);
+            socket.emit("backToRoom", data);
         });
 
         // 切断時の処理

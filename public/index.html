@@ -235,6 +235,11 @@
       <button id="cancelButton" class="roomButton" style="background-color: #29ac17;">キャンセル</button>
     </div>
 
+    <div id="playingText" class="overlay"
+      style="position: absolute; top:150px; left:50%; background-color: #00000000; display: none; transform: translate(-50%, 0%);">
+      <p style="color: #d43737; font-size: 36px;">プレイ中</p>
+    </div>
+
     <div id="readyOverlay" class="overlay"
       style="position: absolute; top:150px; left:50%; display: none; transform: translate(-50%, 0%);">
       <button id="readyButton" class="roomButton" style="background-color: #c06109;">準備完了</button>
@@ -273,6 +278,10 @@
     style="display: none; position: absolute; top: 70%; left: 50%; transform: translate(-50%, -50%);">
     <p id="changeRating" class="whiteText">レート変動 なし</p>
     <button id="toTitleButton" class="blueButton">タイトルに戻る</button>
+  </div>
+  <div id="roomResultOverlay" class="overlay"
+    style="display: none; position: absolute; top: 70%; left: 50%; transform: translate(-50%, -50%);">
+    <button id="toRoomButton" class="blueButton">戻る</button>
   </div>
   <div id="statusOverlay" class="overlay"
     style="display: block;  margin:10px; position: absolute; bottom: 20px; left: 20px; text-align: left;">

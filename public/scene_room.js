@@ -5,17 +5,18 @@ import { createTitleScene } from "./scene_title.js"; // タイトルシーンに
 import { createPlayScene } from "./scene_game.js";
 import { BackgroundImageUI } from "./ui.js";
 
-const roomIdOverlay = document.getElementById("roomIdOverlay");
+export const roomIdOverlay = document.getElementById("roomIdOverlay");
 const copyIdButton = document.getElementById("copyIdButton");
 const roomIdStr = document.getElementById("roomIdStr");
-const tebanOverlay = document.getElementById("tebanOverlay");
+export const tebanOverlay = document.getElementById("tebanOverlay");
 const senteOverlay = document.getElementById("senteOverlay");
 const goteOverlay = document.getElementById("goteOverlay");
 const spectatorsOverlay = document.getElementById("spectatorsOverlay");
-const readyOverlay = document.getElementById("readyOverlay");
-const cancelOverlay = document.getElementById("cancelOverlay");
-const leaveRoomOverlay = document.getElementById("leaveRoomOverlay");
+export const readyOverlay = document.getElementById("readyOverlay");
+export const cancelOverlay = document.getElementById("cancelOverlay");
+export const leaveRoomOverlay = document.getElementById("leaveRoomOverlay");
 const copySuccessMessage = document.getElementById("copySuccessMessage");
+const playingText = document.getElementById("playingText");
 
 const readyButton = document.getElementById("readyButton");
 const cancelButton = document.getElementById("cancelButton");
@@ -27,13 +28,8 @@ const leaveRoomButton = document.getElementById("leaveRoomButton");
 
 function moveSubmit(teban) {
     socket.emit("moveTeban", { teban: teban });
-    if (teban === 'sente' || teban === 'gote') {
-        readyOverlay.style.display = 'block';
-    } else {
-        readyOverlay.style.display = 'none';
-    }
-    cancelOverlay.style.display = 'none';
 }
+
 function leaveRoom() {
     socket.emit("leaveRoom");
     setScene(createTitleScene());
@@ -42,6 +38,7 @@ function leaveRoom() {
     readyOverlay.style.display = 'none';
     cancelOverlay.style.display = 'none';
     leaveRoomOverlay.style.display = 'none';
+    playingText.style.display = 'none';
     // シーンを離れる際にメッセージを非表示にする
     if (copySuccessMessage) {
         copySuccessMessage.style.display = 'none';
@@ -88,7 +85,7 @@ function cleanOverlay() {
 }
 
 export function roomUpdate(data) {
-    console.log(data);
+    console.log(data.sente);
 
     cleanOverlay();
 
@@ -112,13 +109,16 @@ export function roomUpdate(data) {
         pElement.style.color = '#FFFFFF'; // テキスト色を白に設定
         spectatorsOverlay.appendChild(pElement);
     });
-
-    if (data.roomteban === 'sente' || data.roomteban === 'gote') {
-        readyOverlay.style.display = 'block';
-    } else {
-        readyOverlay.style.display = 'none';
+    if (data.state !== 'playing') {
+        if (data.roomteban === 'sente' || data.roomteban === 'gote') {
+            readyOverlay.style.display = 'block';
+        } else {
+            readyOverlay.style.display = 'none';
+        }
+        cancelOverlay.style.display = 'none';
     }
-    cancelOverlay.style.display = 'none';
+
+
 }
 
 // コピーボタンのイベントハンドラ
@@ -159,6 +159,12 @@ export function createRoomScene(data) {
     roomScene.add(backgroundImageUI);
 
     roomUpdate(data);
+
+    if (data.state === 'playing') {
+        playingText.style.display = 'block';
+    } else {
+        playingText.style.display = 'none';
+    }
 
     roomIdStr.textContent = `部屋ID ${data.roomId}`
 

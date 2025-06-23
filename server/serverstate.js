@@ -264,5 +264,11 @@ export class ServerState {
         if (!this.players[id].roomId) return;
         this.players[id].cancelReady();
     }
+
+    backToRoom(id) {
+        if (!this.players[id]) return;
+        if (!this.players[id].roomId) return;
+        return this.rooms[this.players[id].roomId].backToRoom();
+    }
 }
 

@@ -34,7 +34,6 @@ export class Board {
     this.starttime = time;
     this.time = time;
     this.matched = true;
-    this.currentMove = 0;
     this.komadaiPieces = {
       sente: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 },
       gote: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 }

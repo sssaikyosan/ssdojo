@@ -5,7 +5,7 @@ import { AudioManager } from "./audio_manager.js"; // audio_manager.jsからイ�
 import { createTitleScene } from "./scene_title.js";
 import { createPlayScene, endGame } from "./scene_game.js";
 import { createRoomScene, roomUpdate } from "./scene_room.js";
-import { createRoomPlayScene } from "./scene_roomgame.js";
+import { backToRoom, createRoomPlayScene, endRoomGame } from "./scene_roomgame.js";
 
 // 初期化フラグ
 let isInitialized = false;
@@ -242,7 +242,7 @@ function setupSocket() {
   // 待機人数の更新
   socket.on('serverStatus', (data) => {
     serverStatus = data;
-  })
+  });
   // レーティングを受信
   socket.on('receiveRating', (data) => {
     setStatus(data.rating, data.games);
@@ -277,6 +277,7 @@ function setupSocket() {
 
   // 新しい駒の移動を受信
   socket.on('newMove', (data) => {
+    console.log("newMove");
     if (gameManager) {
       gameManager.receiveMove(data);
     }
@@ -285,6 +286,10 @@ function setupSocket() {
   // ゲーム終了を受信
   socket.on('endGame', (data) => {
     endGame(data);
+  });
+
+  socket.on('endRoomGame', (data) => {
+    endRoomGame(data);
   });
 
   socket.on("roomJoined", (data) => {
@@ -298,6 +303,10 @@ function setupSocket() {
   socket.on("roomUpdate", (data) => {
     console.log("roomUpdate");
     roomUpdate(data);
+  });
+
+  socket.on("backToRoom", (data) => {
+    backToRoom(data);
   });
 }
 

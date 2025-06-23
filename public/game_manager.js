@@ -29,6 +29,15 @@ export class GameManager {
         this.boardUI.init(teban);
     }
 
+    setRoomBoard(roomId, board) {
+        this.roomId = roomId;
+        this.teban = 0;
+
+        this.board = board;
+        this.boardUI = new BoardUI({ gameManager: this, board: board, x: 0.0, y: 0.0 })
+        this.boardUI.init(0);
+    }
+
     resetRoom() {
         this.roomId = null;
         this.teban = 0;

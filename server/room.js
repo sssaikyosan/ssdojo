@@ -36,11 +36,13 @@ export class Room {
     }
 
     handleMove(id, data) {
+        console.log("handleMove");
         const servertime = performance.now();
         let validPlayer = false;
         let result = null;
         if (this.sente.includes(id) && data.teban === 1) validPlayer = true;
         if (this.gote.includes(id) && data.teban === -1) validPlayer = true;
+        console.log("validPlayer");
         if (validPlayer) result = this.board.movePieceLocal({ ...data, servertime });
         if (result && result.res) {
             this.emitToRoom("newMove", { ...data, servertime });
@@ -53,15 +55,11 @@ export class Room {
 
     //部屋への通知
     emitToRoom(type, data) {
-        if (this.sente.length > 0 && serverState.players[this.sente]) {
-            for (const id of this.sente) {
-                io.to(id).emit(type, { ...data, roomteban: 'sente' });
-            }
+        for (const id of this.sente) {
+            io.to(id).emit(type, { ...data, roomteban: 'sente' });
         }
-        if (this.gote && serverState.players[this.gote]) {
-            for (const id of this.gote) {
-                io.to(id).emit(type, { ...data, roomteban: 'gote' });
-            }
+        for (const id of this.gote) {
+            io.to(id).emit(type, { ...data, roomteban: 'gote' });
         }
         for (const id of this.spectators) {
             io.to(id).emit(type, { ...data, roomteban: 'spectators' });
@@ -81,7 +79,20 @@ export class Room {
             serverState.players[this.gote[0]].state = 'waiting';
             serverState.deleteRoom(this.roomId);
         } else {
-            this.emitToRoom("endRoomGame", { win: win, text: text })
+            for (const id of this.sente) {
+                this.spectators.push(id);
+            }
+            for (const id of this.gote) {
+                this.spectators.push(id);
+            }
+            this.sente = [];
+            this.gote = [];
+
+            const senteNames = this.sente.map(id => serverState.players[id].name);
+            const goteNames = this.gote.map(id => serverState.players[id].name);
+            const spectatorsNames = this.spectators.map(id => serverState.players[id].name);
+            this.emitToRoom("endRoomGame", { sente: senteNames, gote: goteNames, spectators: spectatorsNames, roomId: this.roomId, win: win, text: text });
+            this.gameState = "waiting";
         }
     }
 
@@ -111,8 +122,16 @@ export class Room {
         }
 
         currentList.splice(currentIndex, 1);
-
-        this.roomUpdate();
+        if (currentList.length === 0 && this.gameState === 'playing') {
+            if (this.sente.length > 0) {
+                this.gameFinished(1, "disconnected");
+            } else if (this.gote.length > 0) {
+                this.gameFinished(-1, "disconnected");
+            }
+        }
+        if (this.gameState === "waiting") {
+            this.roomUpdate();
+        }
 
         if (this.sente.length === 0 && this.gote.length === 0 && this.spectators.length === 0) {
             serverState.deleteRoom(this.roomId);
@@ -143,7 +162,7 @@ export class Room {
 
         // プレイヤーが見つからない場合は false を返す
         if (currentList === null) {
-            return false;
+            return;
         }
 
         const newTeban = data.teban;
@@ -161,20 +180,12 @@ export class Room {
                 targetList = this.spectators;
                 break;
             default:
-                // 無効な手番の場合は false を返す
-                return false;
+                return;
         }
-
-        // 現在のリストと移動先のリストが異なる場合のみ移動処理を行う
-        if (currentList !== targetList) {
-            // 現在のリストからプレイヤーを削除
-            currentList.splice(currentIndex, 1);
-            // 移動先のリストにプレイヤーを追加
-            targetList.push(playerId);
-        }
+        currentList.splice(currentIndex, 1);
+        targetList.push(playerId);
 
         this.roomUpdate();
-        return true;
     }
 
     readyToPlay() {
@@ -192,11 +203,13 @@ export class Room {
 
             this.startGame();
             const data = {
-                sente: senteNames,
+                senteName: senteNames,
                 senteCharacter: serverState.players[this.sente[0]].characterName,
-                gote: goteNames,
-                senteCharacter: serverState.players[this.gote[0]].characterName,
-                spectators: spectatorsNames
+                goteName: goteNames,
+                goteCharacter: serverState.players[this.gote[0]].characterName,
+                spectators: spectatorsNames,
+                roomId: this.roomId,
+                state: this.gameState
             };
             this.emitToRoom("startRoomGame", data);
         }
@@ -216,6 +229,13 @@ export class Room {
         const senteNames = this.sente.map(id => serverState.players[id].name);
         const goteNames = this.gote.map(id => serverState.players[id].name);
         const spectatorsNames = this.spectators.map(id => serverState.players[id].name);
-        this.emitToRoom("roomUpdate", { sente: senteNames, gote: goteNames, spectators: spectatorsNames });
+        this.emitToRoom("roomUpdate", { roomId: this.roomId, sente: senteNames, gote: goteNames, spectators: spectatorsNames, state: this.gameState });
+    }
+
+    backToRoom() {
+        const senteNames = this.sente.map(id => serverState.players[id].name);
+        const goteNames = this.gote.map(id => serverState.players[id].name);
+        const spectatorsNames = this.spectators.map(id => serverState.players[id].name);
+        return { roomId: this.roomId, sente: senteNames, gote: goteNames, spectators: spectatorsNames, state: this.gameState };
     }
 }

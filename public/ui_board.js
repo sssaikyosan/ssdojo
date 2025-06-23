@@ -86,7 +86,7 @@ export class BoardUI extends UI {
     }
 
     // マウスオーバー中のセルをハイライト
-    if (this.hoveredCell) {
+    if (this.gameManager.teban !== 0 && this.hoveredCell) {
       ctx.fillStyle = MOUSE_HIGHLIGHT_COLOR;
       ctx.fillRect(
         this.hoveredCell.x * CELL_SIZE * scale + LINEWIDTH / 2 - CELL_SIZE * scale * 9 / 2,

@@ -8,13 +8,12 @@ import { TextUI } from "./ui_text.js";
 export const statusOverlay = document.getElementById("statusOverlay");
 export const changeRating = document.getElementById("changeRating");
 
-export const resultOverlay = document.getElementById("resultOverlay");
-export const toTitleButton = document.getElementById("toTitleButton");
-
+const resultOverlay = document.getElementById("resultOverlay");
+const toTitleButton = document.getElementById("toTitleButton");
 
 
 //暗い背景
-let background = new Background({
+export let background = new Background({
     x: 0.0,
     y: 0.0,
     width: 1.0,
@@ -22,8 +21,18 @@ let background = new Background({
     color: "#00000070",
 });
 
+export const endText = new TextUI({
+    text: () => {
+        return "試合終了";
+    },
+    x: 0.0,
+    y: -0.2,
+    size: 0.2,
+    colors: ["#ff6739", "#30140b", "#ffffff"]
+});
+
 //勝敗結果テキスト
-const winText = new TextUI({
+export const winText = new TextUI({
     text: () => {
         return "勝利";
     },
@@ -33,7 +42,7 @@ const winText = new TextUI({
     colors: ["#ff6739", "#30140b", "#ffffff"]
 });
 
-const loseText = new TextUI({
+export const loseText = new TextUI({
     text: () => {
         return "敗北";
     },
