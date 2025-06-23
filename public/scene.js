@@ -12,6 +12,9 @@ export class Scene {
   init() {
 
   }
+  destroy() {
+    // シーン破棄時のクリーンアップ処理をここに記述
+  }
 
   draw(ctx) {
     this.resize();

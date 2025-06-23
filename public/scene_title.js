@@ -138,10 +138,10 @@ export function createTitleScene() {
         }
     }
 
-    submitNameButton.addEventListener("click", () => { handleNameSubmit(); });
-    makeRoomButton.addEventListener("click", () => { makeRoomSubmit(); });
-    joinRoomButton.addEventListener("click", () => { joinRoomSubmit(); });
-    charaSelectButton.addEventListener("click", () => { charaSelectSubmit(); });
+    submitNameButton.addEventListener("click", handleNameSubmit);
+    makeRoomButton.addEventListener("click", makeRoomSubmit);
+    joinRoomButton.addEventListener("click", joinRoomSubmit);
+    charaSelectButton.addEventListener("click", charaSelectSubmit);
 
     titleCharacter.image = selectedCharacterName;
     titleScene.add(title);
@@ -160,6 +160,16 @@ export function createTitleScene() {
     nameInputOverlay.style.display = "flex";
     playButtonOverlay.style.display = "flex";
     charaSelectOverlay.style.display = "flex";
+
+    // シーン破棄時のイベントリスナー削除
+    titleScene.destroy = () => {
+        canvas.removeEventListener('click', playBGMOnce);
+        submitNameButton.removeEventListener("click", handleNameSubmit);
+        makeRoomButton.removeEventListener("click", makeRoomSubmit);
+        joinRoomButton.removeEventListener("click", joinRoomSubmit);
+        charaSelectButton.removeEventListener("click", charaSelectSubmit);
+    };
+
     return titleScene;
 }
 

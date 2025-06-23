@@ -13,7 +13,6 @@ const toTitleButton = document.getElementById("toTitleButton");
 
 
 
-
 //暗い背景
 let background = new Background({
     x: 0.0,
@@ -75,6 +74,10 @@ const countDownText = new TextUI({
 
 
 
+// Define the event handler function for the "To Title" button
+function handleToTitleClick() {
+    backToTitle();
+}
 
 //ゲームシーン
 export function createPlayScene(playerName, opponentName, opponentCharacterName, teban, roomId, servertime, rating, opponentRating, cpu = false) {
@@ -178,6 +181,11 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
     playScene.add(countDownText);
     playScene.add(timeText);
 
+    // Add destroy method to remove event listeners
+    playScene.destroy = () => {
+        toTitleButton.removeEventListener("click", handleToTitleClick);
+    };
+
     return playScene;
 }
 
@@ -207,16 +215,11 @@ export function endGame(data) {
     }
 
     resultOverlay.style.display = "block";
-    toTitleButton.addEventListener("click", () => { backToTitle(); });
+    // Use the named function for adding the listener
+    toTitleButton.addEventListener("click", handleToTitleClick);
     gameManager.resetRoom();
     gameManager.board.finished = true;
 }
-
-
-
-
-
-
 
 
 
@@ -322,6 +325,11 @@ export function createRoomPlayScene(senteNames, senteCharacter, goteNames, goteC
     playScene.add(timeText);
 
     statusOverlay.style.display = "none";
+
+    // Add destroy method to remove event listeners
+    playScene.destroy = () => {
+        toTitleButton.removeEventListener("click", handleToTitleClick);
+    };
 
     return playScene;
 }

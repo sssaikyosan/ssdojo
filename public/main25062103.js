@@ -23,6 +23,7 @@ export let serverStatus = { online: 0, roomCount: 0, topPlayers: [] };
 
 export let playerRatingElement = null;
 export let gamesPlayedElement = null;
+//@ts-ignore
 /**@type {Keyboard} */
 export let keyboard = null;
 export let audioManager = new AudioManager();
@@ -76,6 +77,10 @@ function loadOrSelectCharacter() {
 }
 
 export function setScene(s) {
+  // 現在のシーンが存在し、destroyメソッドがあれば呼び出す
+  if (scene && scene.destroy && typeof scene.destroy === 'function') {
+    scene.destroy();
+  }
   scene = s;
 }
 
@@ -135,7 +140,7 @@ function init() {
   resizeCanvas();
 
   gameManager = new GameManager(socket);
-  scene = createTitleScene(); // タイトルシーン作成時に選択されたキャラクターを使用
+  setScene(createTitleScene()); // タイトルシーン作成時に選択されたキャラクターを使用
   roop();
 }
 
@@ -244,7 +249,7 @@ function setupSocket() {
 
   // マッチングが成立したときの処理
   socket.on('matchFound', (data) => {
-    scene = createPlayScene(
+    setScene(createPlayScene(
       playerName,
       data.name,
       data.characterName,
@@ -253,11 +258,11 @@ function setupSocket() {
       data.servertime,
       data.rating,
       data.opponentRating
-    );
+    ));
   });
 
   socket.on('startGame', (data) => {
-    scene = createRoomPlayScene(
+    setScene(createRoomPlayScene(
       data.senteName,
       data.senteCharacter,
       data.goteName,
@@ -265,7 +270,7 @@ function setupSocket() {
       data.roomId,
       data.servertime,
       data.roomteban
-    )
+    ));
   });
 
   // 新しい駒の移動を受信
