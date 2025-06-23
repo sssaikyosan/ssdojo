@@ -78,35 +78,6 @@ export function createTitleScene() {
     };
     canvas.addEventListener('click', playBGMOnce);
 
-
-    // 入力欄の文字数を制限するメソッド
-    function limitInputLength(nameInput) {
-
-        const MAX_LENGTH = 20; // 最大文字数（全角10文字分）
-        let currentText = nameInput.value;
-        let newText = "";
-        let currentLength = 0;
-
-
-
-        for (let i = 0; i < currentText.length; i++) {
-            const char = currentText.charAt(i);
-            const charLength = char.match(/[^\x01-\x7E\uFF61-\uFF9F]/) ? 2 : 1;
-
-            if (currentLength + charLength > MAX_LENGTH) {
-                break; // 制限を超えたらループを抜ける
-            }
-
-            newText += char;
-            currentLength += charLength;
-        }
-
-        // 制限を超えた部分を削除
-        if (currentText !== newText) {
-            nameInput.value = newText;
-        }
-    }
-
     //オンライン対戦
     function handleNameSubmit() {
         setPlayerName(nameInput.value.trim());
@@ -123,10 +94,27 @@ export function createTitleScene() {
     }
 
     function makeRoomSubmit() {
-
+        // ルーム作成をサーバーにリクエスト
+        socket.emit("createRoom", { name: playerName, characterName: selectedCharacterName, userId: userId });
+        roomMakeOverlay.style.display = "none";
+        playButtonOverlay.style.display = "none";
+        nameInputOverlay.style.display = "none";
+        charaSelectOverlay.style.display = "none";
+        titleScene.add(loading);
     }
 
     function joinRoomSubmit() {
+        const roomIdInput = /** @type {HTMLInputElement} */ (document.getElementById("roomIdInput"));
+        const roomId = roomIdInput.value.trim();
+        if (roomId) {
+            // ルーム参加をサーバーにリクエスト
+            socket.emit("joinRoom", { roomId: roomId, name: playerName, characterName: selectedCharacterName, userId: userId });
+            roomMakeOverlay.style.display = "none";
+            playButtonOverlay.style.display = "none";
+            nameInputOverlay.style.display = "none";
+            charaSelectOverlay.style.display = "none";
+            titleScene.add(loading);
+        }
     }
 
     function charaSelectSubmit() {
@@ -144,8 +132,6 @@ export function createTitleScene() {
         }
     }
 
-
-    nameInput.addEventListener("input", () => { limitInputLength(nameInput); });
     submitNameButton.addEventListener("click", () => { handleNameSubmit(); });
     makeRoomButton.addEventListener("click", () => { makeRoomSubmit(); });
     joinRoomButton.addEventListener("click", () => { joinRoomSubmit(); });

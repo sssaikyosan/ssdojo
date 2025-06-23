@@ -57,7 +57,7 @@
 
     #roomIdInput {
       margin: 0px;
-      padding: 10px 15px;
+      padding: 5px 7px;
       flex: 1;
       pointer-events: auto;
       z-index: 1;
@@ -65,9 +65,9 @@
       color: #000000;
       text-align: center;
       border: none;
-      border-radius: 10px;
+      border-radius: 5px;
 
-      font-size: 24px;
+      font-size: 20px;
       width: 100px;
       white-space: nowrap;
     }
@@ -80,6 +80,20 @@
       color: white;
       border: none;
       border-radius: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .roomButton {
+      margin: 0px;
+      padding: 5px 5px;
+      font-size: 20px;
+      background-color: #3241c9;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      width: 290px;
       cursor: pointer;
       white-space: nowrap;
       flex-shrink: 0;
@@ -173,20 +187,48 @@
   </div>
 
   <div id="roomMakeOverlay" class="overlay"
-    style="display: none; padding: 8px; position: absolute; bottom: 232px; right: 40px; transform: translate(0%, 0%);">
-    <button id="makeRoomButton" class="blueButton" style="font-size: 20px; padding:7px 10px">ルーム作成</button>
-  </div>
-
-  <div id="joinRoomOverlay" class="overlay"
     style="display: flex; padding: 8px; position: absolute; bottom: 160px; right: 40px; transform: translate(0%, 0%);">
     <input type="text" id="roomIdInput" placeholder="部屋ID" maxlength="6">
-    <button id="joinRoomButton" class="blueButton" style="font-size: 20px; padding:7px 10px">ルーム参加</button>
+    <button id="joinRoomButton" class="blueButton"
+      style="font-size: 20px; padding:5px 7px; border-radius: 5px;">ルーム参加</button>
+    <button id="makeRoomButton" class="blueButton"
+      style="font-size: 20px; padding:5px 7px; border-radius: 5px;">ルーム作成</button>
   </div>
 
   <div id="nameInputOverlay" class="overlay"
-    style="display: none; position: absolute; bottom: 40px; right: 50%; transform: translate(50%, 0%);">
+    style="display: none; position: absolute; bottom: 40px; left: 50%; transform: translate(-50%, 0%);">
     <input type="text" id="nameInput" placeholder="名前" maxlength="20">
   </div>
+
+  <div id="roomui">
+    <div id="readyOverlay" class="overlay"
+      style="position: absolute; top:150px; left:50%; display: block; transform: translate(-50%, 0%);">
+      <button id=" readyButton" class="roomButton" style="background-color: #29ac17;">キャンセル</button>
+    </div>
+
+    <div id="cancelOverlay" class="overlay"
+      style="position: absolute; top:150px; left:50%; display: block; transform: translate(-50%, 0%);">
+      <button id=" readyButton" class="roomButton" style="background-color: #c06109;">準備完了</button>
+    </div>
+
+    <div class="overlay"
+      style="display: flex; position: absolute; top:200px; left:50%;  background-color: #00000000; left: 50%; transform: translate(-50%, 0%);">
+      <div id="senteOverlay" class="overlay" style="display: block; width: 300px">
+        <button id=" moveToSenteButton" class="roomButton">先手に移動</button>
+      </div>
+      <div id="spectatorsOverlay" class="overlay" style="display: block; width: 300px">
+        <button id="moveToSpectatorsButton" class="roomButton">観戦</button>
+      </div>
+      <div id="goteOverlay" class="overlay" style="display: block; width: 300px">
+        <button id="moveToGoteButton" class="roomButton">後手に移動</button>
+      </div>
+    </div>
+    <div id="leaveRoomOverlay" class="overlay"
+      style="position: absolute; bottom:100px; left:50%; display: block; transform: translate(-50%, 0%);">
+      <button id=" leaveRoomButton" class="roomButton" style="width:120px;">退室</button>
+    </div>
+  </div>
+
 
   <div id="playButtonOverlay" class="overlay"
     style="display: flex; position: absolute; bottom: 40px; right: 40px; transform: translate(0%, 0%);">
@@ -224,6 +266,7 @@
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="./main25062103.js" type="module"></script>
+  <script src="./ui_room.js"></script>
 </body>
 
 </html>

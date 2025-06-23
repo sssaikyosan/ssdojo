@@ -36,9 +36,10 @@ export class Player {
         this.state = "ready";
     }
 
-    joinRoom(roomId) {
+    joinRoom(roomId, characterName) {
         if (this.roomId) return 'すでに入っている部屋があります';
-        serverState.rooms[roomId].joinRoom(this.socket.id);
+        this.characterName = characterName;
+        return serverState.rooms[roomId].joinRoom(this.socket.id);
     }
 
     leaveRoom() {

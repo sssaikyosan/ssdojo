@@ -236,9 +236,9 @@ export class ServerState {
         return roomId;
     }
 
-    joinRoom(id, data) {
-        if (!this.rooms[data.roomId]) return '部屋が見つかりません';
-        return this.players[id].joinRoom(data.roomId);
+    joinRoom(id, roomId, characterName) {
+        if (!this.rooms[roomId]) return '部屋が見つかりません';
+        return this.players[id].joinRoom(roomId, characterName);
     }
 
     leaveRoom(playerId) {

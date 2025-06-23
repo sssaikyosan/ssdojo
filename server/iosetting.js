@@ -23,14 +23,21 @@ export function ioSetup() {
             console.log(serverState.players[socket.id].characterName);
         });
 
-        socket.on("createRoom", () => {
+        socket.on("createRoom", (data) => {
             const roomId = serverState.createRoom();
-            serverState.joinRoom(socket.id, roomId);
-            socket.emit("roomCreated", { roomId: roomId });
+            serverState.joinRoom(socket.id, roomId, data.characterName);
+            socket.emit("roomJoined", { roomId: roomId });
         });
 
         socket.on("joinRoom", (data) => {
-            serverState.joinRoom(socket.id, data);
+            if (!data.roomId) return
+            const res = serverState.joinRoom(socket.id, data.roomId, data.characterName);
+            if (res === "roomJoined") {
+                const room = serverState.rooms[data.roomId];
+                socket.emit("roomJoined", { roomId: data.roomId, sente: room.sente, gote: room.gote, spectators: room.spectators, kifu: room.board.kifu });
+            } else {
+                socket.emit("roomJoinFailed", { roomId: data.roomId, text: res })
+            }
         });
 
         socket.on("leaveRoom", () => {

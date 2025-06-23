@@ -4,6 +4,7 @@ import { Board } from './board.js';
 import { AudioManager } from "./audio_manager.js"; // audio_manager.jsからインポート
 import { createTitleScene } from "./scene_title.js";
 import { createPlayScene, createRoomPlayScene, endGame } from "./scene_game.js";
+import { createRoomScene } from "./scene_room.js";
 
 // 初期化フラグ
 let isInitialized = false;
@@ -277,6 +278,12 @@ function setupSocket() {
   // ゲーム終了を受信
   socket.on('endGame', (data) => {
     endGame(data);
+  });
+
+  socket.on("roomJoined", (data) => {
+    setScene(createRoomScene(socket, userId));
+    scene.showUI();
+    scene.updateRoomInfo(data);
   });
 }
 
