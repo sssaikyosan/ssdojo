@@ -281,9 +281,7 @@ function setupSocket() {
   });
 
   socket.on("roomJoined", (data) => {
-    setScene(createRoomScene(socket, userId));
-    scene.showUI();
-    scene.updateRoomInfo(data);
+    setScene(createRoomScene(data));
   });
 }
 

@@ -178,8 +178,6 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
     playScene.add(countDownText);
     playScene.add(timeText);
 
-
-
     return playScene;
 }
 

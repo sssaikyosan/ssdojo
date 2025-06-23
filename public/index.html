@@ -202,17 +202,17 @@
 
   <div id="roomui">
     <div id="readyOverlay" class="overlay"
-      style="position: absolute; top:150px; left:50%; display: block; transform: translate(-50%, 0%);">
+      style="position: absolute; top:150px; left:50%; display: none; transform: translate(-50%, 0%);">
       <button id=" readyButton" class="roomButton" style="background-color: #29ac17;">キャンセル</button>
     </div>
 
     <div id="cancelOverlay" class="overlay"
-      style="position: absolute; top:150px; left:50%; display: block; transform: translate(-50%, 0%);">
+      style="position: absolute; top:150px; left:50%; display: none; transform: translate(-50%, 0%);">
       <button id=" readyButton" class="roomButton" style="background-color: #c06109;">準備完了</button>
     </div>
 
-    <div class="overlay"
-      style="display: flex; position: absolute; top:200px; left:50%;  background-color: #00000000; left: 50%; transform: translate(-50%, 0%);">
+    <div id="tebanOverlay" class="overlay"
+      style="display: none; position: absolute; top:200px; left:50%;  background-color: #00000000; left: 50%; transform: translate(-50%, 0%);">
       <div id="senteOverlay" class="overlay" style="display: block; width: 300px">
         <button id=" moveToSenteButton" class="roomButton">先手に移動</button>
       </div>
@@ -224,7 +224,7 @@
       </div>
     </div>
     <div id="leaveRoomOverlay" class="overlay"
-      style="position: absolute; bottom:100px; left:50%; display: block; transform: translate(-50%, 0%);">
+      style="position: absolute; bottom:100px; left:50%; display: none; transform: translate(-50%, 0%);">
       <button id=" leaveRoomButton" class="roomButton" style="width:120px;">退室</button>
     </div>
   </div>
@@ -266,7 +266,6 @@
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="./main25062103.js" type="module"></script>
-  <script src="./ui_room.js"></script>
 </body>
 
 </html>
