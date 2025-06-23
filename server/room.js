@@ -98,19 +98,31 @@ export class Room {
     }
 
     leaveRoom(playerId) {
-        if (this.gameState === 'playing') {
-            if (this.sente.includes(playerId) && this.sente.length === 1) {
-                this.gameFinished(-1, "disconnected");
-            } else if (this.gote.includes(playerId) && this.gote.length === 1) {
-                this.gameFinished(1, "disconnected");
+        let currentList = null;
+        let currentIndex = -1;
+
+        // プレイヤーがどのリストにいるかを探す
+        currentIndex = this.sente.indexOf(playerId);
+        if (currentIndex !== -1) {
+            currentList = this.sente;
+        } else {
+            currentIndex = this.gote.indexOf(playerId);
+            if (currentIndex !== -1) {
+                currentList = this.gote;
             } else {
-                console.log("leavePlayer", playerId, "is not player");
+                currentIndex = this.spectators.indexOf(playerId);
+                if (currentIndex !== -1) {
+                    currentList = this.spectators;
+                }
             }
         }
 
-        this.sente.filter(item => item !== playerId);
-        this.gote.filter(item => item !== playerId);
-        this.spectators.filter(item => item !== playerId);
+        // プレイヤーが見つからない場合は false を返す
+        if (currentList === null) {
+            return false;
+        }
+
+        currentList.splice(currentIndex, 1);
 
         if (this.sente.length === 0 && this.gote.length === 0 && this.spectators.length === 0) {
             serverState.deleteRoom(this.roomId);
@@ -119,34 +131,64 @@ export class Room {
 
     moveTeban(playerId, data) {
         if (this.gameState !== 'waiting') return false;
-        if (this.sente.includes(playerId)) {
-            this.sente.filter(item => item !== playerId);
-        } else if (this.gote.includes(playerId)) {
-            this.gote.filter(item => item !== playerId);
-        } else if (this.spectators.includes(playerId)) {
-            this.spectators.filter(item => item !== playerId);
+
+        let currentList = null;
+        let currentIndex = -1;
+
+        // プレイヤーがどのリストにいるかを探す
+        currentIndex = this.sente.indexOf(playerId);
+        if (currentIndex !== -1) {
+            currentList = this.sente;
         } else {
+            currentIndex = this.gote.indexOf(playerId);
+            if (currentIndex !== -1) {
+                currentList = this.gote;
+            } else {
+                currentIndex = this.spectators.indexOf(playerId);
+                if (currentIndex !== -1) {
+                    currentList = this.spectators;
+                }
+            }
+        }
+
+        // プレイヤーが見つからない場合は false を返す
+        if (currentList === null) {
             return false;
         }
 
-        switch (data.teban) {
+        const newTeban = data.teban;
+        let targetList = null;
+
+        // 移動先の手番に対応するリストを決定
+        switch (newTeban) {
             case 'sente':
-                this.sente.push(playerId);
+                targetList = this.sente;
                 break;
             case 'gote':
-                this.gote.push(playerId);
+                targetList = this.gote;
                 break;
             case 'spectators':
-                this.spectators.push(playerId);
+                targetList = this.spectators;
                 break;
             default:
+                // 無効な手番の場合は false を返す
                 return false;
         }
+
+        // 現在のリストと移動先のリストが異なる場合のみ移動処理を行う
+        if (currentList !== targetList) {
+            // 現在のリストからプレイヤーを削除
+            currentList.splice(currentIndex, 1);
+            // 移動先のリストにプレイヤーを追加
+            targetList.push(playerId);
+        }
+
+        // 部屋情報を更新し、クライアントに通知
         const senteNames = this.sente.map(id => serverState.players[id].name);
         const goteNames = this.gote.map(id => serverState.players[id].name);
         const spectatorsNames = this.spectators.map(id => serverState.players[id].name);
-        console.log("roomUpdate");
-        this.emitToRoom("roomUpdate", { sente: senteNames, gote: goteNames, spectators: spectatorsNames })
+        this.emitToRoom("roomUpdate", { sente: senteNames, gote: goteNames, spectators: spectatorsNames });
+
         return true;
     }
 

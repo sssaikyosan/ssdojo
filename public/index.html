@@ -201,14 +201,20 @@
   </div>
 
   <div id="roomui">
-    <div id="readyOverlay" class="overlay"
-      style="position: absolute; top:150px; left:50%; display: none; transform: translate(-50%, 0%);">
-      <button id=" readyButton" class="roomButton" style="background-color: #29ac17;">キャンセル</button>
+    <div id="roomIdOverlay" class="overlay"
+      style="position: absolute; top:50px; left:50%; display: none; transform: translate(-50%, 0%);">
+      <p id="roomIdStr" style="padding: 0px; margin: 0px; color: #ffffff; font-size:48px">部屋ID </p>
+      <button id="copyIdButton" class="roomButton"
+        style="padding: 0px; margin: 0px;background-color: #29ac17; font-size:36px">コピー</button>
     </div>
-
     <div id="cancelOverlay" class="overlay"
       style="position: absolute; top:150px; left:50%; display: none; transform: translate(-50%, 0%);">
-      <button id=" readyButton" class="roomButton" style="background-color: #c06109;">準備完了</button>
+      <button id="cancelButton" class="roomButton" style="background-color: #29ac17;">キャンセル</button>
+    </div>
+
+    <div id="readyOverlay" class="overlay"
+      style="position: absolute; top:150px; left:50%; display: none; transform: translate(-50%, 0%);">
+      <button id="readyButton" class="roomButton" style="background-color: #c06109;">準備完了</button>
     </div>
 
     <div id="tebanOverlay" class="overlay"

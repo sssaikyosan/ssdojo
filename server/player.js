@@ -38,15 +38,20 @@ export class Player {
 
     joinRoom(roomId, name, characterName) {
         if (this.roomId) return 'すでに入っている部屋があります';
-        console.log('name', name);
         this.name = name;
         this.characterName = characterName;
-        return serverState.rooms[roomId].joinRoom(this.socket.id);
+        const res = serverState.rooms[roomId].joinRoom(this.socket.id);
+        if (res === "roomJoined") {
+            this.roomId = roomId;
+            return "roomJoined"
+        } else {
+            return res;
+        }
     }
 
     leaveRoom() {
         if (!this.roomId) return;
-        serverState.rooms[roomId].leaveRoom(this.socket.id);
+        serverState.rooms[this.roomId].leaveRoom(this.socket.id);
         this.roomId = null;
         this.state = 'waiting';
     }
