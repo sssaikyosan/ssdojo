@@ -242,7 +242,19 @@ function setupSocket() {
   // 待機人数の更新
   socket.on('serverStatus', (data) => {
     serverStatus = data;
+    // ランキング表示を更新
+    for (let i = 0; i < 10; i++) {
+      const rankElement = document.getElementById(`ranking${i}`);
+      if (rankElement) {
+        if (serverStatus.topPlayers.length <= i) {
+          rankElement.innerText = `${i + 1}位 none`;
+        } else {
+          rankElement.innerText = `${i + 1}位 ${serverStatus.topPlayers[i].name} ${Math.round(serverStatus.topPlayers[i].rating)}`;
+        }
+      }
+    }
   });
+
   // レーティングを受信
   socket.on('receiveRating', (data) => {
     setStatus(data.rating, data.games);
