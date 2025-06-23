@@ -177,7 +177,7 @@ export class Room {
     }
 
     joinRoom(id) {
-        if (this.sente.length + this.gote.length + this.spectators.length >= 32) return '部屋が満員です';
+        if (this.sente.length + this.gote.length + this.spectators.length >= 16) return '部屋が満員です';
         this.spectators.push(id);
         serverState.players[id].roomId = this.roomId;
     }
