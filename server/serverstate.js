@@ -258,5 +258,11 @@ export class ServerState {
         this.players[id].readyToPlay();
         this.rooms[this.players[id].roomId].readyToPlay();
     }
+
+    cancelReady(id) {
+        if (!this.players[id]) return;
+        if (!this.players[id].roomId) return;
+        this.players[id].cancelReady();
+    }
 }
 

@@ -3,8 +3,9 @@ import { GameManager } from "./game_manager.js";
 import { Board } from './board.js';
 import { AudioManager } from "./audio_manager.js"; // audio_manager.jsからインポート
 import { createTitleScene } from "./scene_title.js";
-import { createPlayScene, createRoomPlayScene, endGame } from "./scene_game.js";
+import { createPlayScene, endGame } from "./scene_game.js";
 import { createRoomScene, roomUpdate } from "./scene_room.js";
+import { createRoomPlayScene } from "./scene_roomgame.js";
 
 // 初期化フラグ
 let isInitialized = false;
@@ -261,7 +262,8 @@ function setupSocket() {
     ));
   });
 
-  socket.on('startGame', (data) => {
+  socket.on('startRoomGame', (data) => {
+    console.log(data);
     setScene(createRoomPlayScene(
       data.senteName,
       data.senteCharacter,
@@ -287,6 +289,10 @@ function setupSocket() {
 
   socket.on("roomJoined", (data) => {
     setScene(createRoomScene(data));
+  });
+
+  socket.on("roomJoinFailed", (data) => {
+    setScene(createTitleScene());
   });
 
   socket.on("roomUpdate", (data) => {

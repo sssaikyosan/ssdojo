@@ -30,18 +30,6 @@ export class Room {
         }
     }
 
-    deletePlayer(id) {
-        for (const playerId in this.sente) {
-            if (playerId === id) { }
-        }
-        for (const playerId in this.gote) {
-            if (playerId === id) { }
-        }
-        for (const playerId in this.spectators) {
-            if (playerId === id) { }
-        }
-    }
-
     startGame(time) {
         this.board.init(time, time);
         this.gameState = 'playing';
@@ -124,6 +112,8 @@ export class Room {
 
         currentList.splice(currentIndex, 1);
 
+        this.roomUpdate();
+
         if (this.sente.length === 0 && this.gote.length === 0 && this.spectators.length === 0) {
             serverState.deleteRoom(this.roomId);
         }
@@ -183,58 +173,49 @@ export class Room {
             targetList.push(playerId);
         }
 
-        // 部屋情報を更新し、クライアントに通知
-        const senteNames = this.sente.map(id => serverState.players[id].name);
-        const goteNames = this.gote.map(id => serverState.players[id].name);
-        const spectatorsNames = this.spectators.map(id => serverState.players[id].name);
-        this.emitToRoom("roomUpdate", { sente: senteNames, gote: goteNames, spectators: spectatorsNames });
-
+        this.roomUpdate();
         return true;
     }
 
-    readyToplay(id) {
-        for (const playerId in this.sente) {
+    readyToPlay() {
+        for (const playerId of this.sente) {
             if (serverState.players[playerId].state !== "ready") return;
         }
-        for (const playerId in this.gote) {
+        for (const playerId of this.gote) {
             if (serverState.players[playerId].state !== "ready") return;
         }
         if (this.sente.length > 0 && this.gote.length > 0) {
 
-            const senteNames = [];
-            const goteNames = [];
-            const spectatorsNames = [];
-
-            for (const playerId in this.sente) {
-                senteNames.push(serverState.players[playerId].name);
-            }
-            for (const playerId in this.gote) {
-                goteNames.push(serverState.players[playerId].name);
-            }
-            for (const playerId in this.spectators) {
-                spectatorsNames.push(serverState.players[playerId].name);
-            }
+            const senteNames = this.sente.map(id => serverState.players[id].name);
+            const goteNames = this.gote.map(id => serverState.players[id].name);
+            const spectatorsNames = this.spectators.map(id => serverState.players[id].name);
 
             this.startGame();
             const data = {
-                sente: [],
+                sente: senteNames,
                 senteCharacter: serverState.players[this.sente[0]].characterName,
-                gote: [],
+                gote: goteNames,
                 senteCharacter: serverState.players[this.gote[0]].characterName,
-                spectators: []
+                spectators: spectatorsNames
             };
-            this.emitToRoom("startGame", data);
+            this.emitToRoom("startRoomGame", data);
         }
     }
 
     joinRoom(id) {
         if (this.sente.length + this.gote.length + this.spectators.length >= 12) return '部屋が満員です';
         this.spectators.push(id);
-        serverState.players[id].roomId = this.roomId;
         return "roomJoined"
     }
 
     chat(name, text) {
         this.emitToRoom("chatMessage", { name: name, text: text });
+    }
+
+    roomUpdate() {
+        const senteNames = this.sente.map(id => serverState.players[id].name);
+        const goteNames = this.gote.map(id => serverState.players[id].name);
+        const spectatorsNames = this.spectators.map(id => serverState.players[id].name);
+        this.emitToRoom("roomUpdate", { sente: senteNames, gote: goteNames, spectators: spectatorsNames });
     }
 }

@@ -5,11 +5,11 @@ import { Background, BackgroundImageUI, CharacterInGameUI } from "./ui.js";
 import { TextUI } from "./ui_text.js";
 
 
-const statusOverlay = document.getElementById("statusOverlay");
-const changeRating = document.getElementById("changeRating");
+export const statusOverlay = document.getElementById("statusOverlay");
+export const changeRating = document.getElementById("changeRating");
 
-const resultOverlay = document.getElementById("resultOverlay");
-const toTitleButton = document.getElementById("toTitleButton");
+export const resultOverlay = document.getElementById("resultOverlay");
+export const toTitleButton = document.getElementById("toTitleButton");
 
 
 
@@ -43,7 +43,7 @@ const loseText = new TextUI({
     colors: ["#b639ff", "#270b36", "#ffffff"]
 });
 
-const timeText = new TextUI({
+export const timeText = new TextUI({
     text: () => {
         let time = (gameManager.board.time - gameManager.board.starttime - 5000) / 1000;
         if (time <= 0) time = 0;
@@ -56,7 +56,7 @@ const timeText = new TextUI({
     textBaseline: "top",
 });
 
-const countDownText = new TextUI({
+export const countDownText = new TextUI({
     text: () => {
         let time = (gameManager.board.starttime - gameManager.board.time + 6000) / 1000;
         if (time <= 1) {
@@ -75,7 +75,7 @@ const countDownText = new TextUI({
 
 
 // Define the event handler function for the "To Title" button
-function handleToTitleClick() {
+export function handleToTitleClick() {
     backToTitle();
 }
 
@@ -219,117 +219,4 @@ export function endGame(data) {
     toTitleButton.addEventListener("click", handleToTitleClick);
     gameManager.resetRoom();
     gameManager.board.finished = true;
-}
-
-
-
-
-
-
-export function createRoomPlayScene(senteNames, senteCharacter, goteNames, goteCharacter, roomId, servertime, roomteban) {
-    let teban = 0;
-
-    let arryNames = [];
-    let enemyNames = [];
-
-    let arryCharacter = senteCharacter;
-    let enemyCharacter = goteCharacter;
-
-    if (roomteban === 'sente') {
-        teban = 1;
-        arryNames = senteNames;
-        enemyNames = goteNames;
-
-        arryCharacter = senteCharacter;
-        enemyCharacter = goteCharacter;
-    } else if (roomteban === 'gote') {
-        teban = -1;
-        arryNames = goteNames;
-        enemyNames = senteNames;
-
-        enemyCharacter = senteCharacter;
-        arryCharacter = goteCharacter;
-    } else if (roomteban === 'spectators') {
-        teban = 0;
-        arryNames = senteNames;
-        enemyNames = goteNames;
-
-        arryCharacter = senteCharacter;
-        enemyCharacter = goteCharacter;
-    }
-
-    let playScene = new Scene();
-
-    // 背景画像UIを追加 (他のUIより前に描画されるように最初に追加)
-    const backgroundImageUI = new BackgroundImageUI({ image: battle_img });
-    playScene.add(backgroundImageUI);
-
-    audioManager.playBGM('battle'); // 対戦BGMを再生
-    gameManager.setRoom(roomId, teban, servertime);
-
-    // プレイヤーのキャラクター画像UIを追加
-    let playerCharacterUI = new CharacterInGameUI({
-        image: arryCharacter, // main.jsから選択されたキャラクター名を取得
-        x: -0.6, // プレイヤー名の近くに配置
-        y: 0.2, // 適切なY座標に調整
-        width: 0.48, // サイズ調整
-        height: 0.48
-    });
-
-    // 相手プレイヤーのキャラクター画像UIを追加
-    let opponentCharacterUI = new CharacterInGameUI({
-        image: enemyCharacter, // 相手プレイヤー名からキャラクター名を生成（仮）
-        x: 0.6, // 相手プレイヤー名の近くに配置
-        y: -0.2, // 適切なY座標に調整
-        width: 0.48, // サイズ調整
-        height: 0.48
-    });
-
-    playScene.add(playerCharacterUI);
-    playScene.add(opponentCharacterUI);
-
-    for (let i = 0; i < arryNames.length; i++) {
-        let playerNameUI = new TextUI({
-            text: () => {
-                return `${arryNames[i]}`;
-            },
-            x: -0.43,
-            y: 0.4 - i * 0.032,
-            size: 0.03,
-            colors: ["#FFFFFF", "#000000"],
-            textBaseline: 'bottom',
-            position: 'right',
-            backgroundColor: '#000000cc'
-        });
-        playScene.add(playerNameUI);
-    }
-
-    for (let i = 0; i < enemyNames.length; i++) {
-        let opponentNameUI = new TextUI({
-            text: () => {
-                return `${enemyNames[i]}`;
-            },
-            x: 0.43,
-            y: -0.4 + i * 0.032,
-            size: 0.03,
-            colors: ["#FFFFFF", "#000000"],
-            textBaseline: 'top',
-            position: 'left',
-            backgroundColor: '#000000cc'
-        });
-        playScene.add(opponentNameUI);
-    }
-
-    playScene.add(gameManager.boardUI);
-    playScene.add(countDownText);
-    playScene.add(timeText);
-
-    statusOverlay.style.display = "none";
-
-    // Add destroy method to remove event listeners
-    playScene.destroy = () => {
-        toTitleButton.removeEventListener("click", handleToTitleClick);
-    };
-
-    return playScene;
 }

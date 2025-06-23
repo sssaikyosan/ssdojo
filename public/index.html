@@ -165,6 +165,27 @@
       z-index: 10;
       /* 他の要素より前面に表示 */
     }
+
+    /* コピー成功メッセージのスタイル */
+    #copySuccessMessage {
+      position: absolute;
+      top: 120px;
+      /* roomIdOverlayの下に配置 */
+      left: 50%;
+      transform: translate(-50%, 0);
+      background-color: #4CAF50;
+      /* 緑色の背景 */
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      z-index: 10;
+      display: none;
+      /* 初期状態では非表示 */
+      opacity: 0;
+      /* 初期状態では透明 */
+      transition: opacity 0.5s ease-in-out;
+      /* フェードイン・アウトのアニメーション */
+    }
   </style>
 </head>
 
@@ -207,6 +228,8 @@
       <button id="copyIdButton" class="roomButton"
         style="padding: 0px; margin: 0px;background-color: #29ac17; font-size:36px">コピー</button>
     </div>
+    <!-- コピー成功メッセージ -->
+    <div id="copySuccessMessage">部屋IDをコピーしました！</div>
     <div id="cancelOverlay" class="overlay"
       style="position: absolute; top:150px; left:50%; display: none; transform: translate(-50%, 0%);">
       <button id="cancelButton" class="roomButton" style="background-color: #29ac17;">キャンセル</button>

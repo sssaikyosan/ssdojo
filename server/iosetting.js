@@ -62,6 +62,10 @@ export function ioSetup() {
             serverState.readyToPlay(socket.id);
         });
 
+        socket.on("cancelReady", () => {
+            serverState.cancelReady(socket.id);
+        });
+
         socket.on("chat", (data) => {
             serverState.players[socket.id].chat(data);
         })

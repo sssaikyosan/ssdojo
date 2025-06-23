@@ -15,7 +15,10 @@ const spectatorsOverlay = document.getElementById("spectatorsOverlay");
 const readyOverlay = document.getElementById("readyOverlay");
 const cancelOverlay = document.getElementById("cancelOverlay");
 const leaveRoomOverlay = document.getElementById("leaveRoomOverlay");
+const copySuccessMessage = document.getElementById("copySuccessMessage");
 
+const readyButton = document.getElementById("readyButton");
+const cancelButton = document.getElementById("cancelButton");
 const moveToSenteButton = document.getElementById("moveToSenteButton");
 const moveToGoteButton = document.getElementById("moveToGoteButton");
 const moveToSpectatorsButton = document.getElementById("moveToSpectatorsButton");
@@ -24,6 +27,12 @@ const leaveRoomButton = document.getElementById("leaveRoomButton");
 
 function moveSubmit(teban) {
     socket.emit("moveTeban", { teban: teban });
+    if (teban === 'sente' || teban === 'gote') {
+        readyOverlay.style.display = 'block';
+    } else {
+        readyOverlay.style.display = 'none';
+    }
+    cancelOverlay.style.display = 'none';
 }
 function leaveRoom() {
     socket.emit("leaveRoom");
@@ -33,6 +42,23 @@ function leaveRoom() {
     readyOverlay.style.display = 'none';
     cancelOverlay.style.display = 'none';
     leaveRoomOverlay.style.display = 'none';
+    // シーンを離れる際にメッセージを非表示にする
+    if (copySuccessMessage) {
+        copySuccessMessage.style.display = 'none';
+        copySuccessMessage.style.opacity = '0';
+    }
+}
+
+function ready() {
+    socket.emit("ready");
+    readyOverlay.style.display = 'none';
+    cancelOverlay.style.display = 'block';
+}
+
+function cancelReady() {
+    socket.emit("cancelReady");
+    readyOverlay.style.display = 'block';
+    cancelOverlay.style.display = 'none';
 }
 
 function cleanOverlay() {
@@ -86,6 +112,43 @@ export function roomUpdate(data) {
         pElement.style.color = '#FFFFFF'; // テキスト色を白に設定
         spectatorsOverlay.appendChild(pElement);
     });
+
+    if (data.roomteban === 'sente' || data.roomteban === 'gote') {
+        readyOverlay.style.display = 'block';
+    } else {
+        readyOverlay.style.display = 'none';
+    }
+    cancelOverlay.style.display = 'none';
+}
+
+// コピーボタンのイベントハンドラ
+async function handleCopyIdClick() {
+    const roomIdText = roomIdStr.textContent;
+    // "部屋ID " の部分を除去してIDのみを取得
+    const roomId = roomIdText.replace('部屋ID ', '');
+    try {
+        await navigator.clipboard.writeText(roomId);
+        console.log('部屋IDをクリップボードにコピーしました:', roomId);
+        // コピー成功メッセージを表示
+        if (copySuccessMessage) {
+            copySuccessMessage.style.display = 'block';
+            // 強制的にリフローを発生させてトランジションを有効にする
+            copySuccessMessage.offsetHeight;
+            copySuccessMessage.style.opacity = '1';
+            // 2秒後にメッセージを非表示にする
+            setTimeout(() => {
+                copySuccessMessage.style.opacity = '0';
+                // トランジション完了後にdisplayをnoneにする
+                copySuccessMessage.addEventListener('transitionend', function handler() {
+                    copySuccessMessage.style.display = 'none';
+                    copySuccessMessage.removeEventListener('transitionend', handler);
+                });
+            }, 2000);
+        }
+    } catch (err) {
+        console.error('部屋IDのコピーに失敗しました:', err);
+        // 必要であれば、コピー失敗のフィードバックをユーザーに表示する処理を追加
+    }
 }
 
 
@@ -97,8 +160,6 @@ export function createRoomScene(data) {
 
     roomUpdate(data);
 
-
-
     roomIdStr.textContent = `部屋ID ${data.roomId}`
 
     roomIdOverlay.style.display = 'flex';
@@ -107,9 +168,33 @@ export function createRoomScene(data) {
     cancelOverlay.style.display = 'none';
     leaveRoomOverlay.style.display = 'block';
 
+    // コピーボタンにイベントリスナーを追加
+    if (copyIdButton) {
+        copyIdButton.addEventListener("click", handleCopyIdClick);
+    }
+
+    // シーン破棄時のイベントリスナー削除とメッセージ非表示
+    roomScene.destroy = () => {
+        if (copyIdButton) {
+            copyIdButton.removeEventListener("click", handleCopyIdClick);
+        }
+        if (copySuccessMessage) {
+            copySuccessMessage.style.display = 'none';
+            copySuccessMessage.style.opacity = '0';
+        }
+    };
+
+    // シーン作成時にメッセージを非表示にする
+    if (copySuccessMessage) {
+        copySuccessMessage.style.display = 'none';
+        copySuccessMessage.style.opacity = '0';
+    }
+
     return roomScene;
 }
 
+readyButton.addEventListener("click", () => { ready(); });
+cancelButton.addEventListener("click", () => { cancelReady(); });
 moveToSenteButton.addEventListener("click", () => { moveSubmit('sente'); });
 moveToGoteButton.addEventListener("click", () => { moveSubmit('gote'); });
 moveToSpectatorsButton.addEventListener("click", () => { moveSubmit('spectators'); });
