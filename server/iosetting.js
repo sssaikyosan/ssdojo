@@ -25,16 +25,30 @@ export function ioSetup() {
 
         socket.on("createRoom", (data) => {
             const roomId = serverState.createRoom();
-            serverState.joinRoom(socket.id, roomId, data.characterName);
-            socket.emit("roomJoined", { roomId: roomId });
+            const res = serverState.joinRoom(socket.id, roomId, data.name, data.characterName);
+            if (res === "roomJoined") {
+                const room = serverState.rooms[roomId];
+                const senteNames = room.sente.map(id => serverState.players[id].name);
+                console.log(senteNames);
+                const goteNames = room.gote.map(id => serverState.players[id].name);
+                console.log(goteNames);
+                const spectatorsNames = room.spectators.map(id => serverState.players[id].name);
+                console.log(spectatorsNames);
+                socket.emit("roomJoined", { roomId: roomId, sente: senteNames, gote: goteNames, spectators: spectatorsNames, kifu: room.board.kifu });
+            } else {
+                socket.emit("roomJoinFailed", { roomId: roomId, text: res })
+            }
         });
 
         socket.on("joinRoom", (data) => {
             if (!data.roomId) return
-            const res = serverState.joinRoom(socket.id, data.roomId, data.characterName);
+            const res = serverState.joinRoom(socket.id, data.roomId, data.name, data.characterName);
             if (res === "roomJoined") {
                 const room = serverState.rooms[data.roomId];
-                socket.emit("roomJoined", { roomId: data.roomId, sente: room.sente, gote: room.gote, spectators: room.spectators, kifu: room.board.kifu });
+                const senteNames = room.sente.map(id => serverState.players[id].name);
+                const goteNames = room.gote.map(id => serverState.players[id].name);
+                const spectatorsNames = room.spectators.map(id => serverState.players[id].name);
+                socket.emit("roomJoined", { roomId: data.roomId, sente: senteNames, gote: goteNames, spectators: spectatorsNames, kifu: room.board.kifu });
             } else {
                 socket.emit("roomJoinFailed", { roomId: data.roomId, text: res })
             }

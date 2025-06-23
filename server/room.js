@@ -65,14 +65,18 @@ export class Room {
 
     //部屋への通知
     emitToRoom(type, data) {
-        if (this.sente && serverState.players[this.sente]) {
-            io.to(serverState.players[this.sente].socket.id).emit(type, { ...data, roomteban: 'sente' });
+        if (this.sente.length > 0 && serverState.players[this.sente]) {
+            for (const id of this.sente) {
+                io.to(id).emit(type, { ...data, roomteban: 'sente' });
+            }
         }
         if (this.gote && serverState.players[this.gote]) {
-            io.to(serverState.players[this.gote].socket.id).emit(type, { ...data, roomteban: 'gote' });
+            for (const id of this.gote) {
+                io.to(id).emit(type, { ...data, roomteban: 'gote' });
+            }
         }
-        for (const spectator in this.spectators) {
-            io.to(serverState.players[spectator].socket.id).emit(type, { ...data, roomteban: 'spectators' });
+        for (const id of this.spectators) {
+            io.to(id).emit(type, { ...data, roomteban: 'spectators' });
         }
     }
 
@@ -115,11 +119,11 @@ export class Room {
 
     moveTeban(playerId, data) {
         if (this.gameState !== 'waiting') return false;
-        if (this.sente.include(playerId)) {
+        if (this.sente.includes(playerId)) {
             this.sente.filter(item => item !== playerId);
-        } else if (this.gote.include(playerId)) {
+        } else if (this.gote.includes(playerId)) {
             this.gote.filter(item => item !== playerId);
-        } else if (this.spectators.include(playerId)) {
+        } else if (this.spectators.includes(playerId)) {
             this.spectators.filter(item => item !== playerId);
         } else {
             return false;
@@ -132,12 +136,17 @@ export class Room {
             case 'gote':
                 this.gote.push(playerId);
                 break;
-            case 'specteators':
+            case 'spectators':
                 this.spectators.push(playerId);
                 break;
             default:
                 return false;
         }
+        const senteNames = this.sente.map(id => serverState.players[id].name);
+        const goteNames = this.gote.map(id => serverState.players[id].name);
+        const spectatorsNames = this.spectators.map(id => serverState.players[id].name);
+        console.log("roomUpdate");
+        this.emitToRoom("roomUpdate", { sente: senteNames, gote: goteNames, spectators: spectatorsNames })
         return true;
     }
 

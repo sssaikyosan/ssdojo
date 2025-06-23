@@ -4,7 +4,7 @@ import { Board } from './board.js';
 import { AudioManager } from "./audio_manager.js"; // audio_manager.jsからインポート
 import { createTitleScene } from "./scene_title.js";
 import { createPlayScene, createRoomPlayScene, endGame } from "./scene_game.js";
-import { createRoomScene } from "./scene_room.js";
+import { createRoomScene, roomUpdate } from "./scene_room.js";
 
 // 初期化フラグ
 let isInitialized = false;
@@ -282,6 +282,11 @@ function setupSocket() {
 
   socket.on("roomJoined", (data) => {
     setScene(createRoomScene(data));
+  });
+
+  socket.on("roomUpdate", (data) => {
+    console.log("roomUpdate");
+    roomUpdate(data);
   });
 }
 

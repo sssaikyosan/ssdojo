@@ -94,6 +94,9 @@ export function createTitleScene() {
     }
 
     function makeRoomSubmit() {
+        setPlayerName(nameInput.value.trim());
+        localStorage.setItem("playerName", playerName);
+        if (playerName == "") setPlayerName("名無しの棋士");
         // ルーム作成をサーバーにリクエスト
         socket.emit("createRoom", { name: playerName, characterName: selectedCharacterName, userId: userId });
         roomMakeOverlay.style.display = "none";
@@ -104,6 +107,9 @@ export function createTitleScene() {
     }
 
     function joinRoomSubmit() {
+        setPlayerName(nameInput.value.trim());
+        localStorage.setItem("playerName", playerName);
+        if (playerName == "") setPlayerName("名無しの棋士");
         const roomIdInput = /** @type {HTMLInputElement} */ (document.getElementById("roomIdInput"));
         const roomId = roomIdInput.value.trim();
         if (roomId) {
