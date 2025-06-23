@@ -15,6 +15,8 @@ const charaSelectOverlay = document.getElementById("charaSelectOverlay");
 
 const nameInput = /** @type {HTMLInputElement} */ (document.getElementById("nameInput"));
 
+const makeRoomButton = document.getElementById("makeRoomButton");
+const joinRoomButton = document.getElementById("joinRoomButton");
 const submitNameButton = document.getElementById("submitNameButton");
 const charaSelectButton = document.getElementById("charaSelectButton");
 
@@ -120,6 +122,13 @@ export function createTitleScene() {
         titleScene.add(loading);
     }
 
+    function makeRoomSubmit() {
+
+    }
+
+    function joinRoomSubmit() {
+    }
+
     function charaSelectSubmit() {
         setScene(createCharacterSelectScene());
     }
@@ -138,6 +147,8 @@ export function createTitleScene() {
 
     nameInput.addEventListener("input", () => { limitInputLength(nameInput); });
     submitNameButton.addEventListener("click", () => { handleNameSubmit(); });
+    makeRoomButton.addEventListener("click", () => { makeRoomSubmit(); });
+    joinRoomButton.addEventListener("click", () => { joinRoomSubmit(); });
     charaSelectButton.addEventListener("click", () => { charaSelectSubmit(); });
 
     titleCharacter.image = selectedCharacterName;

@@ -55,6 +55,23 @@
       white-space: nowrap;
     }
 
+    #roomIdInput {
+      margin: 0px;
+      padding: 10px 15px;
+      flex: 1;
+      pointer-events: auto;
+      z-index: 1;
+      background-color: #f0f0f0;
+      color: #000000;
+      text-align: center;
+      border: none;
+      border-radius: 10px;
+
+      font-size: 24px;
+      width: 100px;
+      white-space: nowrap;
+    }
+
     .blueButton {
       margin: 0px;
       padding: 10px 15px;
@@ -156,18 +173,23 @@
   </div>
 
   <div id="roomMakeOverlay" class="overlay"
-    style="display: none; position: absolute; bottom: 19%; right: 4%; transform: translate(-0%, -0%);">
-    <button id="makeRoomButton" class="blueButton" style="font-size: 20px; padding:7px 10px">部屋作成</button>
-    <button id="makeRoomButton" class="blueButton" style="font-size: 20px; padding:7px 10px">部屋参加</button>
+    style="display: none; padding: 8px; position: absolute; bottom: 232px; right: 40px; transform: translate(0%, 0%);">
+    <button id="makeRoomButton" class="blueButton" style="font-size: 20px; padding:7px 10px">ルーム作成</button>
+  </div>
+
+  <div id="joinRoomOverlay" class="overlay"
+    style="display: flex; padding: 8px; position: absolute; bottom: 160px; right: 40px; transform: translate(0%, 0%);">
+    <input type="text" id="roomIdInput" placeholder="部屋ID" maxlength="6">
+    <button id="joinRoomButton" class="blueButton" style="font-size: 20px; padding:7px 10px">ルーム参加</button>
   </div>
 
   <div id="nameInputOverlay" class="overlay"
-    style="display: none; position: absolute; bottom: 6%; right: 50%; transform: translate(50%, 0%);">
+    style="display: none; position: absolute; bottom: 40px; right: 50%; transform: translate(50%, 0%);">
     <input type="text" id="nameInput" placeholder="名前" maxlength="20">
   </div>
 
   <div id="playButtonOverlay" class="overlay"
-    style="display: flex; position: absolute; bottom: 6%; right: 4%; transform: translate(0%, 0%);">
+    style="display: flex; position: absolute; bottom: 40px; right: 40px; transform: translate(0%, 0%);">
     <button id="submitNameButton" class="blueButton"
       style="font-size: 48px; background-color: #df398c;">オンライン対戦</button>
   </div>
