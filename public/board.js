@@ -1,3 +1,4 @@
+import { gameManager } from "main25062401.js";
 import { BOARD_SIZE, MOVETIME, PIECE_MOVES, UNPROMODED_TYPES } from "./const.js";
 import { getPromotedType, getUnPromotedType } from "./utils.js";
 
@@ -185,8 +186,9 @@ export class Board {
     this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type]--;
 
     this.map[nx][ny] = { type: type, teban: teban, lastmovetime: servertime, lastmoveptime: lmp };
-    // this.komadaiServerTime[teban === 1 ? 'sente' : 'gote'] = servertime;
-    // this.komadaipTime[teban === 1 ? 'sente' : 'gote'] = lmp;
+    if (this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type] === 0 && gameManager.boardUI.draggingPiece.type === type) {
+      gameManager.boardUI.draggingPiece = null;
+    }
     this.kifu.push({ x: -2 + teban, y: -2 + teban, nx: nx, ny: ny });
     return { res: true, capture: null };
   }
@@ -204,6 +206,9 @@ export class Board {
     if (!result.res) return { res: false, capture: null };
 
     this.movePiece(data, result.capture, lmp);
+    if (gameManager.boardUI.draggingPiece.x === x && gameManager.boardUI.draggingPiece.y === y) {
+      gameManager.boardUI.draggingPiece = null;
+    }
 
     return result;
   }

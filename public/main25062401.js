@@ -209,6 +209,9 @@ function addEventListeners() {
   if (voiceVolumeSlider) {
     voiceVolumeSlider.addEventListener('change', (event) => {
       if (event.target instanceof HTMLInputElement) {
+        const volume = parseInt(event.target.value, 10) / 100;
+        audioManager.setVoiceVolume(volume);
+
         // キャラクターのランダムボイス再生
         const randomIndex = Math.floor(Math.random() * 3);
         // selectedCharacterNameがnullでないことを確認
@@ -376,5 +379,4 @@ Promise.all([...pieceImagePromises, ...characterImagePromises])
   })
   .catch(error => {
     console.error("画像の読み込み中にエラーが発生しました:", error);
-    // エラーハンドリング: 例としてエラーメッセージを表示するなど
   });
