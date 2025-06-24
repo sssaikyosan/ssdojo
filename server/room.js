@@ -122,12 +122,11 @@ export class Room {
         }
 
         currentList.splice(currentIndex, 1);
-        if (currentList.length === 0 && this.gameState === 'playing') {
-            if (this.sente.length > 0) {
-                this.gameFinished(1, "disconnected");
-            } else if (this.gote.length > 0) {
-                this.gameFinished(-1, "disconnected");
-            }
+        if (this.sente.length === 0 && this.gameState === 'playing') {
+            this.gameFinished(-1, "disconnected");
+        }
+        if (this.gote.length === 0 && this.gameState === 'playing') {
+            this.gameFinished(1, "disconnected");
         }
         if (this.gameState === "waiting") {
             this.roomUpdate();
