@@ -18,11 +18,13 @@ export function ioSetup() {
 
         // プレイヤーがマッチングを要求
         socket.on("requestMatch", (data) => {
+            if (serverState.players[socket.id].roomId !== null) return;
             serverState.players[socket.id].requestMatch(data);
             console.log(serverState.players[socket.id].characterName);
         });
 
         socket.on("createRoom", (data) => {
+            if (serverState.players[socket.id].roomId !== null) return;
             const roomId = serverState.createRoom();
             const res = serverState.joinRoom(socket.id, roomId, data.name, data.characterName);
             if (res === "roomJoined") {
@@ -38,6 +40,7 @@ export function ioSetup() {
 
         socket.on("joinRoom", (data) => {
             if (!data.roomId) return
+            if (serverState.players[socket.id].roomId !== null) return;
             const res = serverState.joinRoom(socket.id, data.roomId, data.name, data.characterName);
             if (res === "roomJoined") {
                 const room = serverState.rooms[data.roomId];
