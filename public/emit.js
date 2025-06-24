@@ -1,4 +1,4 @@
-import { gameManager } from "./main25062103.js";
+import { gameManager } from "./main25062401.js";
 
 export function sendPutPiece(nx, ny, type) {
     if (gameManager.cpu === null) {

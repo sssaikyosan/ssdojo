@@ -1,5 +1,5 @@
 import { BoardUI } from './ui_board.js';
-import { audioManager } from './main25062103.js'; // audio_manager.jsからインポート
+import { audioManager } from './main25062401.js'; // audio_manager.jsからインポート
 import { Board } from './board.js';
 
 export class GameManager {

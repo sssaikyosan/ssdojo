@@ -1,6 +1,6 @@
 // ルームUIを定義するファイル
 import { Scene } from "./scene.js";
-import { battle_img, setScene, socket } from "./main25062103.js"; // setScene関数をインポート
+import { battle_img, setScene, socket } from "./main25062401.js"; // setScene関数をインポート
 import { createTitleScene } from "./scene_title.js"; // タイトルシーンに戻るために必要
 import { createPlayScene } from "./scene_game.js";
 import { BackgroundImageUI } from "./ui.js";

@@ -1,4 +1,4 @@
-import { characterImages, gameManager, scene, title_img, audioManager } from "./main25062103.js";
+import { characterImages, gameManager, scene, title_img, audioManager } from "./main25062401.js";
 export class UI {
   globalX;
   globalY;
