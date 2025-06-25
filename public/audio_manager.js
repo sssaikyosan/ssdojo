@@ -54,7 +54,7 @@ export class AudioManager {
         audio.play();
     }
 
-    playVoice(filename) {
+    playVoice(filename, onComplete) {
         // 現在再生中の音声があれば停止
         if (this.currentVoice) {
             this.currentVoice.pause();
@@ -66,6 +66,14 @@ export class AudioManager {
         audio.play();
 
         this.currentVoice = audio; // 新しい音声を保持
+
+        // 音声再生完了時のコールバックを設定
+        audio.onended = () => {
+            if (onComplete && typeof onComplete === 'function') {
+                onComplete();
+            }
+            this.currentVoice = null; // 再生完了したら参照をクリア
+        };
     }
 
     playBGM(bgm) {

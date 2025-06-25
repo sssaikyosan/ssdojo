@@ -1,4 +1,4 @@
-import { characterImages, gameManager, scene, title_img, audioManager } from "./main25062402.js";
+import { characterImages, gameManager, scene, title_img, audioManager } from "./main25062501.js";
 export class UI {
   globalX;
   globalY;
@@ -150,8 +150,8 @@ export class CharacterImageUI extends UI { // export キーワードを追加
   }
 
   onMouseDown(pos) {
-    const randomIndex = Math.floor(Math.random() * 3);
-    const randomVoiceFile = `/characters/${this.image}/voice00${randomIndex + 1}.wav`;
+    const randomIndex = Math.floor(Math.random() * 12);
+    const randomVoiceFile = `/characters/${this.image}/voice${randomIndex + 1}.wav`;
     audioManager.playVoice(randomVoiceFile);
   }
 }

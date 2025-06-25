@@ -1,6 +1,6 @@
 // ルームUIを定義するファイル
 import { Scene } from "./scene.js";
-import { battle_img, setScene, socket } from "./main25062402.js"; // setScene関数をインポート
+import { battle_img, setScene, socket } from "./main25062501.js"; // setScene関数をインポート
 import { createTitleScene } from "./scene_title.js"; // タイトルシーンに戻るために必要
 import { createPlayScene } from "./scene_game.js";
 import { BackgroundImageUI } from "./ui.js";
@@ -110,6 +110,7 @@ export function roomUpdate(data) {
         spectatorsOverlay.appendChild(pElement);
     });
     if (data.state !== 'playing') {
+        playingText.style.display = 'none';
         if (data.roomteban === 'sente' || data.roomteban === 'gote') {
             readyOverlay.style.display = 'block';
         } else {

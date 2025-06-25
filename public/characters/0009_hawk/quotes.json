@@ -1,0 +1,94 @@
+{
+    "image": "0009_hawk",
+    "voice": "A female voice with a clear, calm, and composed medium-low pitch. Her delivery is remarkably steady and precise, often minimalistic and devoid of overt emotional inflection, reflecting her focused and analytical mind. Each word is articulated with clean, efficient clarity, conveying a professional detachment. There's an underlying tautness or quiet intensity, like a finely tuned instrument, that hints at immense concentration and an unyielding will. Her voice rarely wavers, embodying a silent strength and the absolute certainty of a skilled sniper.",
+    "name_jp": "シエラ・“ナイトホーク”・アームストロング",
+    "name_romanji": "Sierra \"Nighthawk\" Armstrong",
+    "profile": {
+        "nickname_jp": "ホーク、ナイト",
+        "nickname_en": "Hawk, Night",
+        "age": 24,
+        "birthday": "11月30日",
+        "blood_type": "A型",
+        "height_cm": 168,
+        "likes": [
+            "完璧な狙撃、精密機械の手入れ",
+            "静寂、夜景、ブラックコーヒー",
+            "チェスや将棋などの戦略ゲーム",
+            "孤独な時間、読書（ミリタリー関連）"
+        ],
+        "dislikes_weaknesses": [
+            "無駄口、感情的な判断",
+            "予期せぬアクシデント、計画の変更",
+            "人混み、注目されること",
+            "甘いもの (集中力が鈍る気がする)",
+            "自分の過去について触れられること"
+        ],
+        "personality": [
+            "寡黙で冷静沈着、感情を表に出さないプロフェッショナルなスナイパー。",
+            "任務遂行のためなら非情になれるが、心の奥底には仲間意識も持つ。",
+            "観察眼に優れ、僅かな情報からでも状況を正確に把握する。",
+            "孤独を好むが、信頼できる相手には心を開くこともある。",
+            "一度決めた標的は決して逃さないという強い意志を持つ。"
+        ],
+        "skills_talents": [
+            "超長距離狙撃、精密射撃",
+            "隠密行動、サバイバル術、トラップ設置",
+            "武器のカスタマイズとメンテナンス",
+            "戦術分析、状況判断能力",
+            "精神集中、忍耐力"
+        ],
+        "catchphrases_quotes": [
+            "ターゲット、ロックオン…。",
+            "一発で終わらせる。",
+            "…サイレントキル。",
+            "風速…距離…誤差ゼロ。",
+            "……静かにして。息が乱れる。",
+            "照準よし。あとは引くだけ。",
+            "その動き、既に読んでる。",
+            "ミスは許されない。それが私の流儀。",
+            "1秒の油断が命取り。",
+            "……今、撃つ。",
+            "排莢完了。次弾装填。",
+            "騒がしい場所は苦手だ。",
+            "夜が好きだ。すべてがクリアに見える。",
+            "誤差数ミリ。修正する。",
+            "外した？……そんなはずはない。",
+            "情報が足りない。戻る。",
+            "視界良好。ターゲット確認。",
+            "感情で引き金は引かない。",
+            "……任務中は話しかけるな。",
+            "沈黙は武器。理解できるか？",
+            "完璧な一撃。それだけ。",
+            "……これが私の正確さ。",
+            "敵の心拍…止まった。"
+        ],
+        "dialogue_start_game": [
+            "盤上の王を標的（ターゲット）と認識。…作戦を開始する。",
+            "お前の次の手…その三手先まで、既に私のスコープの中だ。",
+            "……無駄口は不要。ただ、最善の一手を積み重ねるだけ。",
+            "息を止めろ。…一手のミスが、お前の敗北に繋がる。",
+            "この盤上は私の射線。…お前は、もう逃げられない。"
+        ],
+        "victory_quotes": [
+            "予定通りの結果。誤差なし。",
+            "…排除完了。次に進む。",
+            "無駄な衝突は避けたかったが、仕方ない。",
+            "ターゲット、消去。報告は任せた。",
+            "ふっ…やっぱり私はブレてない。"
+        ],
+        "defeat_quotes": [
+            "……読み違えた？私が…？",
+            "この記録、残すわけにはいかない。",
+            "…次は必ず仕留める。",
+            "一発外した代償は、大きい。",
+            "く…沈黙が、破られたか。"
+        ],
+        "background_setting": [
+            "ある国の特殊部隊に所属していた元エーススナイパー。現在はフリーランスの傭兵として活動。",
+            "過去の任務で何か大きなトラウマを抱えているらしく、その詳細は謎に包まれている。",
+            "「ナイトホーク」のコードネームは、夜間の任務におけるその卓越した能力から名付けられた。",
+            "高額な報酬で困難な暗殺任務や警護任務を請け負う。"
+        ]
+    },
+    "image_description_hint": "グレー系のショートヘア、青い瞳、ゴーグル、ヘッドセット、迷彩服、スナイパーライフル、都市の屋上、夕焼け"
+}

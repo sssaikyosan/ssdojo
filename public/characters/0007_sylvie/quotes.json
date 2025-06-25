@@ -1,0 +1,90 @@
+{
+    "image": "0007_sylvie",
+    "voice": "A female voice that is clear, serene, and possesses a refined, medium pitch, imbued with a timeless, ethereal quality. Her delivery is calm and measured, each word articulated with a gentle yet firm cadence, as if carrying the wisdom of ages and the tranquility of the forest. The tone is deeply resonant and pure, evoking images of sunlight filtering through leaves and the quiet strength of ancient trees. Her voice conveys both profound gentleness and an unwavering resolve, often accompanied by a subtle, almost melodic undertone that speaks of harmony with nature.",
+    "name_jp": "シルヴァン・月桂樹（げっけいじゅ）",
+    "name_romanji": "Sylvain Gekkeiju",
+    "profile": {
+        "nickname_jp": "森の守り手、シルヴィ",
+        "nickname_en": "Guardian of the Forest, Sylvie",
+        "age": "127歳 (エルフ基準では若年)",
+        "birthday": "新緑の月の最初の満月",
+        "blood_type": "不明 (エルフ特有)",
+        "height_cm": 175,
+        "likes": [
+            "森の静寂、動物たちとの対話",
+            "星空の下での瞑想、古い歌",
+            "手作りの薬草、木の実のパイ",
+            "弓の手入れ、風の音を聞くこと"
+        ],
+        "dislikes_weaknesses": [
+            "森を汚す者、無意味な殺生",
+            "騒がしい都市、鉄の匂い",
+            "嘘や裏切り",
+            "閉所 (少し息苦しく感じる)"
+        ],
+        "personality": [
+            "冷静沈着で、森の知恵に長けたエルフのレンジャー。",
+            "物静かだが、森の仲間や守るべきものに対しては強い意志と優しさを見せる。",
+            "自然と調和し、その声を聞くことができる。",
+            "人間に対しては警戒心が強いが、純粋な心を持つ者には心を開くことも。",
+            "長い時を生きるエルフらしく、達観したような落ち着きがある。"
+        ],
+        "skills_talents": [
+            "弓術の達人 (百発百中)",
+            "隠密行動、追跡、サバイバル術",
+            "薬草学、動物とのコミュニケーション",
+            "森の中での方向感覚、天候予測",
+            "古代エルフの魔法（治癒や自然操作系のごく一部）"
+        ],
+        "catchphrases_quotes": [
+            "森の声が、私に告げています。",
+            "この矢は、森の怒りを乗せている。",
+            "自然の理に従いなさい。",
+            "静けさの中にこそ、真実がある。",
+            "風が告げている…敵の気配を。",
+            "私はただ、森を守る者。",
+            "葉擦れの音は、私の鼓動と共鳴する。",
+            "お前の心に、まだ緑が残っているかしら？",
+            "矢は放たれた瞬間から、帰る場所を知っている。",
+            "この森の木々は、私の家族です。",
+            "嘘は風に乗っても隠せません。",
+            "あなたの心のざわめきが、木々を震わせる。",
+            "見逃すこともまた、強さの一つ。",
+            "命を奪うのではなく、守るための弓。",
+            "騒がしい鉄の鎧より、小鳥のさえずりの方がよほど勇ましい。",
+            "森は、誰かが見ていなくてもすべてを記憶している。",
+            "古の言葉を忘れたなら、風に問いかけてごらんなさい。",
+            "敵意を持つなら、森そのものがあなたを拒むでしょう。",
+            "私はこの地と共に生き、この地と共に眠る。",
+            "静かにしなさい。…彼ら（動物たち）が怯えてしまう。"
+        ],
+        "dialogue_start_game": [
+            "盤上は静かな森のよう…あなたの指し手が、風のささやきか、嵐の予兆か…見極めさせてもらいます。",
+            "矢をつがえるように、心を澄まします…さあ、あなたの最初の一手を。",
+            "森の木々が見守っています。あなたの心に迷いがないか、この勝負で示してください。",
+            "この盤上でも、森の理（ことわり）は同じ。静かに、流れを読みましょう。",
+            "風が、あなたの心の音を運んできます…始めましょうか、静かなる戦いを。"
+        ],
+        "victory_quotes": [
+            "森の均衡は、守られました。",
+            "風も、木々も、私の勝利を讃えているようです。",
+            "争いは望まぬもの…でもこれが正しき選択だった。",
+            "次は、血を流さずに済む道を選びましょう。",
+            "この矢は、ただ命を奪うためにあるのではありません。"
+        ],
+        "defeat_quotes": [
+            "森の加護が…足りなかったのでしょうか…。",
+            "風が…少し…騒がしかった……。",
+            "この痛みも、自然の摂理の一部…ですね。",
+            "悔いは…ありません。森を思い、戦ったのですから……。",
+            "今は退きましょう……森が、まだ私を呼んでいます。"
+        ],
+        "background_setting": [
+            "古代から続くエルフの森の守護者の一族。",
+            "幼い頃からレンジャーとしての訓練を受け、森と共に生きてきた。",
+            "森のバランスを脅かす存在が現れた時、その弓を取る。",
+            "外界との接触は少ないが、時折森を訪れる旅人から世界の出来事を知る。"
+        ]
+    },
+    "image_description_hint": "銀髪（やや緑がかった）の編み込みロング、緑色の瞳、エルフ耳、緑のケープ、弓と矢、森の中、木漏れ日"
+}

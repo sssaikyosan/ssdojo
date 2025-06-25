@@ -1,6 +1,6 @@
 //タイトルシーン要素
 
-import { serverStatus, title_img, audioManager, canvas, setPlayerName, playerName, socket, selectedCharacterName, userId, setScene, characterFiles, setSelectedCharacterName } from "./main25062402.js";
+import { serverStatus, title_img, audioManager, canvas, setPlayerName, playerName, socket, selectedCharacterName, userId, setScene, characterFiles, setSelectedCharacterName } from "./main25062501.js";
 import { Scene } from "./scene.js";
 import { CharacterImageUI, BackgroundImageUI, OverlayUI } from "./ui.js";
 import { LoadingUI } from "./ui_loading.js";
@@ -244,8 +244,8 @@ export function createCharacterSelectScene() {
             setSelectedCharacterName(characterName); // 選択されたキャラクター名を設定
             localStorage.setItem('selectedCharacter', selectedCharacterName);
             console.log(`Selected character: ${selectedCharacterName}`);
-            const randomIndex = Math.floor(Math.random() * 3);
-            const randomVoiceFile = `/characters/${characterUI.image}/voice00${randomIndex + 1}.wav`;
+            const randomIndex = Math.floor(Math.random() * 12);
+            const randomVoiceFile = `/characters/${characterUI.image}/voice${randomIndex + 1}.wav`;
             audioManager.playVoice(randomVoiceFile);
             setScene(createTitleScene());
         };

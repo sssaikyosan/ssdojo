@@ -1,4 +1,4 @@
-import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus } from "./main25062402.js";
+import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus } from "./main25062501.js";
 import { Scene } from "./scene.js";
 import { createTitleScene, rankingOverlay } from "./scene_title.js";
 import { Background, BackgroundImageUI, CharacterInGameUI } from "./ui.js";
@@ -11,6 +11,11 @@ export const changeRating = document.getElementById("changeRating");
 const resultOverlay = document.getElementById("resultOverlay");
 const toTitleButton = document.getElementById("toTitleButton");
 
+export let opponentCharacter = null;
+
+export function setOpponentCharacter(character) {
+    opponentCharacter = character;
+}
 
 //暗い背景
 export let background = new Background({
@@ -82,7 +87,6 @@ export const countDownText = new TextUI({
 
 
 
-
 // Define the event handler function for the "To Title" button
 export function handleToTitleClick() {
     backToTitle();
@@ -97,7 +101,42 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
     playScene.add(backgroundImageUI);
 
     audioManager.playBGM('battle'); // 対戦BGMを再生
+
     gameManager.setRoom(roomId, teban, servertime);
+
+    opponentCharacter = opponentCharacterName;
+
+    let senteCharacter = null;
+    let goteCharacter = null;
+
+    if (teban === 1) {
+        senteCharacter = selectedCharacterName;
+        goteCharacter = opponentCharacterName
+    } else if (teban === -1) {
+        senteCharacter = opponentCharacterName;
+        goteCharacter = selectedCharacterName
+    }
+
+    // ゲーム開始時音声の再生 (先手 -> 後手の順)
+    if (senteCharacter) {
+        const playerVoiceIndex = Math.floor((servertime * 999) % 3) + 1;
+        const playerStartVoiceFile = `/characters/${senteCharacter}/startvoice${playerVoiceIndex}.wav`;
+
+        // 先手番の音声を再生し、完了後に後手番の音声を再生
+        audioManager.playVoice(playerStartVoiceFile, () => {
+            if (goteCharacter) {
+                const opponentVoiceIndex = Math.floor((servertime * 333) % 3) + 1;
+                const opponentStartVoiceFile = `/characters/${goteCharacter}/startvoice${opponentVoiceIndex}.wav`;
+                audioManager.playVoice(opponentStartVoiceFile);
+            }
+        });
+    } else if (goteCharacter) {
+        // selectedCharacterNameがない場合（観戦など）、後手番の音声のみ再生
+        const opponentVoiceIndex = Math.floor((servertime * 333) % 3) + 1;
+        const opponentStartVoiceFile = `/characters/${goteCharacter}/startvoice${opponentVoiceIndex}.wav`;
+        audioManager.playVoice(opponentStartVoiceFile);
+    }
+
 
     const roundRating = Math.round(rating);
     const opponentRoundRating = Math.round(opponentRating);
@@ -215,12 +254,24 @@ export function endGame(data) {
         changeRating.textContent = "レート変動 " + oldrate + " → " + newrate;
         scene.add(winText);
         setStatus(newrate, data.winGames);
+        // 勝利時音声の再生
+        if (selectedCharacterName) {
+            const randomIndex = Math.floor(Math.random() * 3) + 1; // winvoice1.wav, winvoice2.wav, winvoice3.wav を想定
+            const winVoiceFile = `/characters/${selectedCharacterName}/winvoice${randomIndex}.wav`;
+            audioManager.playVoice(winVoiceFile);
+        }
     } else {
         const oldrate = Math.round(data.loseRating);
         const newrate = Math.round(data.newLoseRating);
         changeRating.textContent = "レート変動 " + oldrate + " → " + newrate;
         scene.add(loseText);
         setStatus(newrate, data.loseGames);
+        // 敵勝利時音声の再生
+        if (opponentCharacter) {
+            const randomIndex = Math.floor(Math.random() * 3) + 1; // losevoice1.wav, losevoice2.wav, losevoice3.wav を想定
+            const loseVoiceFile = `/characters/${opponentCharacter}/winvoice${randomIndex}.wav`;
+            audioManager.playVoice(loseVoiceFile);
+        }
     }
 
     resultOverlay.style.display = "block";
