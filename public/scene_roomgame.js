@@ -127,7 +127,6 @@ export function createRoomPlayScene(senteName, senteCharacter, goteName, goteCha
     }
 
     roomResultOverlay.style.display = "none";
-    toRoomButton.style.display = "none";
     statusOverlay.style.display = "none";
     rankingOverlay.style.display = "none";
 
@@ -141,6 +140,11 @@ export function createRoomPlayScene(senteName, senteCharacter, goteName, goteCha
     playScene.add(gameManager.boardUI);
     playScene.add(countDownText);
     playScene.add(timeText);
+
+    toRoomButton.addEventListener("click", handleToRoomClick);
+    playScene.destroy = () => {
+        toRoomButton.removeEventListener("click", handleToRoomClick);
+    };
 
     return playScene;
 }
@@ -185,7 +189,7 @@ export function endRoomGame(data) {
     }
 
     roomResultOverlay.style.display = "block";
-    toRoomButton.addEventListener("click", handleToRoomClick);
+
     gameManager.resetRoom();
     gameManager.board.finished = true;
 }

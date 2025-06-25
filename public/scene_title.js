@@ -1,5 +1,6 @@
 //タイトルシーン要素
 
+import { createPlayScene } from "./scene_game.js";
 import { serverStatus, title_img, audioManager, canvas, setPlayerName, playerName, socket, selectedCharacterName, userId, setScene, characterFiles, setSelectedCharacterName } from "./main25062501.js";
 import { Scene } from "./scene.js";
 import { CharacterImageUI, BackgroundImageUI, OverlayUI } from "./ui.js";
@@ -8,6 +9,10 @@ import { TextUI } from "./ui_text.js";
 import { getAfterStr } from "./utils.js";
 
 export const rankingOverlay = document.getElementById("rankingOverlay");
+export const cancelMatchOverlay = document.getElementById("cancelMatchOverlay");
+
+const cpumatchOverlay = document.getElementById("cpumatchOverlay");
+const cpulevelOverlay = document.getElementById("cpulevelOverlay");
 const roomMakeOverlay = document.getElementById("roomMakeOverlay");
 const playButtonOverlay = document.getElementById("playButtonOverlay");
 const nameInputOverlay = document.getElementById("nameInputOverlay");
@@ -15,6 +20,11 @@ const charaSelectOverlay = document.getElementById("charaSelectOverlay");
 
 const nameInput = /** @type {HTMLInputElement} */ (document.getElementById("nameInput"));
 
+const cpuButton = document.getElementById("cpulevel1Button");
+const cpulevel1Button = document.getElementById("cpulevel1Button");
+const cpulevel2Button = document.getElementById("cpulevel2Button");
+const cpulevel3Button = document.getElementById("cpulevel3Button");
+const cancelMatchButton = document.getElementById("cancelMatchButton");
 const makeRoomButton = document.getElementById("makeRoomButton");
 const joinRoomButton = document.getElementById("joinRoomButton");
 const submitNameButton = document.getElementById("submitNameButton");
@@ -49,18 +59,31 @@ const matchingText = new TextUI({
     text: () => {
         return "マッチング中";
     },
-    x: 0.4,
+    x: 0.0,
     y: 0.4,
     size: 0.05,
     colors: ["#ffffff", "#00000000", "#00000000"],
     position: 'center'
 });
 const loading = new LoadingUI({
-    x: 0.6,
+    x: 0.2,
     y: 0.4,
     radius: 0.03,
 });
 
+function cancelMatchSubmit() {
+    socket.emit("cancelMatch");
+}
+
+function clearTitleHTML() {
+    cpumatchOverlay.style.display = "none";
+    cpulevelOverlay.style.display = "none";
+    roomMakeOverlay.style.display = "none";
+    playButtonOverlay.style.display = "none";
+    nameInputOverlay.style.display = "none";
+    charaSelectOverlay.style.display = "none";
+    cancelMatchOverlay.style.display = "none";
+}
 
 //タイトルシーン
 export function createTitleScene() {
@@ -74,9 +97,9 @@ export function createTitleScene() {
             audioManager.playBGM('title');
         }
 
-        canvas.removeEventListener('click', playBGMOnce); // イベントリスナーを解除
+        document.removeEventListener('click', playBGMOnce); // イベントリスナーを解除
     };
-    canvas.addEventListener('click', playBGMOnce);
+    document.addEventListener('click', playBGMOnce);
 
     //オンライン対戦
     function handleNameSubmit() {
@@ -85,12 +108,12 @@ export function createTitleScene() {
         if (playerName == "") setPlayerName("名無しの棋士");
         // マッチングを開始
         socket.emit("requestMatch", { name: playerName, characterName: selectedCharacterName, userId: userId });
-        roomMakeOverlay.style.display = "none";
-        playButtonOverlay.style.display = "none";
-        nameInputOverlay.style.display = "none";
-        charaSelectOverlay.style.display = "none";
+        clearTitleHTML();
+        cancelMatchOverlay.style.display = "block";
         titleScene.add(matchingText);
         titleScene.add(loading);
+
+
     }
 
     function makeRoomSubmit() {
@@ -99,10 +122,7 @@ export function createTitleScene() {
         if (playerName == "") setPlayerName("名無しの棋士");
         // ルーム作成をサーバーにリクエスト
         socket.emit("createRoom", { name: playerName, characterName: selectedCharacterName, userId: userId });
-        roomMakeOverlay.style.display = "none";
-        playButtonOverlay.style.display = "none";
-        nameInputOverlay.style.display = "none";
-        charaSelectOverlay.style.display = "none";
+        clearTitleHTML();
         titleScene.add(loading);
     }
 
@@ -115,13 +135,12 @@ export function createTitleScene() {
         if (roomId) {
             // ルーム参加をサーバーにリクエスト
             socket.emit("joinRoom", { roomId: roomId, name: playerName, characterName: selectedCharacterName, userId: userId });
-            roomMakeOverlay.style.display = "none";
-            playButtonOverlay.style.display = "none";
-            nameInputOverlay.style.display = "none";
-            charaSelectOverlay.style.display = "none";
+            clearTitleHTML();
             titleScene.add(loading);
         }
     }
+
+
 
     function charaSelectSubmit() {
         setScene(createCharacterSelectScene());
@@ -138,10 +157,41 @@ export function createTitleScene() {
         }
     }
 
+    function cpuButtonSubmit() {
+
+    }
+
+    function cpulevel1ButtonSubmit() {
+        setPlayerName(nameInput.value.trim());
+        localStorage.setItem("playerName", playerName);
+        if (playerName == "") setPlayerName("名無しの棋士");
+        clearTitleHTML();
+        setScene(createPlayScene(playerName, "レベル１CPU", "cpu", 1, null, performance.now(), 0, 0, 1));
+    }
+    function cpulevel2ButtonSubmit() {
+        setPlayerName(nameInput.value.trim());
+        localStorage.setItem("playerName", playerName);
+        if (playerName == "") setPlayerName("名無しの棋士");
+        clearTitleHTML();
+        setScene(createPlayScene(playerName, "レベル２CPU", "cpu", 1, null, performance.now(), 0, 0, 2));
+    }
+    function cpulevel3ButtonSubmit() {
+        setPlayerName(nameInput.value.trim());
+        localStorage.setItem("playerName", playerName);
+        if (playerName == "") setPlayerName("名無しの棋士");
+        clearTitleHTML();
+        setScene(createPlayScene(playerName, "レベル３CPU", "cpu", 1, null, performance.now(), 0, 0, 3));
+    }
+
+    cpuButton.addEventListener("click", cpuButtonSubmit);
+    cpulevel1Button.addEventListener("click", cpulevel1ButtonSubmit);
+    cpulevel2Button.addEventListener("click", cpulevel2ButtonSubmit);
+    cpulevel3Button.addEventListener("click", cpulevel3ButtonSubmit);
     submitNameButton.addEventListener("click", handleNameSubmit);
     makeRoomButton.addEventListener("click", makeRoomSubmit);
     joinRoomButton.addEventListener("click", joinRoomSubmit);
     charaSelectButton.addEventListener("click", charaSelectSubmit);
+    cancelMatchButton.addEventListener("click", cancelMatchSubmit);
 
     titleCharacter.image = selectedCharacterName;
     titleScene.add(title);
@@ -155,6 +205,8 @@ export function createTitleScene() {
     if (savedName) {
         nameInput.value = savedName;
     }
+    cpumatchOverlay.style.display = "block";
+    cpulevelOverlay.style.display = "block";
     rankingOverlay.style.display = "block";
     roomMakeOverlay.style.display = "flex";
     nameInputOverlay.style.display = "flex";
@@ -163,11 +215,16 @@ export function createTitleScene() {
 
     // シーン破棄時のイベントリスナー削除
     titleScene.destroy = () => {
-        canvas.removeEventListener('click', playBGMOnce);
+        document.removeEventListener('click', playBGMOnce);
+        cpuButton.removeEventListener("click", cpuButtonSubmit);
+        cpulevel1Button.removeEventListener("click", cpulevel1ButtonSubmit);
+        cpulevel2Button.removeEventListener("click", cpulevel2ButtonSubmit);
+        cpulevel3Button.removeEventListener("click", cpulevel3ButtonSubmit);
         submitNameButton.removeEventListener("click", handleNameSubmit);
         makeRoomButton.removeEventListener("click", makeRoomSubmit);
         joinRoomButton.removeEventListener("click", joinRoomSubmit);
         charaSelectButton.removeEventListener("click", charaSelectSubmit);
+        cancelMatchButton.removeEventListener("click", cancelMatchSubmit);
     };
 
     return titleScene;
@@ -254,6 +311,7 @@ export function createCharacterSelectScene() {
         selectScene.add(characterNameText);
     });
 
+    cancelMatchOverlay.style.display = "none";
     rankingOverlay.style.display = "none";
     roomMakeOverlay.style.display = "none";
     playButtonOverlay.style.display = "none";

@@ -113,7 +113,7 @@ export class ServerState {
     sendServerStatus() {
         const online = Object.keys(this.players).length;
         const roomCount = Object.keys(this.rooms).length;
-        const topPlayers = this.topPlayers;
+        const topPlayers = this.getTopPlayers();
         this.io.emit("serverStatus", { online: online, roomCount: roomCount, topPlayers: topPlayers });
         this.timecount++;
     }

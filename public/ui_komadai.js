@@ -1,5 +1,5 @@
 import { CELL_SIZE, KOMADAI_WIDTH, KOMADAI_HEIGHT, BOARD_SIZE, KOMADAI_OFFSET_RATIO, BOARD_COLOR, LINE_COLOR, KOMADAI_TIMER_SIZE, KOMADAI_TIMER_LINEWITH, MOVETIME, KOMADAI_TIMER_COLOR, KOMADAI_TIMER_OFFSET_X, KOMADAI_TIMER_OFFSET_Y } from "./const.js";
-import { ctx, pieceImages } from "./main25062501.js";
+import { ctx, gameManager, pieceImages } from "./main25062501.js";
 import { drawText, drawTextWithDoubleOutline } from "./utils.js";
 
 export class KomadaiUI {
@@ -65,6 +65,8 @@ export class KomadaiUI {
     const padding = CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
     let drag = 0;
     if (draggingPiece !== null && draggingPiece.x === -1 && draggingPiece.type === type && teban === myteban) {
+      drag = 1;
+    } else if (gameManager.boardUI.lastsend !== null && gameManager.boardUI.lastsend.type === type && teban === myteban) {
       drag = 1;
     };
     for (let i = 0; i < (komadai[type] - drag); i++) {

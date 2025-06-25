@@ -66,7 +66,8 @@ export class Room {
         }
     }
 
-    gameFinished(win, text) {
+    gameFinished(win, text, playerId = null) {
+        console.log('gameend');
         if (this.roomType === 'rating') {
             if (this.sente.length !== 1 || this.gote.length !== 1) {
                 console.log('プレイ人数に不正');
@@ -80,18 +81,18 @@ export class Room {
             serverState.deleteRoom(this.roomId);
         } else {
             for (const id of this.sente) {
+                if (id === playerId) continue;
                 this.spectators.push(id);
             }
             for (const id of this.gote) {
+                if (id === playerId) continue;
                 this.spectators.push(id);
             }
             this.sente = [];
             this.gote = [];
 
-            const senteNames = this.sente.map(id => serverState.players[id].name);
-            const goteNames = this.gote.map(id => serverState.players[id].name);
-            const spectatorsNames = this.spectators.map(id => serverState.players[id].name);
-            this.emitToRoom("endRoomGame", { sente: senteNames, gote: goteNames, spectators: spectatorsNames, roomId: this.roomId, win: win, text: text });
+            const names = this.getPlayerNames();
+            this.emitToRoom("endRoomGame", { sente: names.sente, gote: names.gote, spectators: names.spectators, roomId: this.roomId, win: win, text: text });
             this.gameState = "waiting";
         }
     }
@@ -121,13 +122,15 @@ export class Room {
             return false;
         }
 
-        currentList.splice(currentIndex, 1);
-        if (this.sente.length === 0 && this.gameState === 'playing') {
-            this.gameFinished(-1, "disconnected");
+
+        if (currentList === this.sente && currentList.length === 1 && this.gameState === 'playing') {
+            this.gameFinished(-1, "disconnected", playerId);
+        } else if (currentList === this.gote && currentList.length === 1 && this.gameState === 'playing') {
+            this.gameFinished(1, "disconnected", playerId);
+        } else {
+            currentList.splice(currentIndex, 1);
         }
-        if (this.gote.length === 0 && this.gameState === 'playing') {
-            this.gameFinished(1, "disconnected");
-        }
+
         if (this.gameState === "waiting") {
             this.roomUpdate();
         }
@@ -196,17 +199,15 @@ export class Room {
         }
         if (this.sente.length > 0 && this.gote.length > 0) {
 
-            const senteNames = this.sente.map(id => serverState.players[id].name);
-            const goteNames = this.gote.map(id => serverState.players[id].name);
-            const spectatorsNames = this.spectators.map(id => serverState.players[id].name);
+            const names = this.getPlayerNames();
 
             this.startGame();
             const data = {
-                senteName: senteNames,
+                senteName: names.sente,
                 senteCharacter: serverState.players[this.sente[0]].characterName,
-                goteName: goteNames,
+                goteName: names.gote,
                 goteCharacter: serverState.players[this.gote[0]].characterName,
-                spectators: spectatorsNames,
+                spectators: names.spectators,
                 roomId: this.roomId,
                 state: this.gameState
             };
@@ -225,16 +226,38 @@ export class Room {
     }
 
     roomUpdate() {
-        const senteNames = this.sente.map(id => serverState.players[id].name);
-        const goteNames = this.gote.map(id => serverState.players[id].name);
-        const spectatorsNames = this.spectators.map(id => serverState.players[id].name);
-        this.emitToRoom("roomUpdate", { roomId: this.roomId, sente: senteNames, gote: goteNames, spectators: spectatorsNames, state: this.gameState });
+        const names = this.getPlayerNames();
+        this.emitToRoom("roomUpdate", { roomId: this.roomId, sente: names.sente, gote: names.gote, spectators: names.spectators, state: this.gameState });
     }
 
     backToRoom() {
-        const senteNames = this.sente.map(id => serverState.players[id].name);
-        const goteNames = this.gote.map(id => serverState.players[id].name);
-        const spectatorsNames = this.spectators.map(id => serverState.players[id].name);
-        return { roomId: this.roomId, sente: senteNames, gote: goteNames, spectators: spectatorsNames, state: this.gameState };
+        const names = this.getPlayerNames();
+        return { roomId: this.roomId, sente: names.sente, gote: names.gote, spectators: names.spectators, state: this.gameState };
+    }
+
+    getPlayerNames() {
+        const senteNames = [];
+        const goteNames = [];
+        const spectatorsNames = [];
+
+        for (const id of this.sente) {
+            if (!serverState.players[id]) {
+                continue;
+            }
+            senteNames.push(serverState.players[id].name);
+        }
+        for (const id of this.gote) {
+            if (!serverState.players[id]) {
+                continue;
+            }
+            goteNames.push(serverState.players[id].name);
+        }
+        for (const id of this.spectators) {
+            if (!serverState.players[id]) {
+                continue;
+            }
+            spectatorsNames.push(serverState.players[id].name);
+        }
+        return { sente: senteNames, gote: goteNames, spectators: spectatorsNames };
     }
 }

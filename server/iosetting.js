@@ -23,6 +23,13 @@ export function ioSetup() {
             console.log(serverState.players[socket.id].characterName);
         });
 
+        socket.on("cancelMatch", () => {
+            console.log("cancelMatch");
+            if (!serverState.players[socket.id]) return
+            serverState.players[socket.id].cancelMatch();
+            socket.emit("cancelMatch");
+        });
+
         socket.on("createRoom", (data) => {
             if (serverState.players[socket.id].roomId !== null) return;
             const roomId = serverState.createRoom();

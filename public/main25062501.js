@@ -275,6 +275,11 @@ function setupSocket() {
     ));
   });
 
+  socket.on("cancelMatch", () => {
+    console.log("cancelMatch");
+    setScene(createTitleScene());
+  });
+
   socket.on('startRoomGame', (data) => {
     console.log(data);
     setScene(createRoomPlayScene(
@@ -298,6 +303,7 @@ function setupSocket() {
 
   // ゲーム終了を受信
   socket.on('endGame', (data) => {
+    console.log('endGame');
     endGame(data);
   });
 

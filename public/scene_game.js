@@ -1,6 +1,6 @@
 import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus } from "./main25062501.js";
 import { Scene } from "./scene.js";
-import { createTitleScene, rankingOverlay } from "./scene_title.js";
+import { cancelMatchOverlay, createTitleScene, rankingOverlay } from "./scene_title.js";
 import { Background, BackgroundImageUI, CharacterInGameUI } from "./ui.js";
 import { TextUI } from "./ui_text.js";
 
@@ -93,7 +93,7 @@ export function handleToTitleClick() {
 }
 
 //ゲームシーン
-export function createPlayScene(playerName, opponentName, opponentCharacterName, teban, roomId, servertime, rating, opponentRating, cpu = false) {
+export function createPlayScene(playerName, opponentName, opponentCharacterName, teban, roomId, servertime, rating, opponentRating, cpu = null) {
     let playScene = new Scene();
 
     // 背景画像UIを追加 (他のUIより前に描画されるように最初に追加)
@@ -102,8 +102,7 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
 
     audioManager.playBGM('battle'); // 対戦BGMを再生
 
-    gameManager.setRoom(roomId, teban, servertime);
-
+    gameManager.setRoom(roomId, teban, servertime, cpu);
     opponentCharacter = opponentCharacterName;
 
     let senteCharacter = null;
@@ -111,10 +110,10 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
 
     if (teban === 1) {
         senteCharacter = selectedCharacterName;
-        goteCharacter = opponentCharacterName
+        goteCharacter = opponentCharacterName;
     } else if (teban === -1) {
         senteCharacter = opponentCharacterName;
-        goteCharacter = selectedCharacterName
+        goteCharacter = selectedCharacterName;
     }
 
     // ゲーム開始時音声の再生 (先手 -> 後手の順)
@@ -137,10 +136,6 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
         audioManager.playVoice(opponentStartVoiceFile);
     }
 
-
-    const roundRating = Math.round(rating);
-    const opponentRoundRating = Math.round(opponentRating);
-
     let playerNameUI = new TextUI({
         text: () => {
             return `${playerName}`;
@@ -150,20 +145,6 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
         size: 0.03,
         colors: ["#FFFFFF", "#000000"],
         textBaseline: 'bottom',
-        position: 'right',
-        backgroundColor: '#000000cc'
-    });
-
-    let playerRatingUI = new TextUI({
-        text: () => {
-            // main.jsで計算された表示用レーティングを使用
-            return `レート: ${roundRating}`;
-        },
-        x: -0.43,
-        y: 0.44, // プレイヤー名の下に表示するためにy座標を調整
-        size: 0.025, // プレイヤー名より少し小さく
-        colors: ["#FFFFFF", "#000000"],
-        textBaseline: 'bottom', // プレイヤー名の下に揃える
         position: 'right',
         backgroundColor: '#000000cc'
     });
@@ -181,19 +162,44 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
         backgroundColor: '#000000cc'
     });
 
-    let opponentRatingUI = new TextUI({
-        text: () => {
-            // main.jsで計算された表示用レーティングを使用
-            return `レート: ${opponentRoundRating}`;
-        },
-        x: 0.43,
-        y: -0.44, // プレイヤー名の下に表示するためにy座標を調整
-        size: 0.025, // プレイヤー名より少し小さく
-        colors: ["#FFFFFF", "#000000"],
-        textBaseline: 'top', // プレイヤー名の下に揃える
-        position: 'left',
-        backgroundColor: '#000000cc'
-    });
+    let playerRatingUI = null;
+    let opponentRatingUI = null;
+
+    if (!cpu) {
+        const roundRating = Math.round(rating);
+        playerRatingUI = new TextUI({
+            text: () => {
+                // main.jsで計算された表示用レーティングを使用
+                return `レート: ${roundRating}`;
+            },
+            x: -0.43,
+            y: 0.44, // プレイヤー名の下に表示するためにy座標を調整
+            size: 0.025, // プレイヤー名より少し小さく
+            colors: ["#FFFFFF", "#000000"],
+            textBaseline: 'bottom', // プレイヤー名の下に揃える
+            position: 'right',
+            backgroundColor: '#000000cc'
+        });
+
+
+
+        const opponentRoundRating = Math.round(opponentRating);
+        opponentRatingUI = new TextUI({
+            text: () => {
+                // main.jsで計算された表示用レーティングを使用
+                return `レート: ${opponentRoundRating}`;
+            },
+            x: 0.43,
+            y: -0.44, // プレイヤー名の下に表示するためにy座標を調整
+            size: 0.025, // プレイヤー名より少し小さく
+            colors: ["#FFFFFF", "#000000"],
+            textBaseline: 'top', // プレイヤー名の下に揃える
+            position: 'left',
+            backgroundColor: '#000000cc'
+        });
+    }
+
+
 
     // プレイヤーのキャラクター画像UIを追加
     let playerCharacterUI = new CharacterInGameUI({
@@ -213,7 +219,7 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
         height: 0.48
     });
 
-
+    cancelMatchOverlay.style.display = "none";
     statusOverlay.style.display = "none";
     rankingOverlay.style.display = "none";
 
@@ -222,13 +228,13 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
     playScene.add(gameManager.boardUI);
     // playScene.add(playerOverlayUI);
     playScene.add(playerNameUI);
-    playScene.add(playerRatingUI); // レーティング表示UIを追加
-    // playScene.add(opponentOverlayUI);
     playScene.add(opponentNameUI);
-    playScene.add(opponentRatingUI); // レーティング表示UIを追加
+    if (playerRatingUI) playScene.add(playerRatingUI); // レーティング表示UIを追加
+    if (opponentRatingUI) playScene.add(opponentRatingUI); // レーティング表示UIを追加
     playScene.add(countDownText);
     playScene.add(timeText);
 
+    toTitleButton.addEventListener("click", handleToTitleClick);
     // Add destroy method to remove event listeners
     playScene.destroy = () => {
         toTitleButton.removeEventListener("click", handleToTitleClick);
@@ -276,7 +282,33 @@ export function endGame(data) {
 
     resultOverlay.style.display = "block";
     // Use the named function for adding the listener
-    toTitleButton.addEventListener("click", handleToTitleClick);
+
+    gameManager.resetRoom();
+    gameManager.board.finished = true;
+}
+
+export function endCPUGame(data) {
+    scene.add(background);
+    if (data.winPlayer === gameManager.teban) {
+        scene.add(winText);
+        // 勝利時音声の再生
+        if (selectedCharacterName) {
+            const randomIndex = Math.floor(Math.random() * 3) + 1; // winvoice1.wav, winvoice2.wav, winvoice3.wav を想定
+            const winVoiceFile = `/characters/${selectedCharacterName}/winvoice${randomIndex}.wav`;
+            audioManager.playVoice(winVoiceFile);
+        }
+    } else {
+        scene.add(loseText);
+        // 敵勝利時音声の再生
+        if (opponentCharacter) {
+            const randomIndex = Math.floor(Math.random() * 3) + 1; // losevoice1.wav, losevoice2.wav, losevoice3.wav を想定
+            const loseVoiceFile = `/characters/${opponentCharacter}/winvoice${randomIndex}.wav`;
+            audioManager.playVoice(loseVoiceFile);
+        }
+    }
+
+    resultOverlay.style.display = "block";
+
     gameManager.resetRoom();
     gameManager.board.finished = true;
 }

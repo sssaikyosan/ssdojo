@@ -15,10 +15,10 @@ export class BoardUI extends UI {
   draggingPiecePos = null;
   hoveredCell = null;
   started = false;
+  lastsend = null;
 
   constructor(params) {
     super(params);
-    this.gameManager = params.gameManager;
     this.width = 10000;
     this.height = 10000;
     this.board = params.board;
@@ -86,7 +86,7 @@ export class BoardUI extends UI {
     }
 
     // マウスオーバー中のセルをハイライト
-    if (this.gameManager.teban !== 0 && this.hoveredCell) {
+    if (gameManager.teban !== 0 && this.hoveredCell) {
       ctx.fillStyle = MOUSE_HIGHLIGHT_COLOR;
       ctx.fillRect(
         this.hoveredCell.x * CELL_SIZE * scale + LINEWIDTH / 2 - CELL_SIZE * scale * 9 / 2,
@@ -182,16 +182,28 @@ export class BoardUI extends UI {
   }
 
   onMouseUp(pos) {
+    console.log("mouseUp");
     if (!this.draggingPiece) return;
     const { x, y } = this.getBoardPosition(pos);
     if (this.draggingPiece.x === -1) {
       sendPutPiece(x, y, this.draggingPiece.type);
+      if (this.board.canPut(x, y, this.draggingPiece.type, gameManager.teban, (this.board.serverstarttime + performance.now() - this.board.starttime)).res) {
+        this.lastsend = { x: null, y: null, type: this.draggingPiece.type };
+      }
     } else {
       let nari = false;
       if ((this.teban === 1 && y < 3) || (this.teban === -1 && y > 5)) {
         if (UNPROMODED_TYPES.includes(this.draggingPiece.type)) nari = true;
       }
       sendMovePiece(this.draggingPiece.x, this.draggingPiece.y, x, y, nari);
+      if (gameManager.cpu === null) {
+        const time = this.board.serverstarttime + performance.now() - this.board.starttime;
+        const result = this.board.getCanMovePiece(this.draggingPiece.x, this.draggingPiece.y, x, y, nari, gameManager.teban, time);
+        if (result.res) {
+          this.lastsend = { x: this.draggingPiece.x, y: this.draggingPiece.y, type: null };
+        }
+
+      }
     }
     this.draggingPiece = null;
     this.draggingPiecePos = null;
@@ -223,6 +235,10 @@ export class BoardUI extends UI {
   };
 
   drawPiece(ctx, scale, x, y) {
+    if (this.lastsend && x === this.lastsend.x && y === this.lastsend.y) {
+      console.log(x, y, this.lastsend);
+      return;
+    }
     const piece = this.board.map[x][y];
     if (!piece) return
     ctx.save();

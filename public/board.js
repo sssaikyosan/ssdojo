@@ -132,6 +132,7 @@ export class Board {
   //指定した位置に駒を打てるか判定
   canPut(x, y, type, teban, servertime) {
     // if (servertime - (teban === 1 ? this.komadaiServerTime.sente : this.komadaiServerTime.gote) < MOVETIME) return false;
+    if (this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type] <= 0) return false
     if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE || this.map[x][y]) return false;
     if (this.isTopCell(x, y, type, teban)) return false;
     if (this.isNihu(x, y, type, teban)) return false;
@@ -181,7 +182,6 @@ export class Board {
   putPieceLocal(data) {
     const { x, y, nx, ny, type, nari, teban, roomId, servertime } = data;
     const lmp = performance.now();
-    if (this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type] <= 0) return { res: false, capture: null };
     if (!this.canPut(nx, ny, type, teban, servertime)) return { res: false, capture: null };
     this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type]--;
 
@@ -269,5 +269,20 @@ export class Board {
     //棋譜更新
     this.kifu.push({ x, y, nx, ny, nari, teban, capturePiece, time: servertime, captime: captime });
     return true;
+  }
+
+
+  checkGameEnd(data) {
+    const { nx, ny, teban } = data;
+
+    if (this.komadaiPieces["sente"]["king2"] > 0 || this.komadaiPieces["gote"]["king"] > 0) {
+      return { player: teban, text: "勝利" };
+    }
+    if (this.map[nx][ny].type === "king" && teban === 1 && nx === 4 && ny === 0) {
+      return { player: teban, text: "トライ勝ち" };
+    } else if (this.map[nx][ny].type === "king2" && teban === -1 && nx === 4 && ny === 8) {
+      return { player: teban, text: "トライ勝ち" };
+    }
+    return { player: 0, text: "" };
   }
 }
