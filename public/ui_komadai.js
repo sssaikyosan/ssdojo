@@ -1,5 +1,5 @@
 import { CELL_SIZE, KOMADAI_WIDTH, KOMADAI_HEIGHT, BOARD_SIZE, KOMADAI_OFFSET_RATIO, BOARD_COLOR, LINE_COLOR, KOMADAI_TIMER_SIZE, KOMADAI_TIMER_LINEWITH, MOVETIME, KOMADAI_TIMER_COLOR, KOMADAI_TIMER_OFFSET_X, KOMADAI_TIMER_OFFSET_Y } from "./const.js";
-import { ctx, gameManager, pieceImages } from "./main25062501.js";
+import { ctx, gameManager, pieceImages } from "./main25062601.js";
 import { drawText, drawTextWithDoubleOutline } from "./utils.js";
 
 export class KomadaiUI {
