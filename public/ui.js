@@ -26,6 +26,7 @@ export class UI {
     //     this.onMouseDown(e);
     //   });
     //   canvas.addEventListener('mouseup', (e) => {
+    //   canvas.addEventListener('mouseup', (e) => {
     //     this.onMouseUp(e);
     //   });
     // }
@@ -131,8 +132,9 @@ export class Background extends UI {
 }
 
 // キャラクター画像を表示するためのUIクラス
-export class CharacterImageUI extends UI { // export キーワードを追加
+export class CharacterImageUI extends UI {
   image; // Imageオブジェクト
+  videoElement; // Video要素
 
   constructor(params) {
     super(params);
@@ -142,6 +144,12 @@ export class CharacterImageUI extends UI { // export キーワードを追加
   }
 
   renderSelf(ctx, scale) {
+    // 動画が再生中の場合は画像を描画しない
+    if (this.videoElement && !this.videoElement.paused) {
+      // 動画要素はDOMで管理するため、ここでは描画しない
+      return;
+    }
+
     // 画像が存在するかチェック
     if (this.image && characterImages[this.image]) {
       // 画像を中央揃えで描画
@@ -150,9 +158,56 @@ export class CharacterImageUI extends UI { // export キーワードを追加
   }
 
   onMouseDown(pos) {
-    const randomIndex = Math.floor(Math.random() * 12);
-    const randomVoiceFile = `/characters/${this.image}/voice${randomIndex + 1}.wav`;
-    audioManager.playVoice(randomVoiceFile);
+    // 動画を再生
+    this.playVideo();
+  }
+
+  playVideo() {
+    // 既に動画要素が存在する場合は何もしない
+    if (this.videoElement) {
+      return;
+    }
+
+    // video要素を作成
+    this.videoElement = document.createElement('video');
+    this.videoElement.src = `characters/${this.image}/voice1.webm`;
+    this.videoElement.autoplay = true;
+    this.videoElement.loop = false; // ループはしない
+    this.videoElement.style.position = 'absolute';
+    this.videoElement.style.left = '50%';
+    this.videoElement.style.top = '50%';
+    this.videoElement.style.transform = 'translate(-50%, -50%)';
+    this.videoElement.style.width = '100%'; // キャンバスサイズに合わせる
+    this.videoElement.style.height = '100%'; // キャンバスサイズに合わせる
+    this.videoElement.style.objectFit = 'contain'; // アスペクト比を維持して表示
+    this.videoElement.style.zIndex = '100'; // 最前面に表示
+
+    // 動画再生終了時の処理
+    this.videoElement.onended = () => {
+      this.videoElement.remove(); // 要素を削除
+      this.videoElement = null; // 参照をクリア
+    };
+
+    // エラーハンドリング
+    this.videoElement.onerror = (e) => {
+      console.error('動画の再生に失敗しました:', e);
+      if (this.videoElement) {
+        this.videoElement.remove();
+        this.videoElement = null;
+      }
+    };
+
+    // bodyに追加
+    document.body.appendChild(this.videoElement);
+
+    // 動画を再生
+    this.videoElement.play().catch(error => {
+      console.error('動画の再生開始に失敗しました:', error);
+      if (this.videoElement) {
+        this.videoElement.remove();
+        this.videoElement = null;
+      }
+    });
   }
 }
 
