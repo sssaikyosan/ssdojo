@@ -150,7 +150,7 @@ export function createTitleScene() {
             if (serverStatus.topPlayers.length < i + 1) {
                 rankElement.innerText = `${i + 1}位 none`;
             } else {
-                rankElement.innerText = `${i + 1}位 ${serverStatus.topPlayers[i].name} ${Math.round(serverStatus.topPlayers[i].rating)}`;
+                rankElement.innerText = `${i + 1}位 ${Math.round(serverStatus.topPlayers[i].rating)} ${serverStatus.topPlayers[i].name}`;
             }
         }
     }
