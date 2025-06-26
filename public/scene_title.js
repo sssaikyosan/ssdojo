@@ -212,7 +212,6 @@ export function createTitleScene() {
         nameInput.value = savedName;
     }
     cpumatchOverlay.style.display = "block";
-
     rankingOverlay.style.display = "block";
     roomMakeOverlay.style.display = "flex";
     nameInputOverlay.style.display = "flex";
@@ -317,12 +316,7 @@ export function createCharacterSelectScene() {
         selectScene.add(characterNameText);
     });
 
-    cancelMatchOverlay.style.display = "none";
-    rankingOverlay.style.display = "none";
-    roomMakeOverlay.style.display = "none";
-    playButtonOverlay.style.display = "none";
-    nameInputOverlay.style.display = "none";
-    charaSelectOverlay.style.display = "none";
+    clearTitleHTML();
 
     return selectScene;
 }
