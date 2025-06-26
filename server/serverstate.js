@@ -257,6 +257,9 @@ export class ServerState {
             this.ratings[winPlayerId].games++;
             this.ratings[losePlayerId].games++;
 
+            this.ratings[this.players[sente].userId].name = this.players[sente].name;
+            this.ratings[this.players[gote].userId].name = this.players[gote].name;
+
             // レーティングデータをSQLiteに保存
             this.saveRatings(winPlayerId, this.ratings[winPlayerId]);
             this.saveRatings(losePlayerId, this.ratings[losePlayerId]);

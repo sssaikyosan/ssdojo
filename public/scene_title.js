@@ -24,7 +24,7 @@ const cpuButton = document.getElementById("cpuButton");
 const cpulevel1Button = document.getElementById("cpulevel1Button");
 const cpulevel2Button = document.getElementById("cpulevel2Button");
 const cpulevel3Button = document.getElementById("cpulevel3Button");
-const cancelMatchButton = document.getElementById("cancelMatchButton");
+
 const makeRoomButton = document.getElementById("makeRoomButton");
 const joinRoomButton = document.getElementById("joinRoomButton");
 const submitNameButton = document.getElementById("submitNameButton");
@@ -74,9 +74,6 @@ const loading = new LoadingUI({
     radius: 0.03,
 });
 
-function cancelMatchSubmit() {
-    socket.emit("cancelMatch");
-}
 
 function clearTitleHTML() {
     cpumatchOverlay.style.display = "none";
@@ -115,8 +112,6 @@ export function createTitleScene() {
         cancelMatchOverlay.style.display = "block";
         titleScene.add(matchingText);
         titleScene.add(loading);
-
-
     }
 
     function makeRoomSubmit() {
@@ -202,7 +197,7 @@ export function createTitleScene() {
     makeRoomButton.addEventListener("click", makeRoomSubmit);
     joinRoomButton.addEventListener("click", joinRoomSubmit);
     charaSelectButton.addEventListener("click", charaSelectSubmit);
-    cancelMatchButton.addEventListener("click", cancelMatchSubmit);
+
 
     titleCharacter.image = selectedCharacterName;
     titleScene.add(title);
@@ -235,8 +230,6 @@ export function createTitleScene() {
         makeRoomButton.removeEventListener("click", makeRoomSubmit);
         joinRoomButton.removeEventListener("click", joinRoomSubmit);
         charaSelectButton.removeEventListener("click", charaSelectSubmit);
-        cancelMatchButton.removeEventListener("click", cancelMatchSubmit);
-
         cpumatch = false;
     };
 

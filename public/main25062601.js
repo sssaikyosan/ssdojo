@@ -44,7 +44,7 @@ export let selectedCharacterName = null; // 選択されたキャラクターの
 export function setSelectedCharacterName(name) {
   selectedCharacterName = name;
 }
-
+const cancelMatchButton = document.getElementById("cancelMatchButton");
 export const title_img = new Image(1920, 1080);
 title_img.src = '/images/title.png';
 
@@ -96,6 +96,12 @@ export function setStatus(rating, games) {
   }
 }
 
+function cancelMatchSubmit() {
+  console.log("cancelMatch");
+  socket.emit("cancelMatch");
+}
+
+
 // 初期化関数
 function init() {
   // 初期化済みであれば何もしない
@@ -139,6 +145,7 @@ function init() {
   resizeCanvas();
 
   gameManager = new GameManager(socket);
+  cancelMatchButton.addEventListener("click", cancelMatchSubmit);
   setScene(createTitleScene()); // タイトルシーン作成時に選択されたキャラクターを使用
   roop();
 }
