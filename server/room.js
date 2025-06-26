@@ -82,10 +82,12 @@ export class Room {
         } else {
             for (const id of this.sente) {
                 if (id === playerId) continue;
+                serverState.players[id].state = 'waiting';
                 this.spectators.push(id);
             }
             for (const id of this.gote) {
                 if (id === playerId) continue;
+                serverState.players[id].state = 'waiting';
                 this.spectators.push(id);
             }
             this.sente = [];
@@ -212,6 +214,12 @@ export class Room {
                 state: this.gameState
             };
             this.emitToRoom("startRoomGame", data);
+            for (const id of this.sente) {
+                serverState.players[id].goToPlay(this.roomId);
+            }
+            for (const id of this.gote) {
+                serverState.players[id].goToPlay(this.roomId);
+            }
         }
     }
 
