@@ -20,7 +20,7 @@ const charaSelectOverlay = document.getElementById("charaSelectOverlay");
 
 const nameInput = /** @type {HTMLInputElement} */ (document.getElementById("nameInput"));
 
-const cpuButton = document.getElementById("cpulevel1Button");
+const cpuButton = document.getElementById("cpuButton");
 const cpulevel1Button = document.getElementById("cpulevel1Button");
 const cpulevel2Button = document.getElementById("cpulevel2Button");
 const cpulevel3Button = document.getElementById("cpulevel3Button");
@@ -29,6 +29,9 @@ const makeRoomButton = document.getElementById("makeRoomButton");
 const joinRoomButton = document.getElementById("joinRoomButton");
 const submitNameButton = document.getElementById("submitNameButton");
 const charaSelectButton = document.getElementById("charaSelectButton");
+
+
+let cpumatch = false;
 
 const title = new TextUI({
     text: () => "リアルタイム将棋",
@@ -158,6 +161,14 @@ export function createTitleScene() {
     }
 
     function cpuButtonSubmit() {
+        cpumatch = !cpumatch;
+        if (cpumatch) {
+            console.log(cpumatch);
+            cpulevelOverlay.style.display = "block";
+        } else {
+            console.log(cpumatch);
+            cpulevelOverlay.style.display = "none";
+        }
 
     }
 
@@ -166,21 +177,21 @@ export function createTitleScene() {
         localStorage.setItem("playerName", playerName);
         if (playerName == "") setPlayerName("名無しの棋士");
         clearTitleHTML();
-        setScene(createPlayScene(playerName, "レベル１CPU", "cpu", 1, null, performance.now(), 0, 0, 1));
+        setScene(createPlayScene(playerName, "レベル１CPU", null, 1, null, performance.now(), 0, 0, 1));
     }
     function cpulevel2ButtonSubmit() {
         setPlayerName(nameInput.value.trim());
         localStorage.setItem("playerName", playerName);
         if (playerName == "") setPlayerName("名無しの棋士");
         clearTitleHTML();
-        setScene(createPlayScene(playerName, "レベル２CPU", "cpu", 1, null, performance.now(), 0, 0, 2));
+        setScene(createPlayScene(playerName, "レベル２CPU", null, 1, null, performance.now(), 0, 0, 2));
     }
     function cpulevel3ButtonSubmit() {
         setPlayerName(nameInput.value.trim());
         localStorage.setItem("playerName", playerName);
         if (playerName == "") setPlayerName("名無しの棋士");
         clearTitleHTML();
-        setScene(createPlayScene(playerName, "レベル３CPU", "cpu", 1, null, performance.now(), 0, 0, 3));
+        setScene(createPlayScene(playerName, "レベル３CPU", null, 1, null, performance.now(), 0, 0, 3));
     }
 
     cpuButton.addEventListener("click", cpuButtonSubmit);
@@ -206,7 +217,7 @@ export function createTitleScene() {
         nameInput.value = savedName;
     }
     cpumatchOverlay.style.display = "block";
-    cpulevelOverlay.style.display = "block";
+
     rankingOverlay.style.display = "block";
     roomMakeOverlay.style.display = "flex";
     nameInputOverlay.style.display = "flex";
@@ -225,6 +236,8 @@ export function createTitleScene() {
         joinRoomButton.removeEventListener("click", joinRoomSubmit);
         charaSelectButton.removeEventListener("click", charaSelectSubmit);
         cancelMatchButton.removeEventListener("click", cancelMatchSubmit);
+
+        cpumatch = false;
     };
 
     return titleScene;

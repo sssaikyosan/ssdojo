@@ -22,29 +22,20 @@ export class GameManager {
     }
 
     setRoom(roomId, teban, servertime, cpu = null) {
+        const now = performance.now();
         this.roomId = roomId;
         this.teban = teban;
 
         const board = new Board();
         this.board = board;
         this.boardUI = new BoardUI({ gameManager: this, board: board, x: 0.0, y: 0.0 });
-        this.board.init(servertime, performance.now());
+        this.board.init(servertime, now);
         this.boardUI.init(teban);
 
-        if (cpu) {
+        if (cpu !== null) {
             console.log("GameManager: CPU対戦を開始します。");
             this.cpu = new CPU(this); // GameManager自身をCPUに渡す
-
-            // ゲーム開始時にCPUが先手の場合、ワーカーに盤面情報を送信して思考を開始
-            // リアルタイム将棋では手番の概念が異なるが、ここでは初期配置後の最初の思考トリガーとして使用
-            // CPUの手番が1であると仮定
-            if (this.teban === 1) {
-                console.log("GameManager: CPUが先手です。ゲーム開始時にワーカーに盤面情報を送信します。");
-                this.cpu.boardChanged(this.board); // 盤面情報をワーカーに送信
-            }
-
-        } else {
-            this.cpu = null; // CPU対戦でない場合はnull
+            this.cpu.gameStart(servertime, now);
         }
     }
 
@@ -70,9 +61,7 @@ export class GameManager {
 
     receiveMove(move) {
         console.log("GameManager: 手を受信しました", move);
-        if (move.teban === this.teban) {
-            this.boardUI.lastsend = null;
-        }
+        this.boardUI.lastsend = null;
         const result = this.board.movePieceLocal(move);
         if (result.res) {
             if (result.capture === this.boardUI.draggingPiece) {
@@ -83,8 +72,10 @@ export class GameManager {
 
             const gameEnd = this.board.checkGameEnd(move);
 
-            if (gameEnd.player !== 0) {
+            if (gameEnd.player !== 0 && this.cpu !== null) {
+                this.cpu.endGame();
                 endCPUGame({ winPlayer: gameEnd.player, text: gameEnd.text });
+                this.cpu = null;
             }
 
             // リアルタイム将棋では手番に関係なく思考が必要になる可能性があるため、
@@ -102,23 +93,13 @@ export class GameManager {
     // Web WorkerからCPUの手を受け取るメソッド
     handleCpuMove(move) {
         console.log("GameManager: CPUの手を受信しました", move);
-        // 受信した手をゲームに適用する
-        // receiveMoveと同様のロジックで手を適用できるか確認
-        // ただし、CPUの手はサーバーを経由しないため、socket.emitは不要
-        const result = this.board.movePieceLocal(move);
+        const serverMove = { ...move, servertime: performance.now() }
+        console.log(serverMove);
+        const result = this.board.movePieceLocal(serverMove);
         if (result.res) {
             console.log("GameManager: CPUの手を適用しました。");
-            // UIの更新など、手が進んだ後の処理をここに追加
-            // 例: this.boardUI.updateBoard();
+            this.cpu.boardChanged(move);
             audioManager.playSound("sound"); // 効果音
-
-            // CPUが手を指した後も、引き続き思考が必要な場合（例：連続王手など）に備え、
-            // 再度ワーカーに盤面情報を送信することも検討。
-            // ただし、無限ループにならないように注意が必要。
-            // ここではシンプルに、CPUの手を適用した後に再度思考を促す処理は追加しない。
-            // 必要であれば、worker側で連続思考のロジックを実装するか、
-            // GameManager側で一定時間後に再度通知するなどの制御を追加。
-
         } else {
             console.error("GameManager: CPUの手の適用に失敗しました。", move);
             // エラーハンドリング
@@ -128,7 +109,9 @@ export class GameManager {
 
     update() {
         const time = performance.now();
-        this.board.time = time;
+        if (!this.board.finished) {
+            this.board.time = time;
+        }
         if (this.board.matched && !this.board.started && !this.board.finished && this.board.time - this.board.starttime > 5000) {
             this.board.started = true;
             audioManager.playSound('match');

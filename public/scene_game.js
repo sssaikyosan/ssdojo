@@ -239,6 +239,7 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
     playScene.destroy = () => {
         toTitleButton.removeEventListener("click", handleToTitleClick);
     };
+    console.log(gameManager.teban);
 
     return playScene;
 }
@@ -309,6 +310,5 @@ export function endCPUGame(data) {
 
     resultOverlay.style.display = "block";
 
-    gameManager.resetRoom();
     gameManager.board.finished = true;
 }

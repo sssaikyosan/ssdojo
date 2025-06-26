@@ -4,24 +4,117 @@ import fs from 'fs';
 import { getDisplayRating, calRating, generateRandomString } from './utils.js';
 import { Room } from './room.js';
 
-import { RATING_FILE } from './server.js';
+import sqlite3 from 'sqlite3'; // sqlite3 モジュールをインポート
 
-
+const DB_PATH = './Data/game.db'; // データベースファイルのパス
 
 export class ServerState {
     timecount = 0;
     rooms = {};
     players = {};
-    ratings = {};
+    ratings = {}; // メモリ上のキャッシュとして残す
     topPlayers = [];
+    db; // SQLiteデータベース接続用のプロパティ
 
     constructor(io) {
         this.io = io;
+        this.initDatabase(); // データベース初期化処理
+    }
+
+    // データベースの初期化と接続
+    initDatabase() {
+        this.db = new sqlite3.Database(DB_PATH, (err) => {
+            if (err) {
+                console.error('データベース接続エラー:', err.message);
+            } else {
+                console.log('SQLiteデータベースに接続しました。');
+                this.createRatingsTable(); // テーブル作成処理
+                this.loadRatings(); // データベースからレーティングデータを読み込み
+            }
+        });
+    }
+
+    // ratings テーブルの作成
+    createRatingsTable() {
+        const sql = `
+            CREATE TABLE IF NOT EXISTS ratings (
+                player_id TEXT PRIMARY KEY,
+                total_games INTEGER DEFAULT 0,
+                rating REAL DEFAULT 1500,
+                last_login DATETIME,
+                name TEXT
+            )
+        `;
+        this.db.run(sql, (err) => {
+            if (err) {
+                console.error('ratingsテーブル作成エラー:', err.message);
+            } else {
+                console.log('ratingsテーブルが存在しないため作成しました、または既に存在します。');
+            }
+        });
+    }
+
+    // プレイヤーのレーティングデータをSQLiteに保存（挿入または更新）
+    saveRatings(userId, ratingData) {
+        const sql = `
+            INSERT INTO ratings (player_id, total_games, rating, last_login, name)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(player_id) DO UPDATE SET
+                total_games = excluded.total_games,
+                rating = excluded.rating,
+                last_login = excluded.last_login,
+                name = excluded.name
+        `;
+        this.db.run(sql, [userId, ratingData.games, ratingData.rating, ratingData.lastLogin.toISOString(), ratingData.name], (err) => {
+            if (err) {
+                console.error(`レーティングデータ保存エラー (UserID: ${userId}):`, err.message);
+            } else {
+                console.log(`レーティングデータを保存しました (UserID: ${userId})`);
+            }
+        });
+    }
+
+    // レーティングデータをSQLiteから読み込み
+    loadRatings() {
+        const sql = `SELECT * FROM ratings`;
+        this.db.all(sql, [], (err, rows) => {
+            if (err) {
+                console.error('レーティングデータ読み込みエラー:', err.message);
+                this.ratings = {}; // エラー時はキャッシュをクリア
+            } else {
+                this.ratings = {}; // 既存のキャッシュをクリア
+                rows.forEach((row) => {
+                    this.ratings[row.player_id] = {
+                        rating: row.rating,
+                        games: row.total_games,
+                        lastLogin: new Date(row.last_login), // DATETIME文字列をDateオブジェクトに変換
+                        name: row.name
+                    };
+                });
+                console.log(`SQLiteから${rows.length}件のレーティングデータを読み込みました`);
+            }
+        });
+    }
+
+    // 新しいプレイヤーのレーティングデータを作成し、SQLiteに保存
+    makeRating(userId, name) {
+        if (this.ratings[userId]) return false; // キャッシュに存在する場合は作成しない
+
+        const initialRatingData = { rating: 1500, games: 0, lastLogin: new Date(), name: name };
+        this.ratings[userId] = initialRatingData; // キャッシュに追加
+
+        // SQLiteに保存
+        this.saveRatings(userId, initialRatingData);
+
+        return true;
     }
 
     addPlayer(socket) {
         if (!socket.id) return false;
         this.players[socket.id] = new Player(socket);
+        // プレイヤーが接続した際に、ユーザーIDが確定したら makeRating または loadRatings を呼び出す必要がある。
+        // 現在のコードではユーザーIDの確定タイミングが不明確なため、ここでは処理を追加しない。
+        // ユーザーIDと名前は、ログイン機能などで別途設定されることを想定する。
         return true;
     }
 
@@ -59,6 +152,7 @@ export class ServerState {
                 this.rooms[roomId].startGame(time);
 
                 // 両プレイヤーにマッチング完了を通知
+                // userId の取得方法が不明確だが、ratingProcess で使われている前提なのでそのままにする
                 const rate1 = this.ratings[this.players[player1].userId];
                 const rate2 = this.ratings[this.players[player2].userId];
 
@@ -133,7 +227,6 @@ export class ServerState {
         // トップ10のプレイヤーを取得
         const top = playersWithRating.slice(0, 10);
         this.topPlayers = top;
-        console.log(top);
         return top;
     }
 
@@ -159,15 +252,14 @@ export class ServerState {
             this.ratings[winPlayerId].rating = rateData.newWinRating;
             this.ratings[losePlayerId].rating = rateData.newLoseRating;
 
-            this.ratings[winPlayerId]['name'] = win === 1 ? this.players[sente].name : this.players[gote].name;
-            this.ratings[losePlayerId]['name'] = win === 1 ? this.players[gote].name : this.players[sente].name;
-
             console.log(`レーティング更新: ${winPlayerId}: ${this.ratings[winPlayerId].rating} (${winEloRating}), ${losePlayerId}: ${this.ratings[losePlayerId].rating} (${loseEloRating})`);
 
             this.ratings[winPlayerId].games++;
             this.ratings[losePlayerId].games++;
 
-            this.saveRatings(); // レーティングを保存
+            // レーティングデータをSQLiteに保存
+            this.saveRatings(winPlayerId, this.ratings[winPlayerId]);
+            this.saveRatings(losePlayerId, this.ratings[losePlayerId]);
 
             const data = {
                 winPlayer: win,
@@ -186,31 +278,6 @@ export class ServerState {
         }
     }
 
-    saveRatings() {
-        try {
-            fs.writeFileSync(RATING_FILE, JSON.stringify(this.ratings, null, 2), 'utf8');
-            console.log('レーティングデータを保存しました');
-        } catch (error) {
-            console.error('レーティングデータの保存中にエラーが発生しました:', error);
-        }
-    }
-
-    loadRatings() {
-        try {
-            const data = fs.readFileSync(RATING_FILE, 'utf8');
-            this.ratings = JSON.parse(data);
-            console.log('レーティングデータを読み込みました');
-        } catch (error) {
-            if (error.code === 'ENOENT') {
-                console.log('レーティングファイルが見つかりませんでした。新しく作成します。');
-                this.ratings = {};
-                this.saveRatings(); // 新しいファイルを作成
-            } else {
-                console.error('レーティングデータの読み込み中にエラーが発生しました:', error);
-            }
-        }
-    }
-
     getUserRating(userId) {
         if (!this.ratings[userId]) return null;
         return getDisplayRating(this.ratings[userId].rating, this.ratings[userId].games)
@@ -220,14 +287,6 @@ export class ServerState {
         if (!this.ratings[userId]) return null;
         return this.ratings[userId].games;
     }
-
-    makeRating(userId) {
-        if (this.ratings[userId]) return false;
-        this.ratings[userId] = { rating: 1500, games: 0, lastLogin: new Date() };
-        this.saveRatings();
-        return true;
-    }
-
 
 
     createRoom() {
@@ -271,4 +330,3 @@ export class ServerState {
         return this.rooms[this.players[id].roomId].backToRoom();
     }
 }
-
