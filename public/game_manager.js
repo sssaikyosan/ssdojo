@@ -1,6 +1,6 @@
 // public/game_manager.js
 import { BoardUI } from './ui_board.js';
-import { audioManager } from './main25062603.js'; // audio_manager.jsからインポート
+import { audioManager } from './main25062604.js'; // audio_manager.jsからインポート
 import { Board } from './board.js';
 import { CPU } from './cpu.js'; // CPUクラスをインポート
 import { endCPUGame } from './scene_game.js';
@@ -64,7 +64,7 @@ export class GameManager {
         this.boardUI.lastsend = null;
         const result = this.board.movePieceLocal(move);
         if (result.res) {
-            if (result.capture === this.boardUI.draggingPiece) {
+            if (this.boardUI.draggingPiece && move.nx === this.boardUI.draggingPiece.x && move.ny === this.boardUI.draggingPiece.y) {
                 this.boardUI.draggingPiece = null;
                 this.boardUI.draggingPiecePos = null;
             }
