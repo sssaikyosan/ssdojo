@@ -326,3 +326,22 @@ export function createCharacterSelectScene() {
 
     return selectScene;
 }
+
+
+export function roomJoinFailed() {
+    const roomJoinFailedMessage = document.getElementById('roomJoinFailedMessage');
+    if (roomJoinFailedMessage.style.display === 'block') return;
+    roomJoinFailedMessage.style.display = 'block';
+    // 強制的にリフローを発生させてトランジションを有効にする
+    roomJoinFailedMessage.offsetHeight;
+    roomJoinFailedMessage.style.opacity = '1';
+    // 2秒後にメッセージを非表示にする
+    setTimeout(() => {
+        roomJoinFailedMessage.style.opacity = '0';
+        // トランジション完了後にdisplayをnoneにする
+        roomJoinFailedMessage.addEventListener('transitionend', function handler() {
+            roomJoinFailedMessage.style.display = 'none';
+            roomJoinFailedMessage.removeEventListener('transitionend', handler);
+        });
+    }, 2000);
+}

@@ -173,7 +173,7 @@
       /* roomIdOverlayの下に配置 */
       left: 50%;
       transform: translate(-50%, 0);
-      background-color: #4CAF50;
+      background-color: #187a1c;
       /* 緑色の背景 */
       color: white;
       padding: 10px 20px;
@@ -185,6 +185,27 @@
       /* 初期状態では透明 */
       transition: opacity 0.5s ease-in-out;
       /* フェードイン・アウトのアニメーション */
+    }
+
+    /* ルーム参加失敗メッセージのスタイル */
+    #roomJoinFailedMessage {
+      position: absolute;
+      bottom: 160px;
+      right: 400px;
+      background-color: #187a1c;
+      /* 赤色の背景 */
+      color: white;
+      padding: 5px;
+      border-radius: 5px;
+      z-index: 10;
+      display: none;
+      /* 初期状態では非表示 */
+      opacity: 0;
+      /* 初期状態では透明 */
+      transition: opacity 0.5s ease-in-out;
+      /* フェードイン・アウトのアニメーション */
+      font-size: 20px;
+      text-align: center;
     }
   </style>
 </head>
@@ -282,6 +303,8 @@
       style="position: absolute; bottom:100px; left:50%; display: none; transform: translate(-50%, 0%);">
       <button id="leaveRoomButton" class="roomButton" style="width:120px;">退室</button>
     </div>
+    <!-- ルーム参加失敗メッセージ -->
+    <div id="roomJoinFailedMessage" class="overlay">ルームへの参加に失敗しました</div>
   </div>
 
 

@@ -8,6 +8,7 @@ export function ioSetup() {
 
         socket.on('sendUserId', (data) => {
             if (!data.userId) return;
+            if (data.userId.length > 50) return;
             serverState.players[socket.id].setUserId(data.userId);
             serverState.makeRating(data.userId);
 
@@ -18,6 +19,8 @@ export function ioSetup() {
 
         // プレイヤーがマッチングを要求
         socket.on("requestMatch", (data) => {
+            if (!data.name || !data.characterName || !data.userId) return;
+            if (data.name.length > 30 || data.characterName.length > 50 || data.userId.length > 50) return;
             if (serverState.players[socket.id].roomId !== null) return;
             serverState.players[socket.id].requestMatch(data);
             console.log(serverState.players[socket.id].characterName);
@@ -31,6 +34,8 @@ export function ioSetup() {
         });
 
         socket.on("createRoom", (data) => {
+            if (!data.name || !data.characterName || !data.userId) return;
+            if (data.name.length > 30 || data.characterName.length > 50 || data.userId.length > 50) return;
             if (serverState.players[socket.id].roomId !== null) return;
             const roomId = serverState.createRoom();
             const res = serverState.joinRoom(socket.id, roomId, data.name, data.characterName);
@@ -46,7 +51,8 @@ export function ioSetup() {
         });
 
         socket.on("joinRoom", (data) => {
-            if (!data.roomId) return
+            if (!data.name || !data.characterName || !data.userId || !data.roomId) return;
+            if (data.name.length > 30 || data.characterName.length > 50 || data.userId.length > 50 || data.roomId.length > 10) return;
             if (serverState.players[socket.id].roomId !== null) return;
             const res = serverState.joinRoom(socket.id, data.roomId, data.name, data.characterName);
             if (res === "roomJoined") {

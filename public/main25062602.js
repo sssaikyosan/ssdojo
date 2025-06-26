@@ -2,7 +2,7 @@ import { Keyboard } from "./keyboard.js";
 import { GameManager } from "./game_manager.js";
 import { Board } from './board.js';
 import { AudioManager } from "./audio_manager.js"; // audio_manager.jsからインポート
-import { createTitleScene } from "./scene_title.js";
+import { createTitleScene, roomJoinFailed } from "./scene_title.js";
 import { createPlayScene, endGame } from "./scene_game.js";
 import { createRoomScene, roomUpdate } from "./scene_room.js";
 import { backToRoom, createRoomPlayScene, endRoomGame } from "./scene_roomgame.js";
@@ -324,6 +324,7 @@ function setupSocket() {
 
   socket.on("roomJoinFailed", (data) => {
     setScene(createTitleScene());
+    roomJoinFailed();
   });
 
   socket.on("roomUpdate", (data) => {

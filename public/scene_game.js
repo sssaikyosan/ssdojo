@@ -290,6 +290,7 @@ export function endGame(data) {
 
 export function endCPUGame(data) {
     scene.add(background);
+    changeRating.textContent = "レート変動 なし";
     if (data.winPlayer === gameManager.teban) {
         scene.add(winText);
         // 勝利時音声の再生
