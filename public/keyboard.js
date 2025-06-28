@@ -1,5 +1,5 @@
 import { sendPutPiece } from "./emit.js";
-import { gameManager } from "./main25062604.js";
+import { gameManager } from "./main25062801.js";
 
 export class Keyboard {
   keys = {

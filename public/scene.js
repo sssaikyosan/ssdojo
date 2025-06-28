@@ -1,4 +1,4 @@
-import { canvas } from "./main25062604.js";
+import { canvas } from "./main25062801.js";
 
 export class Scene {
   scale = 0;
