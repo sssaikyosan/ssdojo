@@ -21,7 +21,7 @@ export class GameManager {
         this.boardUI = new BoardUI({ gameManager: this, board: board, x: 0.0, y: 0.0 })
     }
 
-    setRoom(roomId, teban, servertime, cpu = null) {
+    setRoom(roomId, teban, servertime, cpulevel = null) {
         const now = performance.now();
         this.roomId = roomId;
         this.teban = teban;
@@ -32,9 +32,9 @@ export class GameManager {
         this.board.init(servertime, now);
         this.boardUI.init(teban);
 
-        if (cpu !== null) {
+        if (cpulevel !== null) {
             console.log("GameManager: CPU対戦を開始します。");
-            this.cpu = new CPU(this); // GameManager自身をCPUに渡す
+            this.cpu = new CPU(this, cpulevel); // GameManager自身をCPUに渡す
             this.cpu.gameStart(servertime, now);
         }
     }
@@ -98,8 +98,15 @@ export class GameManager {
         const result = this.board.movePieceLocal(serverMove);
         if (result.res) {
             console.log("GameManager: CPUの手を適用しました。");
-            this.cpu.boardChanged(move);
             audioManager.playSound("sound"); // 効果音
+            const gameEnd = this.board.checkGameEnd(move);
+            if (gameEnd.player !== 0 && this.cpu !== null) {
+                this.cpu.endGame();
+                endCPUGame({ winPlayer: gameEnd.player, text: gameEnd.text });
+                this.cpu = null;
+            }
+            this.cpu.boardChanged(move);
+
         } else {
             console.error("GameManager: CPUの手の適用に失敗しました。", move);
             // エラーハンドリング

@@ -88,7 +88,9 @@ export function ioSetup() {
 
         // 駒の移動を転送
         socket.on("movePiece", (data) => {
-            if (!serverState.rooms[data.roomId]) return;
+            if (!serverState.rooms[data.roomId]) {
+                return;
+            }
             serverState.rooms[data.roomId].handleMove(socket.id, data);
         });
 

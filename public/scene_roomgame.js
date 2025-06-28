@@ -3,12 +3,15 @@ import { BackgroundImageUI, CharacterInGameUI } from "./ui.js";
 import { TextUI } from "./ui_text.js";
 import { audioManager, battle_img, gameManager, scene, selectedCharacterName, setScene, socket } from "./main25062604.js";
 import { Scene } from "./scene.js";
-import { background, countDownText, endText, loseText, statusOverlay, timeText, winText, opponentCharacter, setOpponentCharacter } from "./scene_game.js";
+import { countDownText, endText, loseText, statusOverlay, timeText, winText, opponentCharacter, setOpponentCharacter } from "./scene_game.js";
 import { roomIdOverlay, tebanOverlay, readyOverlay, cancelOverlay, leaveRoomOverlay, createRoomScene, roomUpdate } from "./scene_room.js";
 
 const roomResultOverlay = document.getElementById("roomResultOverlay");
 const toRoomButton = document.getElementById("toRoomButton");
+
 let roomdata = null;
+let arryCharacterUI;
+let enemyCharacterUI;
 
 export function createRoomPlayScene(senteName, senteCharacter, goteName, goteCharacter, roomId, servertime, roomteban, board = null) {
     let playScene = new Scene();
@@ -30,13 +33,12 @@ export function createRoomPlayScene(senteName, senteCharacter, goteName, goteCha
         gameManager.setRoomBoard(roomId, board);
     }
 
-
-
-
     let arryNames = null;
     let enemyNames = null;
     let arryCharacter = null;
     let enemyCharacter = null;
+    let senteCharacterUI = null;
+    let goteCharacterUI = null;
 
     if (teban >= 0) {
         arryNames = senteName;
@@ -52,28 +54,8 @@ export function createRoomPlayScene(senteName, senteCharacter, goteName, goteCha
         setOpponentCharacter(senteCharacter);
     }
 
-    // ゲーム開始時音声の再生 (先手 -> 後手の順)
-    if (selectedCharacterName) {
-        const playerVoiceIndex = Math.floor((servertime * 999) % 3) + 1;
-        const playerStartVoiceFile = `/characters/${selectedCharacterName}/startvoice${playerVoiceIndex}.wav`;
-
-        // 先手番の音声を再生し、完了後に後手番の音声を再生
-        audioManager.playVoice(playerStartVoiceFile, () => {
-            if (opponentCharacter) {
-                const opponentVoiceIndex = Math.floor((servertime * 333) % 3) + 1;
-                const opponentStartVoiceFile = `/characters/${opponentCharacter}/startvoice${opponentVoiceIndex}.wav`;
-                audioManager.playVoice(opponentStartVoiceFile);
-            }
-        });
-    } else if (opponentCharacter) {
-        // selectedCharacterNameがない場合（観戦など）、後手番の音声のみ再生
-        const opponentVoiceIndex = Math.floor((servertime * 333) % 3) + 1;
-        const opponentStartVoiceFile = `/characters/${opponentCharacter}/startvoice${opponentVoiceIndex}.wav`;
-        audioManager.playVoice(opponentStartVoiceFile);
-    }
-
     // プレイヤーのキャラクター画像UIを追加
-    let arryCharacterUI = new CharacterInGameUI({
+    arryCharacterUI = new CharacterInGameUI({
         image: arryCharacter, // main.jsから選択されたキャラクター名を取得
         x: -0.6, // プレイヤー名の近くに配置
         y: 0.2, // 適切なY座標に調整
@@ -82,13 +64,21 @@ export function createRoomPlayScene(senteName, senteCharacter, goteName, goteCha
     });
 
     // 相手プレイヤーのキャラクター画像UIを追加
-    let enemyCharacterUI = new CharacterInGameUI({
+    enemyCharacterUI = new CharacterInGameUI({
         image: enemyCharacter, // 相手プレイヤー名からキャラクター名を生成（仮）
         x: 0.6, // 相手プレイヤー名の近くに配置
         y: -0.2, // 適切なY座標に調整
         width: 0.48, // サイズ調整
         height: 0.48
     });
+
+    if (teban >= 0) {
+        senteCharacterUI = arryCharacterUI;
+        goteCharacterUI = enemyCharacterUI
+    } else {
+        senteCharacterUI = enemyCharacterUI;
+        goteCharacterUI = arryCharacterUI;
+    }
 
     playScene.add(arryCharacterUI);
     playScene.add(enemyCharacterUI);
@@ -125,6 +115,16 @@ export function createRoomPlayScene(senteName, senteCharacter, goteName, goteCha
         });
         playScene.add(enemyNamesUI);
     }
+
+    senteCharacterUI.startVideoElement[0].addEventListener('ended', () => {
+        console.log('先手ビデオ再生終了、後手ビデオ再生開始');
+        goteCharacterUI.playStartVideo(0);
+    });
+
+    senteCharacterUI.startVideoElement[0].addEventListener('canplaythrough', () => {
+        senteCharacterUI.playStartVideo(0);
+        console.log('動画の再生準備ができました:');
+    });
 
     roomResultOverlay.style.display = "none";
     statusOverlay.style.display = "none";
@@ -165,25 +165,20 @@ export function endRoomGame(data) {
         roomUpdate(data);
         return;
     }
-    scene.add(background);
     roomdata = { sente: data.sente, gote: data.gote, spectators: data.spectators, roomId: data.roomId };
 
     if (gameManager.teban === 0) {
         scene.add(endText);
     } else if (data.win === gameManager.teban) {
         // 勝利時音声の再生
-        if (selectedCharacterName) {
-            const randomIndex = Math.floor(Math.random() * 3) + 1; // winvoice1.wav, winvoice2.wav, winvoice3.wav を想定
-            const winVoiceFile = `/characters/${selectedCharacterName}/winvoice${randomIndex}.wav`;
-            audioManager.playVoice(winVoiceFile);
+        if (arryCharacterUI) {
+            arryCharacterUI.playWinVideo(0);
         }
         scene.add(winText);
     } else {
         // 敵勝利時音声の再生
-        if (opponentCharacter) {
-            const randomIndex = Math.floor(Math.random() * 3) + 1; // losevoice1.wav, losevoice2.wav, losevoice3.wav を想定
-            const loseVoiceFile = `/characters/${opponentCharacter}/winvoice${randomIndex}.wav`;
-            audioManager.playVoice(loseVoiceFile);
+        if (enemyCharacterUI) {
+            enemyCharacterUI.playWinVideo(0);
         }
         scene.add(loseText);
     }

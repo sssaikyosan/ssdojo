@@ -187,8 +187,12 @@ export class BoardUI extends UI {
     const { x, y } = this.getBoardPosition(pos);
     if (this.draggingPiece.x === -1) {
       sendPutPiece(x, y, this.draggingPiece.type);
-      if (this.board.canPut(x, y, this.draggingPiece.type, gameManager.teban, (this.board.serverstarttime + performance.now() - this.board.starttime)).res) {
-        this.lastsend = { x: null, y: null, type: this.draggingPiece.type };
+      if (gameManager.cpu === null) {
+        const time = this.board.serverstarttime + performance.now() - this.board.starttime;
+        const result = this.board.canPut(x, y, this.draggingPiece.type, gameManager.teban, time);
+        if (result.res) {
+          this.lastsend = { x: null, y: null, type: this.draggingPiece.type };
+        }
       }
     } else {
       let nari = false;
@@ -202,7 +206,6 @@ export class BoardUI extends UI {
         if (result.res) {
           this.lastsend = { x: this.draggingPiece.x, y: this.draggingPiece.y, type: null };
         }
-
       }
     }
     this.draggingPiece = null;
@@ -214,8 +217,22 @@ export class BoardUI extends UI {
     const { x, y } = this.getBoardPosition(pos);
     if (this.draggingPiece.x === -1) {
       sendPutPiece(x, y, this.draggingPiece.type);
+      if (gameManager.cpu === null) {
+        const time = this.board.serverstarttime + performance.now() - this.board.starttime;
+        const result = this.board.canPut(x, y, this.draggingPiece.type, gameManager.teban, time);
+        if (result.res) {
+          this.lastsend = { x: null, y: null, type: this.draggingPiece.type };
+        }
+      }
     } else {
       sendMovePiece(this.draggingPiece.x, this.draggingPiece.y, x, y, false);
+      if (gameManager.cpu === null) {
+        const time = this.board.serverstarttime + performance.now() - this.board.starttime;
+        const result = this.board.getCanMovePiece(this.draggingPiece.x, this.draggingPiece.y, x, y, false, gameManager.teban, time);
+        if (result.res) {
+          this.lastsend = { x: this.draggingPiece.x, y: this.draggingPiece.y, type: null };
+        }
+      }
     }
     this.draggingPiece = null;
     this.draggingPiecePos = null;
@@ -236,7 +253,6 @@ export class BoardUI extends UI {
 
   drawPiece(ctx, scale, x, y) {
     if (this.lastsend && x === this.lastsend.x && y === this.lastsend.y) {
-      console.log(x, y, this.lastsend);
       return;
     }
     const piece = this.board.map[x][y];

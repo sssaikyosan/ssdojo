@@ -141,3 +141,19 @@ export const PIECE_MOVES = {
     { dx: -1, dy: 1 }
   ]
 };
+
+
+export const characterInfo = {
+  rei: {
+    name: "緋月 零",
+    romaji: "Hizuki Rei"
+  },
+  aoi: {
+    name: "水瀬 葵",
+    romaji: "Minase Aoi"
+  },
+  akira: {
+    name: "日輪 晶",
+    romaji: "Hinowa Akira"
+  }
+}

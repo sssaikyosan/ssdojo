@@ -1,15 +1,17 @@
 // public/cpu.js
 export class CPU {
     worker;
+    level;
     gameManager;
 
-    constructor(gameManager) {
+    constructor(gameManager, level) {
+        this.level = level
         this.gameManager = gameManager;
         this.setWorker(); // コンストラクタでワーカーのイベントハンドラを設定
     }
 
     gameStart(servertime, now) {
-        this.worker.postMessage(["gameStart", { servertime: servertime, time: now }]);
+        this.worker.postMessage(["gameStart", { servertime: servertime, time: now, level: this.level }]);
     }
 
     boardChanged(move) {

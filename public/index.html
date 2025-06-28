@@ -207,6 +207,49 @@
       font-size: 20px;
       text-align: center;
     }
+
+    /* Discordボタンの基本スタイル */
+    .discord-button {
+      display: inline-block;
+      position: absolute;
+      top: 20px;
+      right: 160px;
+      /* 他の要素と横並びできるようにしつつ、大きさも指定可能にする */
+      padding: 12px 24px;
+      /* ボタンの内側の余白 (上下12px, 左右24px) */
+      font-size: 16px;
+      /* 文字の大きさ */
+      font-weight: bold;
+      /* 文字を太字に */
+      text-align: center;
+      /* 文字を中央揃えに */
+      text-decoration: none;
+      /* テキストの下線を消す */
+      color: #FFFFFF;
+      /* 文字の色 (白) */
+      background-color: #5865F2;
+      /* 背景色 (Discordのブランドカラー) */
+      border: none;
+      /* 枠線をなくす */
+      border-radius: 8px;
+      /* ボタンの角を丸くする */
+      cursor: pointer;
+      /* マウスカーソルを指の形にする */
+      transition: background-color 0.3s, transform 0.2s;
+      /* 色や形が滑らかに変わるアニメーション */
+    }
+
+    /* マウスを乗せた時 (ホバー) のスタイル */
+    .discord-button:hover {
+      background-color: #4752C4;
+      /* 少し暗い色に変化させる */
+    }
+
+    /* クリックした時 (アクティブ) のスタイル */
+    .discord-button:active {
+      transform: translateY(1px);
+      /* 少し下に沈むような動き */
+    }
   </style>
 </head>
 
@@ -249,13 +292,14 @@
       style="font-size: 20px; padding:5px 7px; border-radius: 5px;">CPU対戦</button>
   </div>
   <div id="cpulevelOverlay" class="overlay"
-    style="display: none; padding: 8px; position: absolute; bottom: 285px; right: 40px; transform: translate(0%, 0%);">
-    <button id="cpulevel3Button" class="blueButton"
-      style="display:none; font-size: 20px; margin:0px 0px 7px 0px; padding:5px 7px; border-radius: 5px;">レベル３CPU</button>
+    style="display: none; padding: 5px 10px; position: absolute; bottom: 285px; right: 40px; transform: translate(0%, 0%);">
+
     <button id="cpulevel2Button" class="blueButton"
-      style="display:none; font-size: 20px; margin:0px 0px 7px 0px; padding:5px 7px; border-radius: 5px;">レベル２CPU</button>
+      style="display:none; font-size: 20px; margin:4px 0px 5px 0px; padding:5px 7px; border-radius: 5px;">レベル2</button>
     <button id="cpulevel1Button" class="blueButton"
-      style="display:block; font-size: 20px; margin:0px 0px 0px 0px; padding:5px 7px; border-radius: 5px;">レベル１CPU</button>
+      style="display:none; font-size: 20px; margin:4px 0px 5px 0px; padding:5px 7px; border-radius: 5px;">レベル1</button>
+    <button id="cpulevel0Button" class="blueButton"
+      style="display:block; font-size: 20px; margin:4px 0px 5px 0px; padding:5px 7px; border-radius: 5px;">レベル0</button>
   </div>
 
   <div id="nameInputOverlay" class="overlay"
@@ -345,6 +389,10 @@
     <label for="voiceVolumeSlider" class="whiteText">ボイス音量:</label>
     <input type="range" id="voiceVolumeSlider" min="0" max="100" value="100">
   </div>
+  <a href="https://discord.gg/6VYVWnM7Qu" class="discord-button" target="_blank" rel="noopener noreferrer">
+    Discord
+  </a>
+
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="./main25062604.js" type="module"></script>

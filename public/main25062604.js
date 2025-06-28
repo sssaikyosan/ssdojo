@@ -34,8 +34,7 @@ export let characterProfiles = null;
 
 // キャラクター画像フォルダ名のリスト (prof.jsonから抽出)
 export const characterFiles = [ // exportを追加
-  "0001_rei", "0002_karen", "0003_mifuyu", "0004_kureha", "0005_setsuna",
-  "0006_kirisaki", "0007_sylvie", "0009_hawk", "0010_shizuru", "0011_kanade"
+  "rei", "aoi", "akira"
 ];
 
 export let selectedCharacterName = null; // 選択されたキャラクターの名前
@@ -305,6 +304,13 @@ function setupSocket() {
     console.log("newMove");
     if (gameManager) {
       gameManager.receiveMove(data);
+    }
+  });
+
+  socket.on('moveFailed', (data) => {
+    console.log("nemoveFailed");
+    if (gameManager && gameManager.boardUI) {
+      gameManager.boardUI.lastsend = null;
     }
   });
 

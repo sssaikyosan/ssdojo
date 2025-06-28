@@ -275,8 +275,11 @@ export class Board {
   checkGameEnd(data) {
     const { nx, ny, teban } = data;
 
-    if (this.komadaiPieces["sente"]["king2"] > 0 || this.komadaiPieces["gote"]["king"] > 0) {
-      return { player: teban, text: "勝利" };
+    if (this.komadaiPieces["sente"]["king2"] > 0) {
+      return { player: 1, text: "勝利" };
+    }
+    if (this.komadaiPieces["gote"]["king"] > 0) {
+      return { player: -1, text: "勝利" };
     }
     if (this.map[nx][ny].type === "king" && teban === 1 && nx === 4 && ny === 0) {
       return { player: teban, text: "トライ勝ち" };

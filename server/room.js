@@ -50,6 +50,8 @@ export class Room {
             if (endGame.player !== 0) {
                 this.gameFinished(endGame.player, endGame.text);
             }
+        } else {
+            io.to(id).emit("moveFailed", {});
         }
     }
 
@@ -67,7 +69,7 @@ export class Room {
     }
 
     gameFinished(win, text, playerId = null) {
-        console.log('gameend');
+        console.log('gameend', this);
         if (this.roomType === 'rating') {
             if (this.sente.length !== 1 || this.gote.length !== 1) {
                 console.log('プレイ人数に不正');
@@ -202,8 +204,9 @@ export class Room {
         if (this.sente.length > 0 && this.gote.length > 0) {
 
             const names = this.getPlayerNames();
+            const now = performance.now();
 
-            this.startGame();
+            this.startGame(now);
             const data = {
                 senteName: names.sente,
                 senteCharacter: serverState.players[this.sente[0]].characterName,
@@ -211,6 +214,7 @@ export class Room {
                 goteCharacter: serverState.players[this.gote[0]].characterName,
                 spectators: names.spectators,
                 roomId: this.roomId,
+                servertime: now,
                 state: this.gameState
             };
             this.emitToRoom("startRoomGame", data);

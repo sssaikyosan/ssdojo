@@ -17,7 +17,12 @@ export class AudioManager {
     }
 
     addBGM(filename, originalVolume) {
-        this.bgmDict[filename] = { audio: new Audio(`/music/${filename}.mp3`), originalVolume: originalVolume };
+        const audio = new Audio(`/music/${filename}.mp3`);
+        audio.onended = () => {
+            audio.currentTime = 0; // 再生位置を最初に戻す
+            audio.play(); // 再度再生を開始する
+        };
+        this.bgmDict[filename] = { audio: audio, originalVolume: originalVolume };
     }
 
     setBGMVolume(volume) {
@@ -89,7 +94,7 @@ export class AudioManager {
             }
         }
 
-        this.bgmDict[bgm].loop = true; // BGMはループ再生
+        this.bgmDict[bgm].loop = false; // BGMはループ再生
         this.bgmDict[bgm].audio.volume = this.bgmVolume * this.bgmDict[bgm].originalVolume; // マスター音量と元の音量を掛け合わせる
         this.bgmDict[bgm].audio.play();
 

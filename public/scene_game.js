@@ -17,14 +17,8 @@ export function setOpponentCharacter(character) {
     opponentCharacter = character;
 }
 
-//暗い背景
-export let background = new Background({
-    x: 0.0,
-    y: 0.0,
-    width: 1.0,
-    height: 1.0,
-    color: "#00000070",
-});
+let playerCharacterUI;
+let opponentCharacterUI;
 
 export const endText = new TextUI({
     text: () => {
@@ -93,7 +87,7 @@ export function handleToTitleClick() {
 }
 
 //ゲームシーン
-export function createPlayScene(playerName, opponentName, opponentCharacterName, teban, roomId, servertime, rating, opponentRating, cpu = null) {
+export function createPlayScene(playerName, opponentName, opponentCharacterName, teban, roomId, servertime, rating, opponentRating, cpulevel = null) {
     let playScene = new Scene();
 
     // 背景画像UIを追加 (他のUIより前に描画されるように最初に追加)
@@ -102,39 +96,11 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
 
     audioManager.playBGM('battle'); // 対戦BGMを再生
 
-    gameManager.setRoom(roomId, teban, servertime, cpu);
+    gameManager.setRoom(roomId, teban, servertime, cpulevel);
     opponentCharacter = opponentCharacterName;
 
     let senteCharacter = null;
     let goteCharacter = null;
-
-    if (teban === 1) {
-        senteCharacter = selectedCharacterName;
-        goteCharacter = opponentCharacterName;
-    } else if (teban === -1) {
-        senteCharacter = opponentCharacterName;
-        goteCharacter = selectedCharacterName;
-    }
-
-    // ゲーム開始時音声の再生 (先手 -> 後手の順)
-    if (senteCharacter) {
-        const playerVoiceIndex = Math.floor((servertime * 999) % 3) + 1;
-        const playerStartVoiceFile = `/characters/${senteCharacter}/startvoice${playerVoiceIndex}.wav`;
-
-        // 先手番の音声を再生し、完了後に後手番の音声を再生
-        audioManager.playVoice(playerStartVoiceFile, () => {
-            if (goteCharacter) {
-                const opponentVoiceIndex = Math.floor((servertime * 333) % 3) + 1;
-                const opponentStartVoiceFile = `/characters/${goteCharacter}/startvoice${opponentVoiceIndex}.wav`;
-                audioManager.playVoice(opponentStartVoiceFile);
-            }
-        });
-    } else if (goteCharacter) {
-        // selectedCharacterNameがない場合（観戦など）、後手番の音声のみ再生
-        const opponentVoiceIndex = Math.floor((servertime * 333) % 3) + 1;
-        const opponentStartVoiceFile = `/characters/${goteCharacter}/startvoice${opponentVoiceIndex}.wav`;
-        audioManager.playVoice(opponentStartVoiceFile);
-    }
 
     let playerNameUI = new TextUI({
         text: () => {
@@ -165,7 +131,7 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
     let playerRatingUI = null;
     let opponentRatingUI = null;
 
-    if (!cpu) {
+    if (!cpulevel) {
         const roundRating = Math.round(rating);
         playerRatingUI = new TextUI({
             text: () => {
@@ -199,10 +165,8 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
         });
     }
 
-
-
     // プレイヤーのキャラクター画像UIを追加
-    let playerCharacterUI = new CharacterInGameUI({
+    playerCharacterUI = new CharacterInGameUI({
         image: selectedCharacterName, // main.jsから選択されたキャラクター名を取得
         x: -0.6, // プレイヤー名の近くに配置
         y: 0.2, // 適切なY座標に調整
@@ -211,13 +175,36 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
     });
 
     // 相手プレイヤーのキャラクター画像UIを追加
-    let opponentCharacterUI = new CharacterInGameUI({
+    opponentCharacterUI = new CharacterInGameUI({
         image: opponentCharacterName, // 相手プレイヤー名からキャラクター名を生成（仮）
         x: 0.6, // 相手プレイヤー名の近くに配置
         y: -0.2, // 適切なY座標に調整
         width: 0.48, // サイズ調整
         height: 0.48
     });
+
+    if (teban === 1) {
+        senteCharacter = playerCharacterUI;
+        goteCharacter = opponentCharacterUI;
+    } else if (teban === -1) {
+        senteCharacter = opponentCharacterUI;
+        goteCharacter = playerCharacterUI;
+    }
+
+
+
+    // 先手の開始ビデオ再生終了後に後手の開始ビデオを再生
+    senteCharacter.startVideoElement[0].addEventListener('ended', () => {
+        console.log('先手ビデオ再生終了、後手ビデオ再生開始');
+        goteCharacter.playStartVideo(0);
+    });
+
+    senteCharacter.startVideoElement[0].addEventListener('canplaythrough', () => {
+        senteCharacter.playStartVideo(0);
+        console.log('動画の再生準備ができました:');
+    });
+
+
 
     cancelMatchOverlay.style.display = "none";
     statusOverlay.style.display = "none";
@@ -252,7 +239,6 @@ export function backToTitle() {
 }
 
 export function endGame(data) {
-    scene.add(background);
     if (gameManager.teban === 0) {
         changeRating.textContent = "レート変動 なし(観戦)";
     } else if (data.winPlayer === gameManager.teban) {
@@ -262,10 +248,8 @@ export function endGame(data) {
         scene.add(winText);
         setStatus(newrate, data.winGames);
         // 勝利時音声の再生
-        if (selectedCharacterName) {
-            const randomIndex = Math.floor(Math.random() * 3) + 1; // winvoice1.wav, winvoice2.wav, winvoice3.wav を想定
-            const winVoiceFile = `/characters/${selectedCharacterName}/winvoice${randomIndex}.wav`;
-            audioManager.playVoice(winVoiceFile);
+        if (playerCharacterUI) {
+            playerCharacterUI.playWinVideo(0);
         }
     } else {
         const oldrate = Math.round(data.loseRating);
@@ -274,10 +258,8 @@ export function endGame(data) {
         scene.add(loseText);
         setStatus(newrate, data.loseGames);
         // 敵勝利時音声の再生
-        if (opponentCharacter) {
-            const randomIndex = Math.floor(Math.random() * 3) + 1; // losevoice1.wav, losevoice2.wav, losevoice3.wav を想定
-            const loseVoiceFile = `/characters/${opponentCharacter}/winvoice${randomIndex}.wav`;
-            audioManager.playVoice(loseVoiceFile);
+        if (opponentCharacterUI) {
+            opponentCharacterUI.playWinVideo(0);
         }
     }
 
@@ -289,27 +271,21 @@ export function endGame(data) {
 }
 
 export function endCPUGame(data) {
-    scene.add(background);
     changeRating.textContent = "レート変動 なし";
     if (data.winPlayer === gameManager.teban) {
         scene.add(winText);
         // 勝利時音声の再生
-        if (selectedCharacterName) {
-            const randomIndex = Math.floor(Math.random() * 3) + 1; // winvoice1.wav, winvoice2.wav, winvoice3.wav を想定
-            const winVoiceFile = `/characters/${selectedCharacterName}/winvoice${randomIndex}.wav`;
-            audioManager.playVoice(winVoiceFile);
+        if (playerCharacterUI) {
+            playerCharacterUI.playWinVideo(0);
         }
     } else {
         scene.add(loseText);
         // 敵勝利時音声の再生
-        if (opponentCharacter) {
-            const randomIndex = Math.floor(Math.random() * 3) + 1; // losevoice1.wav, losevoice2.wav, losevoice3.wav を想定
-            const loseVoiceFile = `/characters/${opponentCharacter}/winvoice${randomIndex}.wav`;
-            audioManager.playVoice(loseVoiceFile);
+        if (opponentCharacterUI) {
+            opponentCharacterUI.playWinVideo(0);
         }
     }
 
     resultOverlay.style.display = "block";
-
     gameManager.board.finished = true;
 }
