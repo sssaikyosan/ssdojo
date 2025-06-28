@@ -1,7 +1,7 @@
 //タイトルシーン要素
 
 import { createPlayScene } from "./scene_game.js";
-import { serverStatus, title_img, audioManager, canvas, setPlayerName, playerName, socket, selectedCharacterName, userId, setScene, characterFiles, setSelectedCharacterName } from "./main25062801.js";
+import { serverStatus, title_img, audioManager, canvas, setPlayerName, playerName, socket, selectedCharacterName, userId, setScene, characterFiles, setSelectedCharacterName } from "./main25062802.js";
 import { Scene } from "./scene.js";
 import { CharacterImageUI, BackgroundImageUI, OverlayUI } from "./ui.js";
 import { LoadingUI } from "./ui_loading.js";

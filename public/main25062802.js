@@ -211,20 +211,27 @@ function addEventListeners() {
   }
 
   if (voiceVolumeSlider) {
-    voiceVolumeSlider.addEventListener('change', (event) => {
+    voiceVolumeSlider.addEventListener('input', (event) => {
       if (event.target instanceof HTMLInputElement) {
         const volume = parseInt(event.target.value, 10) / 100;
         audioManager.setVoiceVolume(volume);
 
-        // キャラクターのランダムボイス再生
+        // キャラクターのランダムボイス再生（音量設定の確認用）
         const randomIndex = Math.floor(Math.random() * 3);
         // selectedCharacterNameがnullでないことを確認
         if (selectedCharacterName) {
+          // 存在しない可能性のあるファイル名に対応するため、try-catchで囲むか、事前にファイル存在チェックを行う方が安全ですが、今回はシンプルに実装します。
           const randomVoiceFile = `/characters/${selectedCharacterName}/voice00${randomIndex + 1}.wav`;
+          // playVoice内でvolumeが設定されるため、ここでは音量設定は不要
           audioManager.playVoice(randomVoiceFile);
         }
       }
     });
+
+    // 初期表示時にスライダーの値を現在の音量に設定
+    if (voiceVolumeSlider instanceof HTMLInputElement) {
+      voiceVolumeSlider.value = (audioManager.voiceVolume * 100).toString();
+    }
   }
 
   // 設定ボタンのイベントリスナーを追加

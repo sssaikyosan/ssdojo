@@ -1,4 +1,4 @@
-import { characterImages, gameManager, scene, title_img, audioManager, canvas } from "./main25062801.js";
+import { characterImages, gameManager, scene, title_img, audioManager, canvas } from "./main25062802.js";
 export class UI {
   globalX;
   x;
@@ -227,6 +227,7 @@ export class CharacterImageUI extends UI {
 
     this.isRenderingVideo = true; // 動画描画フラグをオン
     this.currentVideo.currentTime = 0; // 最初から再生
+    this.currentVideo.volume = audioManager.voiceVolume; // 音量を設定
     this.currentVideo.play().catch(error => {
       console.error('動画の再生開始に失敗しました:', error);
       this.currentVideo = null;
@@ -343,6 +344,7 @@ export class CharacterInGameUI extends UI {
     this.currentVideo = this.startVideoElement[idx];
 
     this.isRenderingVideo = true; // 動画描画フラグをオン
+    this.currentVideo.volume = audioManager.voiceVolume; // 音量を設定
     this.currentVideo.currentTime = 0; // 最初から再生
     this.currentVideo.play().catch(error => {
       console.error('動画の再生開始に失敗しました:', error);
@@ -368,6 +370,7 @@ export class CharacterInGameUI extends UI {
 
     this.currentVideo = this.winVideoElement[idx];
 
+    this.currentVideo.volume = audioManager.voiceVolume; // 音量を設定
     this.isRenderingVideo = true; // 動画描画フラグをオン
     this.currentVideo.currentTime = 0; // 最初から再生
     this.currentVideo.play().catch(error => {

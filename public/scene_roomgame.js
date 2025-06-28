@@ -1,7 +1,7 @@
 import { rankingOverlay } from "./scene_title.js";
 import { BackgroundImageUI, CharacterInGameUI } from "./ui.js";
 import { TextUI } from "./ui_text.js";
-import { audioManager, battle_img, gameManager, scene, selectedCharacterName, setScene, socket } from "./main25062801.js";
+import { audioManager, battle_img, gameManager, scene, selectedCharacterName, setScene, socket } from "./main25062802.js";
 import { Scene } from "./scene.js";
 import { countDownText, endText, loseText, statusOverlay, timeText, winText, opponentCharacter, setOpponentCharacter } from "./scene_game.js";
 import { roomIdOverlay, tebanOverlay, readyOverlay, cancelOverlay, leaveRoomOverlay, createRoomScene, roomUpdate } from "./scene_room.js";
