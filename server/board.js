@@ -85,11 +85,11 @@ export class Board {
   }
 
   //指定したマスへの移動が合法手か判定
-  checkMove(xx, yy, teban, type, nari, nteban) {
+  checkMove(y, xx, yy, teban, type, nari, nteban) {
     if (this.map[xx][yy] && this.map[xx][yy].teban === nteban) return false;
     if (nari) {
-      if (teban === 1 && yy > 2) return false;
-      if (teban === -1 && yy < 6) return false;
+      if (teban === 1 && yy > 2 && y > 2) return false;
+      if (teban === -1 && yy < 6 && y < 6) return false;
     } else {
       if (this.isTopCell(xx, yy, type, teban)) return false;
     }
@@ -108,7 +108,7 @@ export class Board {
 
     for (const move of moves) {
       if (move.dx === dx && move.dy === dy * nteban) {
-        return this.checkMove(x + move.dx, y + move.dy * nteban, piece.teban, piece.type, nari, nteban);
+        return this.checkMove(y, x + move.dx, y + move.dy * nteban, piece.teban, piece.type, nari, nteban);
       }
 
       // 再帰的に動きを計算
@@ -117,7 +117,7 @@ export class Board {
         let currentY = y + move.dy * nteban;
         while (currentX >= 0 && currentX < BOARD_SIZE && currentY >= 0 && currentY < BOARD_SIZE) {
           if (this.map[currentX][currentY] && this.map[currentX][currentY].teban === nteban) break;
-          if (currentX === nx && currentY === ny) return this.checkMove(currentX, currentY, piece.teban, piece.type, nari, nteban);
+          if (currentX === nx && currentY === ny) return this.checkMove(y, currentX, currentY, piece.teban, piece.type, nari, nteban);
           if (this.map[currentX][currentY] && this.map[currentX][currentY].teban !== nteban) break;
           currentX += move.dx;
           currentY += move.dy * nteban;
@@ -160,13 +160,12 @@ export class Board {
   }
 
   //成り可能判定
-  canPromote(x, y, ny) {
-    const piece = this.map[x][y];
-    if (!UNPROMODED_TYPES.includes(piece.type)) return false;
-    if (piece.teban === 1 && y < 3) return true;
-    if (piece.teban === 1 && ny < 3) return true;
-    if (piece.teban === -1 && y >= 6) return true;
-    if (piece.teban === -1 && ny >= 6) return true;
+  canPromote(y, ny, teban, type) {
+    if (!UNPROMODED_TYPES.includes(type)) return false;
+    if (teban === 1 && y < 3) return true;
+    if (teban === 1 && ny < 3) return true;
+    if (teban === -1 && y > 5) return true;
+    if (teban === -1 && ny > 5) return true;
     return false;
   }
 
@@ -217,7 +216,7 @@ export class Board {
       return { res: false, capture: null };
     }
     //成りチェック
-    if (nari && !this.canPromote(x, y, ny)) return { res: false, capture: null };
+    if (nari && !this.canPromote(y, ny, teban, piece.type)) return { res: false, capture: null };
     //駒の移動が可能かどうかを判定  // エラーチェック: ここでreturn
     if (!this.canMove(x, y, nx, ny, nari, teban)) return { res: false, capture: null };
 

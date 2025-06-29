@@ -1,6 +1,6 @@
 import { KomadaiUI } from "./ui_komadai.js";
 import { UI } from "./ui.js";
-import { gameManager, pieceImages, scene } from "./main25062802.js";
+import { gameManager, pieceImages } from "./main25062802.js";
 import { CELL_SIZE, BOARD_SIZE, BOARD_COLOR, LINE_COLOR, LINEWIDTH, MOUSE_HIGHLIGHT_COLOR, KOMADAI_OFFSET_RATIO, KOMADAI_HEIGHT, MOVETIME, TIMER_RADIUS, TIMER_LINEWIDTH, TIMER_BORDER_WIDTH, TIMER_OFFSET_X, TIMER_OFFSET_Y, TIMER_BGCOLOR, TIMER_COLOR, MOVE_COLOR, PIECE_MOVES, UNPROMODED_TYPES } from "./const.js";
 import { sendPutPiece, sendMovePiece } from "./emit.js";
 
@@ -196,8 +196,8 @@ export class BoardUI extends UI {
       }
     } else {
       let nari = false;
-      if ((this.teban === 1 && y < 3) || (this.teban === -1 && y > 5)) {
-        if (UNPROMODED_TYPES.includes(this.draggingPiece.type)) nari = true;
+      if (this.board.canPromote(this.draggingPiece.y, y, gameManager.teban, this.draggingPiece.type)) {
+        nari = true;
       }
       sendMovePiece(this.draggingPiece.x, this.draggingPiece.y, x, y, nari);
       if (gameManager.cpu === null) {

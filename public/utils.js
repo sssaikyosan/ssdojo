@@ -1,3 +1,5 @@
+import { UNPROMODED_TYPES } from "./const.js";
+
 /**
  * テキストを描画する
  * @param {string} text - 表示するテキスト

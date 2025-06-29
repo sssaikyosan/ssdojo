@@ -44,6 +44,7 @@ export class Room {
         if (this.gote.includes(id) && data.teban === -1) validPlayer = true;
         console.log("validPlayer");
         if (validPlayer) result = this.board.movePieceLocal({ ...data, servertime });
+        console.log(result);
         if (result && result.res) {
             this.emitToRoom("newMove", { ...data, servertime });
             let endGame = this.board.checkGameEnd(data);

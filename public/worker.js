@@ -304,13 +304,12 @@ class Board {
     }
 
     //成り可能判定
-    canPromote(x, y, ny) {
-        const piece = this.map[x][y];
-        if (!UNPROMODED_TYPES.includes(piece.type)) return false;
-        if (piece.teban === 1 && y < 3) return true;
-        if (piece.teban === 1 && ny < 3) return true;
-        if (piece.teban === -1 && y >= 6) return true;
-        if (piece.teban === -1 && ny >= 6) return true;
+    canPromote(y, ny, teban, type) {
+        if (!UNPROMODED_TYPES.includes(type)) return false;
+        if (teban === 1 && y < 3) return true;
+        if (teban === 1 && ny < 3) return true;
+        if (teban === -1 && y >= 6) return true;
+        if (teban === -1 && ny >= 6) return true;
         return false;
     }
 
@@ -358,7 +357,7 @@ class Board {
             return { res: false, capture: null };
         }
         //成りチェック
-        if (nari && !this.canPromote(x, y, ny)) return { res: false, capture: null };
+        if (nari && !this.canPromote(y, ny, teban, piece.type)) return { res: false, capture: null };
         //駒の移動が可能かどうかを判定  // エラーチェック: ここでreturn
         if (!this.canMove(x, y, nx, ny, nari, teban)) return { res: false, capture: null };
 
@@ -473,7 +472,7 @@ function getPieceLeagalMoves(x, y, teban, servertime, ignoretime = true) {
             const piece = board.map[moveX][moveY];
             if (piece && piece.teban === selectedPiece.teban) break;
 
-            if ((moveY > 8 + selectedPiece.teban * 3 || moveY < 0 + selectedPiece.teban * 3) && UNPROMODED_TYPES.includes(selectedPiece.type)) {
+            if (board.canPromote(move.y, moveY, teban, selectedPiece.type)) {
                 if (selectedPiece.lastmovetime >= servertime - MOVETIME) {
                     pieceLegalMoves.push({
                         x: x,
@@ -497,32 +496,32 @@ function getPieceLeagalMoves(x, y, teban, servertime, ignoretime = true) {
                         ignoretime: false
                     });
                 }
-            }
-            if (board.isTopCell(moveX, moveY, selectedPiece.type, selectedPiece.teban)) break;
-            if (selectedPiece.lastmovetime >= servertime - MOVETIME) {
-                pieceLegalMoves.push({
-                    x: x,
-                    y: y,
-                    nx: moveX,
-                    ny: moveY,
-                    nari: false,
-                    type: null,
-                    teban: teban,
-                    ignoretime: true
-                });
             } else {
-                pieceLegalMoves.push({
-                    x: x,
-                    y: y,
-                    nx: moveX,
-                    ny: moveY,
-                    nari: false,
-                    type: null,
-                    teban: teban,
-                    ignoretime: false
-                });
+                if (board.isTopCell(moveX, moveY, selectedPiece.type, selectedPiece.teban)) break;
+                if (selectedPiece.lastmovetime >= servertime - MOVETIME) {
+                    pieceLegalMoves.push({
+                        x: x,
+                        y: y,
+                        nx: moveX,
+                        ny: moveY,
+                        nari: false,
+                        type: null,
+                        teban: teban,
+                        ignoretime: true
+                    });
+                } else {
+                    pieceLegalMoves.push({
+                        x: x,
+                        y: y,
+                        nx: moveX,
+                        ny: moveY,
+                        nari: false,
+                        type: null,
+                        teban: teban,
+                        ignoretime: false
+                    });
+                }
             }
-
 
             if (!move.recursive) break;
             if (piece) break;

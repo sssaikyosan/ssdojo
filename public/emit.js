@@ -1,6 +1,7 @@
 import { gameManager } from "./main25062802.js";
 
 export function sendPutPiece(nx, ny, type) {
+
     if (gameManager.cpu === null) {
         gameManager.socket.emit("movePiece", {
             x: -1,
@@ -29,6 +30,7 @@ export function sendPutPiece(nx, ny, type) {
 }
 
 export function sendMovePiece(x, y, nx, ny, nari) {
+    console.log("sendmovepiece", x, y, nx, ny, nari);
     if (!gameManager.board.canMove(x, y, nx, ny, nari, gameManager.teban)) return false;
     if (gameManager.cpu === null) {
         gameManager.socket.emit("movePiece", {
