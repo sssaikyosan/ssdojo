@@ -459,21 +459,25 @@ function getPosLeagalPuts(x, y, teban) {
     return legalPuts;
 }
 
-function getPieceLeagalMoves(x, y, teban, servertime, ignoretime = true) {
-    let pieceLegalMoves = [];
+function getPieceLeagalMoves(x, y, teban, servertime, ignoretime) {
+    const pieceLegalMoves = [];
     const selectedPiece = board.map[x][y];
     if (!selectedPiece) return [];
-    if (!ignoretime && selectedPiece.lastmovetime >= servertime - MOVETIME) return [];
     if (selectedPiece.teban !== teban) return [];
+    if (!ignoretime && (selectedPiece.lastmovetime >= (servertime - MOVETIME))) return [];
+
     for (const move of PIECE_MOVES[selectedPiece.type]) {
-        let moveX = x + move.dx * selectedPiece.teban;
-        let moveY = y + move.dy * selectedPiece.teban;
-        while (moveX >= 0 && moveX < BOARD_SIZE && moveY >= 0 && moveY < BOARD_SIZE) {
+        let moveX = x;
+        let moveY = y;
+        while (true) {
+            moveX += move.dx * selectedPiece.teban;
+            moveY += move.dy * selectedPiece.teban;
+            if (moveX < 0 || moveX >= BOARD_SIZE || moveY < 0 || moveY >= BOARD_SIZE) break;
             const piece = board.map[moveX][moveY];
             if (piece && piece.teban === selectedPiece.teban) break;
 
             if (board.canPromote(move.y, moveY, teban, selectedPiece.type)) {
-                if (selectedPiece.lastmovetime >= servertime - MOVETIME) {
+                if (selectedPiece.lastmovetime >= (servertime - MOVETIME)) {
                     pieceLegalMoves.push({
                         x: x,
                         y: y,
@@ -498,7 +502,7 @@ function getPieceLeagalMoves(x, y, teban, servertime, ignoretime = true) {
                 }
             } else {
                 if (board.isTopCell(moveX, moveY, selectedPiece.type, selectedPiece.teban)) break;
-                if (selectedPiece.lastmovetime >= servertime - MOVETIME) {
+                if (selectedPiece.lastmovetime >= (servertime - MOVETIME)) {
                     pieceLegalMoves.push({
                         x: x,
                         y: y,
@@ -525,8 +529,6 @@ function getPieceLeagalMoves(x, y, teban, servertime, ignoretime = true) {
 
             if (!move.recursive) break;
             if (piece) break;
-            moveX += move.dx * selectedPiece.teban;
-            moveY += move.dy * selectedPiece.teban;
         }
     }
     return pieceLegalMoves;
@@ -576,14 +578,13 @@ function isDanger(x, y, nx, ny, teban) {
 }
 
 // 合法手を取得する関数 (スケルトン - 要具体的な将棋ロジックの実装)
-function getLegalMoves(teban, servertime, ignoretime = true) {
-    let leagalMoves = [];
+function getLeagalMoves(teban, servertime, ignoretime) {
+    const leagalMoves = [];
     if (board === null) return [];
     for (let i = 0; i < BOARD_SIZE; i++) {
         for (let j = 0; j < BOARD_SIZE; j++) {
             if (board.map[i][j]) {
                 leagalMoves.push(...getPieceLeagalMoves(i, j, teban, servertime, ignoretime));
-                continue;
             }
         }
     }
@@ -591,7 +592,7 @@ function getLegalMoves(teban, servertime, ignoretime = true) {
 }
 
 function getAllLeagalPuts(teban) {
-    let leagalPuts = [];
+    const leagalPuts = [];
     if (board === null) return;
     for (let i = 0; i < BOARD_SIZE; i++) {
         for (let j = 0; j < BOARD_SIZE; j++) {
@@ -617,11 +618,11 @@ function setcpu(lev) {
 function level0cpu() {
     setInterval(() => {
         const servertime = startTime + performance.now();
-        const cpulegalMoves = getLegalMoves(-1, servertime);
-        cpulegalMoves.push(...getAllLeagalPuts(-1));
-        if (cpulegalMoves.length > 0) {
-            const randomIndex = Math.floor(Math.random() * cpulegalMoves.length);
-            const randomMove = cpulegalMoves[randomIndex];
+        const cpuLeagalMoves = getLeagalMoves(-1, servertime, false);
+        cpuLeagalMoves.push(...getAllLeagalPuts(-1));
+        if (cpuLeagalMoves.length > 0) {
+            const randomIndex = Math.floor(Math.random() * cpuLeagalMoves.length);
+            const randomMove = cpuLeagalMoves[randomIndex];
             console.log('calculateCpuMove: ランダムに選択された合法手', randomMove);
             postMessage({ move: randomMove });
         } else {
@@ -646,11 +647,11 @@ function level1cpu() {
         const escapeMoves = [];
         const escapeMovesIgnoreTime = [];
         const safetyCapMoves = [];
-        const cpulegalMoves = getLegalMoves(-1, servertime, false);
-        const playerlegalMoves = getLegalMoves(1, servertime);
+        const cpuLeagalMoves = getLeagalMoves(-1, servertime, false);
+        const playerLeagalMoves = getLeagalMoves(1, servertime, true);
 
         //放置すると取られる駒を検索
-        for (const move of playerlegalMoves) {
+        for (const move of playerLeagalMoves) {
             const res = board.getCanMovePiece(move.x, move.y, move.nx, move.ny, move.nari, move.teban, servertime);
             if (res.capture !== null) {
                 if (move.ignoretime) {
@@ -664,12 +665,11 @@ function level1cpu() {
 
         //放置すると取られる駒で駒をとれる手を検索
         for (const move of playerCaptureMoves) {
-            const targetPieceMoves = getPieceLeagalMoves(move.nx, move.ny, -1, servertime);
+            const targetPieceMoves = getPieceLeagalMoves(move.nx, move.ny, -1, servertime, false);
             for (const targetmove of targetPieceMoves) {
+                console.log("playerCaptureMoves", targetmove);
                 if ((targetmove.nx === move.x) && (targetmove.ny === move.y)) {
-                    if (!targetmove.ignoretime) {
-                        collisionMoves.push(targetmove);
-                    }
+                    collisionMoves.push(targetmove);
                 };
                 //放置すると取られる駒で逃げる手を検索
                 if (!isDanger(targetmove.x, targetmove.y, targetmove.nx, targetmove.ny, -1)) {
@@ -680,9 +680,9 @@ function level1cpu() {
 
         //放置すると取られる駒で駒をとれる手を検索IgnoreTime
         for (const move of playerCaptureMovesIgnoreTime) {
-            const targetPieceMoves = getPieceLeagalMoves(move.nx, move.ny, -1, servertime);
+            const targetPieceMoves = getPieceLeagalMoves(move.nx, move.ny, -1, servertime, false);
             for (const targetmove of targetPieceMoves) {
-                if (targetmove.ignoretime) continue;
+                console.log("playerCaptureMovesIgnoreTime", targetmove);
                 if ((targetmove.nx === move.x) && (targetmove.ny === move.y)) {
                     collisionMovesIgnoreTime.push(targetmove);
                 };
@@ -779,8 +779,7 @@ function level1cpu() {
         }
 
         //駒を取れる手を検索
-        for (const move of cpulegalMoves) {
-            if (move.ignoretime) continue;
+        for (const move of cpuLeagalMoves) {
             const res = board.getCanMovePiece(move.x, move.y, move.nx, move.ny, move.nari, move.teban, servertime);
             if (res.capture !== null) {
                 cpuCaptureMoves.push(move);
@@ -821,12 +820,12 @@ function level1cpu() {
             return
         }
 
-        cpulegalMoves.push(...getAllLeagalPuts(-1));
+        cpuLeagalMoves.push(...getAllLeagalPuts(-1));
 
         //ここまでの条件に適合する手がなければランダムに選択
-        if (cpulegalMoves.length > 0) {
-            const randomIndex = Math.floor(Math.random() * cpulegalMoves.length);
-            const randomMove = cpulegalMoves[randomIndex];
+        if (cpuLeagalMoves.length > 0) {
+            const randomIndex = Math.floor(Math.random() * cpuLeagalMoves.length);
+            const randomMove = cpuLeagalMoves[randomIndex];
             console.log('calculateCpuMove: ランダムに選択', randomMove);
             postMessage({ move: randomMove });
             return
@@ -849,11 +848,11 @@ function level2cpu() {
         const escapeMoves = [];
         const escapeMovesIgnoreTime = [];
         const safetyCapMoves = [];
-        const cpulegalMoves = getLegalMoves(-1, servertime, false);
-        const playerlegalMoves = getLegalMoves(1, servertime);
+        const cpuLeagalMoves = getLeagalMoves(-1, servertime, false);
+        const playerLeagalMoves = getLeagalMoves(1, servertime, true);
 
         //放置すると取られる駒を検索
-        for (const move of playerlegalMoves) {
+        for (const move of playerLeagalMoves) {
             const res = board.getCanMovePiece(move.x, move.y, move.nx, move.ny, move.nari, move.teban, servertime);
             if (res.capture !== null) {
                 if (move.ignoretime) {
@@ -867,7 +866,7 @@ function level2cpu() {
 
         //放置すると取られる駒で駒をとれる手を検索
         for (const move of playerCaptureMoves) {
-            const targetPieceMoves = getPieceLeagalMoves(move.nx, move.ny, -1, servertime);
+            const targetPieceMoves = getPieceLeagalMoves(move.nx, move.ny, -1, servertime, false);
             for (const targetmove of targetPieceMoves) {
                 if ((targetmove.nx === move.x) && (targetmove.ny === move.y)) {
                     if (!targetmove.ignoretime) {
@@ -883,7 +882,7 @@ function level2cpu() {
 
         //放置すると取られる駒で駒をとれる手を検索IgnoreTime
         for (const move of playerCaptureMovesIgnoreTime) {
-            const targetPieceMoves = getPieceLeagalMoves(move.nx, move.ny, -1, servertime);
+            const targetPieceMoves = getPieceLeagalMoves(move.nx, move.ny, -1, servertime, false);
             for (const targetmove of targetPieceMoves) {
                 if (targetmove.ignoretime) continue;
                 if ((targetmove.nx === move.x) && (targetmove.ny === move.y)) {
@@ -982,7 +981,7 @@ function level2cpu() {
         }
 
         //駒を取れる手を検索
-        for (const move of cpulegalMoves) {
+        for (const move of cpuLeagalMoves) {
             if (move.ignoretime) continue;
             const res = board.getCanMovePiece(move.x, move.y, move.nx, move.ny, move.nari, move.teban, servertime);
             if (res.capture !== null) {
@@ -1026,23 +1025,23 @@ function level2cpu() {
     }, 100);
     setInterval(() => {
         const servertime = startTime + performance.now();
-        const cpulegalMoves = getLegalMoves(-1, servertime);
-        cpulegalMoves.filter(item => {
+        const cpuLeagalMoves = getLeagalMoves(-1, servertime, false);
+        cpuLeagalMoves.filter(item => {
             if (item.x === cpuKingPos.x && item.y === cpuKingPos.y) {
-                if (isDanger(item.nx, item.ny)) return false;
+                if (isDanger(item.x, item.y, item.nx, item.ny, item.teban)) return false;
             }
         })
-        cpulegalMoves.push(...getAllLeagalPuts(-1));
-        if (cpulegalMoves.length > 0) {
-            const randomIndex = Math.floor(Math.random() * cpulegalMoves.length);
-            const randomMove = cpulegalMoves[randomIndex];
+        cpuLeagalMoves.push(...getAllLeagalPuts(-1));
+        if (cpuLeagalMoves.length > 0) {
+            const randomIndex = Math.floor(Math.random() * cpuLeagalMoves.length);
+            const randomMove = cpuLeagalMoves[randomIndex];
             console.log('calculateCpuMove: ランダムに選択された合法手', randomMove);
             postMessage({ move: randomMove });
         } else {
             console.log('calculateCpuMove: 合法手がありません');
             return null;
         }
-    }, 3000);
+    }, 1000);
 }
 
 // メインスレッドからのメッセージを受信

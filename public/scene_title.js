@@ -1,7 +1,7 @@
 //タイトルシーン要素
 
 import { createPlayScene } from "./scene_game.js";
-import { serverStatus, title_img, audioManager, canvas, setPlayerName, playerName, socket, selectedCharacterName, userId, setScene, characterFiles, setSelectedCharacterName } from "./main25062802.js";
+import { serverStatus, title_img, audioManager, canvas, setPlayerName, playerName, socket, selectedCharacterName, userId, setScene, characterFiles, setSelectedCharacterName } from "./main25062901.js";
 import { Scene } from "./scene.js";
 import { OverlayUI } from "./ui.js";
 import { BackgroundImageUI } from "./ui_background.js";
@@ -334,5 +334,6 @@ function cpuLevelSubmit(level, event) {
     localStorage.setItem("playerName", playerName);
     if (playerName == "") setPlayerName("名無しの棋士");
     clearTitleHTML();
-    setScene(createPlayScene(playerName, `レベル${level}CPU`, null, 1, null, performance.now(), 0, 0, level));
+    const now = performance.now();
+    setScene(createPlayScene(playerName, `レベル${level}CPU`, null, 1, null, now, 0, 0, level));
 }

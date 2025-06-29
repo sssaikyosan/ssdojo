@@ -1,6 +1,6 @@
 // public/game_manager.js
 import { BoardUI } from './ui_board.js';
-import { audioManager } from './main25062802.js'; // audio_manager.jsからインポート
+import { audioManager } from './main25062901.js'; // audio_manager.jsからインポート
 import { Board } from './board.js';
 import { CPU } from './cpu.js'; // CPUクラスをインポート
 import { endCPUGame } from './scene_game.js';
@@ -93,7 +93,8 @@ export class GameManager {
     // Web WorkerからCPUの手を受け取るメソッド
     handleCpuMove(move) {
         console.log("GameManager: CPUの手を受信しました", move);
-        const serverMove = { ...move, servertime: performance.now() }
+        const now = performance.now();
+        const serverMove = { ...move, servertime: now }
         console.log(serverMove);
         const result = this.board.movePieceLocal(serverMove);
         if (result.res) {
@@ -106,16 +107,16 @@ export class GameManager {
                     this.boardUI.draggingPiecePos = null;
                 }
             }
-            const gameEnd = this.board.checkGameEnd(move);
+            const gameEnd = this.board.checkGameEnd(serverMove);
             if (gameEnd.player !== 0 && this.cpu !== null) {
                 this.cpu.endGame();
                 endCPUGame({ winPlayer: gameEnd.player, text: gameEnd.text });
                 this.cpu = null;
             }
-            this.cpu.boardChanged(move);
+            this.cpu.boardChanged(serverMove);
 
         } else {
-            console.error("GameManager: CPUの手の適用に失敗しました。", move);
+            console.error("GameManager: CPUの手の適用に失敗しました。", serverMove);
             // エラーハンドリング
         }
     }
