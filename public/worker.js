@@ -578,7 +578,7 @@ function isDanger(x, y, nx, ny, teban) {
 // 合法手を取得する関数 (スケルトン - 要具体的な将棋ロジックの実装)
 function getLegalMoves(teban, servertime, ignoretime = true) {
     let leagalMoves = [];
-    if (board === null) return;
+    if (board === null) return [];
     for (let i = 0; i < BOARD_SIZE; i++) {
         for (let j = 0; j < BOARD_SIZE; j++) {
             if (board.map[i][j]) {
@@ -600,6 +600,7 @@ function getAllLeagalPuts(teban) {
             }
         }
     }
+    return leagalPuts;
 }
 
 function setcpu(lev) {
@@ -616,10 +617,11 @@ function setcpu(lev) {
 function level0cpu() {
     setInterval(() => {
         const servertime = startTime + performance.now();
-        const legalMoves = getLegalMoves(-1, servertime);
-        if (legalMoves.length > 0) {
-            const randomIndex = Math.floor(Math.random() * legalMoves.length);
-            const randomMove = legalMoves[randomIndex];
+        const cpulegalMoves = getLegalMoves(-1, servertime);
+        cpulegalMoves.push(...getAllLeagalPuts(-1));
+        if (cpulegalMoves.length > 0) {
+            const randomIndex = Math.floor(Math.random() * cpulegalMoves.length);
+            const randomMove = cpulegalMoves[randomIndex];
             console.log('calculateCpuMove: ランダムに選択された合法手', randomMove);
             postMessage({ move: randomMove });
         } else {
@@ -818,6 +820,8 @@ function level1cpu() {
             postMessage({ move: randomMove });
             return
         }
+
+        cpulegalMoves.push(...getAllLeagalPuts(-1));
 
         //ここまでの条件に適合する手がなければランダムに選択
         if (cpulegalMoves.length > 0) {
