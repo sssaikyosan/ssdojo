@@ -15,14 +15,12 @@ export class CPU {
     }
 
     boardChanged(move) {
-        console.log("CPU: 盤面が変更されました。ワーカーに通知します。");
         this.worker.postMessage(["move", move]);
     }
 
     setWorker() {
         this.worker = new Worker(new URL("./worker.js", import.meta.url));
         this.worker.onmessage = (e) => {
-            console.log("CPU: メッセージをワーカーから受信しました", e.data);
             // 受信したCPUの手をGameManagerに渡す
             if (this.gameManager && typeof this.gameManager.handleCpuMove === 'function') {
                 this.gameManager.handleCpuMove(e.data.move);

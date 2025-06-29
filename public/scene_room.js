@@ -3,7 +3,7 @@ import { Scene } from "./scene.js";
 import { battle_img, setScene, socket } from "./main25062802.js"; // setScene関数をインポート
 import { createTitleScene, rankingOverlay } from "./scene_title.js"; // タイトルシーンに戻るために必要
 import { createPlayScene } from "./scene_game.js";
-import { BackgroundImageUI } from "./ui.js";
+import { BackgroundImageUI } from "./ui_background.js";
 
 export const roomIdOverlay = document.getElementById("roomIdOverlay");
 const copyIdButton = document.getElementById("copyIdButton");

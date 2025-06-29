@@ -199,6 +199,10 @@ function addEventListeners() {
       }
     });
   }
+  // 初期表示時にスライダーの値を現在の音量に設定
+  if (bgmVolumeSlider instanceof HTMLInputElement) {
+    bgmVolumeSlider.value = (audioManager.bgmVolume * 100).toString();
+  }
 
   if (soundVolumeSlider) {
     soundVolumeSlider.addEventListener('change', (event) => {
@@ -206,6 +210,10 @@ function addEventListeners() {
         const volume = parseInt(event.target.value, 10) / 100;
         audioManager.setSoundVolume(volume);
         audioManager.playSound('sound'); // 効果音を再生
+        // 初期表示時にスライダーの値を現在の音量に設定
+        if (soundVolumeSlider instanceof HTMLInputElement) {
+          soundVolumeSlider.value = (audioManager.soundVolume * 100).toString();
+        }
       }
     });
   }

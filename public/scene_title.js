@@ -3,7 +3,9 @@
 import { createPlayScene } from "./scene_game.js";
 import { serverStatus, title_img, audioManager, canvas, setPlayerName, playerName, socket, selectedCharacterName, userId, setScene, characterFiles, setSelectedCharacterName } from "./main25062802.js";
 import { Scene } from "./scene.js";
-import { CharacterImageUI, BackgroundImageUI, OverlayUI } from "./ui.js";
+import { OverlayUI } from "./ui.js";
+import { BackgroundImageUI } from "./ui_background.js";
+import { CharacterImageUI } from "./ui_character.js";
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
 import { getAfterStr } from "./utils.js";
@@ -261,12 +263,12 @@ export function createCharacterSelectScene() {
             text: () => {
                 return characterInfo[characterName].name;
             },
-            x: x - characterSize / 2,
-            y: y + characterSize / 2,
+            x: x,
+            y: y + characterSize / 2 + 0.04,
             size: 0.03,
             colors: ["#bbdd44", "#000000", "#00000000"],
             textBaseline: 'bottom',
-            position: 'left'
+            position: 'center'
         })
 
         // キャラクターがクリックされたときの処理

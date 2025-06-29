@@ -1,7 +1,8 @@
 import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus } from "./main25062802.js";
 import { Scene } from "./scene.js";
 import { cancelMatchOverlay, createTitleScene, rankingOverlay } from "./scene_title.js";
-import { Background, BackgroundImageUI, CharacterInGameUI } from "./ui.js";
+import { BackgroundImageUI } from "./ui_background.js";
+import { CharacterInGameUI } from "./ui_character.js";
 import { TextUI } from "./ui_text.js";
 
 
