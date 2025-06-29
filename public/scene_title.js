@@ -34,6 +34,16 @@ const joinRoomButton = document.getElementById("joinRoomButton");
 const submitNameButton = document.getElementById("submitNameButton");
 const charaSelectButton = document.getElementById("charaSelectButton");
 
+cpuButton.addEventListener("click", cpuButtonSubmit);
+cpulevel0Button.addEventListener("click", function (event) {
+    cpuLevelSubmit('0', event);
+});
+cpulevel1Button.addEventListener("click", function (event) {
+    cpuLevelSubmit('1', event);
+});
+cpulevel2Button.addEventListener("click", function (event) {
+    cpuLevelSubmit('2', event);
+});
 
 let cpumatch = false;
 
@@ -326,13 +336,3 @@ function cpuLevelSubmit(level, event) {
     clearTitleHTML();
     setScene(createPlayScene(playerName, `レベル${level}CPU`, null, 1, null, performance.now(), 0, 0, level));
 }
-cpuButton.addEventListener("click", cpuButtonSubmit);
-cpulevel0Button.addEventListener("click", function (event) {
-    cpuLevelSubmit('0', event);
-});
-cpulevel1Button.addEventListener("click", function (event) {
-    cpuLevelSubmit('1', event);
-});
-cpulevel2Button.addEventListener("click", function (event) {
-    cpuLevelSubmit('2', event);
-});

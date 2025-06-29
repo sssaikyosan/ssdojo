@@ -10,7 +10,8 @@ import { roomIdOverlay, tebanOverlay, readyOverlay, cancelOverlay, leaveRoomOver
 const roomResultOverlay = document.getElementById("roomResultOverlay");
 const toRoomButton = document.getElementById("toRoomButton");
 
-let roomdata = null;
+toRoomButton.addEventListener("click", handleToRoomClick);
+
 let arryCharacterUI;
 let enemyCharacterUI;
 
@@ -25,8 +26,6 @@ export function createRoomPlayScene(senteName, senteCharacter, goteName, goteCha
     let teban = 0;
     if (roomteban === 'sente') teban = 1;
     if (roomteban === 'gote') teban = -1;
-
-    console.log(roomId);
 
     if (board === null) {
         gameManager.setRoom(roomId, teban, servertime);
@@ -142,11 +141,6 @@ export function createRoomPlayScene(senteName, senteCharacter, goteName, goteCha
     playScene.add(countDownText);
     playScene.add(timeText);
 
-    toRoomButton.addEventListener("click", handleToRoomClick);
-    playScene.destroy = () => {
-        toRoomButton.removeEventListener("click", handleToRoomClick);
-    };
-
     return playScene;
 }
 
@@ -166,7 +160,6 @@ export function endRoomGame(data) {
         roomUpdate(data);
         return;
     }
-    roomdata = { sente: data.sente, gote: data.gote, spectators: data.spectators, roomId: data.roomId };
 
     if (gameManager.teban === 0) {
         scene.add(endText);
@@ -189,3 +182,4 @@ export function endRoomGame(data) {
     gameManager.resetRoom();
     gameManager.board.finished = true;
 }
+

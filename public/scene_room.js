@@ -26,6 +26,15 @@ const moveToSpectatorsButton = document.getElementById("moveToSpectatorsButton")
 const leaveRoomButton = document.getElementById("leaveRoomButton");
 
 
+readyButton.addEventListener("click", () => { ready(); });
+cancelButton.addEventListener("click", () => { cancelReady(); });
+moveToSenteButton.addEventListener("click", () => { moveSubmit('sente'); });
+moveToGoteButton.addEventListener("click", () => { moveSubmit('gote'); });
+moveToSpectatorsButton.addEventListener("click", () => { moveSubmit('spectators'); });
+leaveRoomButton.addEventListener("click", () => { leaveRoom(); });
+
+copyIdButton.addEventListener("click", handleCopyIdClick);
+
 function moveSubmit(teban) {
     socket.emit("moveTeban", { teban: teban });
 }
@@ -118,8 +127,6 @@ export function roomUpdate(data) {
         }
         cancelOverlay.style.display = 'none';
     }
-
-
 }
 
 // コピーボタンのイベントハンドラ
@@ -175,35 +182,16 @@ export function createRoomScene(data) {
     readyOverlay.style.display = 'none';
     cancelOverlay.style.display = 'none';
     leaveRoomOverlay.style.display = 'block';
-
-    // コピーボタンにイベントリスナーを追加
-    if (copyIdButton) {
-        copyIdButton.addEventListener("click", handleCopyIdClick);
-    }
+    copySuccessMessage.style.display = 'none';
+    copySuccessMessage.style.opacity = '0';
 
     // シーン破棄時のイベントリスナー削除とメッセージ非表示
     roomScene.destroy = () => {
-        if (copyIdButton) {
-            copyIdButton.removeEventListener("click", handleCopyIdClick);
-        }
         if (copySuccessMessage) {
             copySuccessMessage.style.display = 'none';
             copySuccessMessage.style.opacity = '0';
         }
     };
 
-    // シーン作成時にメッセージを非表示にする
-    if (copySuccessMessage) {
-        copySuccessMessage.style.display = 'none';
-        copySuccessMessage.style.opacity = '0';
-    }
-
     return roomScene;
 }
-
-readyButton.addEventListener("click", () => { ready(); });
-cancelButton.addEventListener("click", () => { cancelReady(); });
-moveToSenteButton.addEventListener("click", () => { moveSubmit('sente'); });
-moveToGoteButton.addEventListener("click", () => { moveSubmit('gote'); });
-moveToSpectatorsButton.addEventListener("click", () => { moveSubmit('spectators'); });
-leaveRoomButton.addEventListener("click", () => { leaveRoom(); });
