@@ -99,6 +99,10 @@ export class GameManager {
         if (result.res) {
             console.log("GameManager: CPUの手を適用しました。");
             audioManager.playSound("sound"); // 効果音
+            if ((result.capture.x === this.boardUI.draggingPiece.x) && (result.capture.y === this.boardUI.draggingPiece.y)) {
+                this.boardUI.draggingPiece = null;
+                this.boardUI.draggingPiecePos = null;
+            }
             const gameEnd = this.board.checkGameEnd(move);
             if (gameEnd.player !== 0 && this.cpu !== null) {
                 this.cpu.endGame();
