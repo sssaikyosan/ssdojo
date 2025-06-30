@@ -1,5 +1,5 @@
 import { TextUI } from "./ui_text.js";
-import { characterImages, audioManager } from "./main25063002.js";
+import { characterImages, audioManager } from "./main.js";
 import { OverlayUI, UI } from "./ui.js";
 import { characterQuotes } from "./const.js";
 

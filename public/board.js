@@ -1,4 +1,4 @@
-import { gameManager } from "./main25063002.js";
+import { gameManager } from "./main.js";
 import { BOARD_SIZE, MOVETIME, PIECE_MOVES, UNPROMODED_TYPES } from "./const.js";
 import { getPromotedType, getUnPromotedType } from "./utils.js";
 
