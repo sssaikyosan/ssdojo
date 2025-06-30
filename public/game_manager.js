@@ -1,6 +1,6 @@
 // public/game_manager.js
 import { BoardUI } from './ui_board.js';
-import { audioManager } from './main25062902.js'; // audio_manager.jsからインポート
+import { audioManager } from './main25063001.js'; // audio_manager.jsからインポート
 import { Board } from './board.js';
 import { CPU } from './cpu.js'; // CPUクラスをインポート
 import { endCPUGame } from './scene_game.js';
@@ -131,11 +131,5 @@ export class GameManager {
             this.board.started = true;
             audioManager.playSound('match');
         }
-
-        // GameManagerのupdateからはCPUのupdateを直接呼ばないように変更
-        // CPUの思考はWeb Workerで行い、結果はhandleCpuMoveで受け取る
-        // if (this.cpu !== null) {
-        //     this.cpu.update(time);
-        // }
     }
 }

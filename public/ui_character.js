@@ -1,5 +1,7 @@
-import { characterImages, audioManager } from "./main25062902.js";
-import { UI } from "./ui.js";
+import { TextUI } from "./ui_text.js";
+import { characterImages, audioManager } from "./main25063001.js";
+import { OverlayUI, UI } from "./ui.js";
+import { characterQuotes } from "./const.js";
 
 // キャラクター画像を表示するためのUIクラス
 export class CharacterImageUI extends UI {
@@ -9,19 +11,43 @@ export class CharacterImageUI extends UI {
   winVideoElement = [];
   currentVideo = null;
   isRenderingVideo = false; // 動画を描画中かどうかのフラグ
+  voiceTextOverlay;
+  voiceText;
+  textfade = 0;
 
   constructor(params) {
     super(params);
     this.image = params.image;
     this.width = params.width;
     this.height = params.height;
+
+    this.textsize = 0.035;
+    this.voiceTextOverlay = new OverlayUI({
+      color: 'rgba(15,63,31,0.8)',
+      x: params.x + 0.2,
+      y: params.y + 0.15,
+      width: 0,
+      height: 0.035 + 0.04
+    });
+    this.voiceText = new TextUI({
+      text: () => {
+        return "";
+      },
+      x: params.x + 0.21,
+      y: params.y + 0.15,
+      size: 0.035,
+      colors: ["#ffffff", "#00000000", "#00000000"],
+      position: 'center'
+    });
+    this.voiceTextOverlay.add(this.voiceText);
+    this.add(this.voiceTextOverlay);
     this.init();
   }
   init() {
     if (this.image) {
       for (let i = 0; i < 3; i++) {
         this.videoElement.push(document.createElement('video'));
-        this.videoElement[i].src = `characters/${this.image}/click${i + 1}.webm`;
+        this.videoElement[i].src = `characters25063001/${this.image}/click${i + 1}.webm`;
         this.videoElement[i].loop = false; // ループはしない
         this.videoElement[i].addEventListener('canplaythrough', () => {
           console.log('動画の再生準備ができました:');
@@ -65,7 +91,9 @@ export class CharacterImageUI extends UI {
   }
 
   onMouseDown(pos) {
-    this.playVideo();
+    const randomIndex = Math.floor(Math.random() * 3);
+    this.playVideo(randomIndex);
+    this.spawnVoiceText(randomIndex);
   }
 
   resize(data) {
@@ -73,8 +101,7 @@ export class CharacterImageUI extends UI {
     // canvasに描画する場合は動画要素自体のサイズ変更は不要
   }
 
-  playVideo() {
-    const randomIndex = Math.floor(Math.random() * 3);
+  playVideo(randomIndex) {
     // videoElement が存在し、動画が既に再生中、または再生準備ができていない場合は何もしない
     if (this.videoElement.length < 3 || this.isRenderingVideo) {
       console.log('動画の再生準備ができていません、または既に再生中です。');
@@ -100,6 +127,19 @@ export class CharacterImageUI extends UI {
       this.isRenderingVideo = false; // 再生開始に失敗したらフラグをオフ
     });
   }
+
+  spawnVoiceText(randomIndex) {
+    this.voiceText.text = () => { return `${characterQuotes[this.image][randomIndex]}` }
+    this.voiceTextOverlay.width = characterQuotes[this.image][randomIndex].length * this.textsize + 0.02;
+    this.currentVideo.addEventListener('ended', () => {
+      setTimeout(() => {
+        if (this.currentVideo === null) {
+          this.voiceText.text = () => { return `` };
+          this.voiceTextOverlay.width = 0;
+        }
+      }, 1000);
+    });
+  }
 }
 
 export class CharacterInGameUI extends UI {
@@ -121,7 +161,7 @@ export class CharacterInGameUI extends UI {
     if (this.image) {
       for (let i = 0; i < 1; i++) {
         this.startVideoElement.push(document.createElement('video'));
-        this.startVideoElement[i].src = `characters/${this.image}/start${i + 1}.webm`;
+        this.startVideoElement[i].src = `characters25063001/${this.image}/start${i + 1}.webm`;
         this.startVideoElement[i].loop = false; // ループはしない
         this.startVideoElement[i].addEventListener('canplaythrough', () => {
           console.log('動画の再生準備ができました:');
@@ -142,7 +182,7 @@ export class CharacterInGameUI extends UI {
 
       for (let i = 0; i < 1; i++) {
         this.winVideoElement.push(document.createElement('video'));
-        this.winVideoElement[i].src = `characters/${this.image}/win${i + 1}.webm`;
+        this.winVideoElement[i].src = `characters25063001/${this.image}/win${i + 1}.webm`;
         this.winVideoElement[i].loop = false; // ループはしない
         this.winVideoElement[i].addEventListener('canplaythrough', () => {
           console.log('動画の再生準備ができました:');

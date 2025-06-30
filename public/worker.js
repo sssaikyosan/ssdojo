@@ -478,6 +478,7 @@ function getPieceLeagalMoves(x, y, teban, servertime, ignoretime) {
 
             if (board.canPromote(move.y, moveY, teban, selectedPiece.type)) {
                 if (selectedPiece.lastmovetime >= (servertime - MOVETIME)) {
+                    console.log("ignoreTime", selectedPiece);
                     pieceLegalMoves.push({
                         x: x,
                         y: y,
@@ -503,6 +504,7 @@ function getPieceLeagalMoves(x, y, teban, servertime, ignoretime) {
             } else {
                 if (board.isTopCell(moveX, moveY, selectedPiece.type, selectedPiece.teban)) break;
                 if (selectedPiece.lastmovetime >= (servertime - MOVETIME)) {
+                    console.log("ignoreTime", selectedPiece);
                     pieceLegalMoves.push({
                         x: x,
                         y: y,
@@ -604,6 +606,22 @@ function getAllLeagalPuts(teban) {
     return leagalPuts;
 }
 
+function copyBoard() {
+    let boardcopy = new Board();
+    boardcopy.serverstarttime = board.serverstarttime;
+    boardcopy.starttime = board.starttime;
+    for (let i = 0; i < BOARD_SIZE; i++) {
+        for (let j = 0; j < BOARD_SIZE; j++) {
+            boardcopy.map[i][j] = { type: board.map[i][j].type, teban: board.map[i][j].teban };
+        }
+    }
+    for (const type of UNPROMODED_TYPES) {
+        boardcopy.komadaiPieces['sente'][type] = board.komadaiPieces['sente'][type];
+        boardcopy.komadaiPieces['gote'][type] = board.komadaiPieces['gote'][type];
+    }
+    return boardcopy;
+}
+
 function setcpu(lev) {
     //レベル０アルゴリズム（ランダムムーブ）
     if (lev === '0') {
@@ -659,15 +677,16 @@ function level1cpu() {
                 } else {
                     playerCaptureMoves.push(move);
                 }
-
             }
         }
+        console.log("playerIgnoreTime", playerCaptureMovesIgnoreTime);
+        console.log("servertime", servertime);
+        console.log(board.serverstarttime);
 
         //放置すると取られる駒で駒をとれる手を検索
         for (const move of playerCaptureMoves) {
             const targetPieceMoves = getPieceLeagalMoves(move.nx, move.ny, -1, servertime, false);
             for (const targetmove of targetPieceMoves) {
-                console.log("playerCaptureMoves", targetmove);
                 if ((targetmove.nx === move.x) && (targetmove.ny === move.y)) {
                     collisionMoves.push(targetmove);
                 };
@@ -838,213 +857,10 @@ function level1cpu() {
 
 function level2cpu() {
     setInterval(() => {
+        let copyboard = copyBoard();
         const servertime = startTime + performance.now();
-        const cpuCaptureMoves = [];
-        const playerCaptureMoves = [];
-        const playerCaptureMovesIgnoreTime = [];
-        const kingCollisionMoves = [];
-        const kingCollisionMovesIgnoreTime = [];
-        const kingEscapeMoves = [];
-        const kingEscapeMovesIgnoreTime = [];
-        const collisionMoves = [];
-        const collisionMovesIgnoreTime = [];
-        const escapeMoves = [];
-        const escapeMovesIgnoreTime = [];
-        const safetyCapMoves = [];
-        const cpuLeagalMoves = getLeagalMoves(-1, servertime, false);
-        const playerLeagalMoves = getLeagalMoves(1, servertime, true);
-
-        //放置すると取られる駒を検索
-        for (const move of playerLeagalMoves) {
-            const res = board.getCanMovePiece(move.x, move.y, move.nx, move.ny, move.nari, move.teban, servertime);
-            if (res.capture !== null) {
-                if (move.ignoretime) {
-                    playerCaptureMovesIgnoreTime.push(move);
-                } else {
-                    playerCaptureMoves.push(move);
-                }
-
-            }
-        }
-
-        //放置すると取られる駒で駒をとれる手を検索
-        for (const move of playerCaptureMoves) {
-            const targetPieceMoves = getPieceLeagalMoves(move.nx, move.ny, -1, servertime, false);
-            for (const targetmove of targetPieceMoves) {
-                if ((targetmove.nx === move.x) && (targetmove.ny === move.y)) {
-                    if (!targetmove.ignoretime) {
-                        collisionMoves.push(targetmove);
-                    }
-                };
-                //放置すると取られる駒で逃げる手を検索
-                if (!isDanger(targetmove.x, targetmove.y, targetmove.nx, targetmove.ny, -1)) {
-                    escapeMoves.push(targetmove);
-                }
-            }
-        }
-
-        //放置すると取られる駒で駒をとれる手を検索IgnoreTime
-        for (const move of playerCaptureMovesIgnoreTime) {
-            const targetPieceMoves = getPieceLeagalMoves(move.nx, move.ny, -1, servertime, false);
-            for (const targetmove of targetPieceMoves) {
-                if (targetmove.ignoretime) continue;
-                if ((targetmove.nx === move.x) && (targetmove.ny === move.y)) {
-                    collisionMovesIgnoreTime.push(targetmove);
-                };
-                //放置すると取られる駒で逃げる手を検索
-                if (!isDanger(targetmove.x, targetmove.y, targetmove.nx, targetmove.ny, -1)) {
-                    escapeMovesIgnoreTime.push(targetmove);
-                }
-            }
-        }
-
-        //取られそうな玉で逆にとる手があれば指す
-        for (const move of collisionMoves) {
-            if ((move.x === cpuKingPos.x) && (move.y === cpuKingPos.y)) {
-                if (!isDanger(move.x, move.y, move.nx, move.ny, -1)) {
-                    kingCollisionMoves.push(move);
-                }
-            }
-        }
-        if (kingCollisionMoves.length > 0) {
-            const randomIndex = Math.floor(Math.random() * kingCollisionMoves.length);
-            const randomMove = kingCollisionMoves[randomIndex];
-            console.log('calculateCpuMove: 取られそうな玉で逆にとる手があれば指す', randomMove);
-            postMessage({ move: randomMove });
-            return
-        }
-
-
-        //取られそうな玉で逆にとる手があれば指す
-        for (const move of collisionMovesIgnoreTime) {
-            if ((move.x === cpuKingPos.x) && (move.y === cpuKingPos.y)) {
-                if (!isDanger(move.x, move.y, move.nx, move.ny, -1)) {
-                    kingCollisionMovesIgnoreTime.push(move);
-                }
-            }
-        }
-        if (kingCollisionMovesIgnoreTime.length > 0) {
-            const randomIndex = Math.floor(Math.random() * kingCollisionMovesIgnoreTime.length);
-            const randomMove = kingCollisionMovesIgnoreTime[randomIndex];
-            console.log('calculateCpuMove: 取られそうな玉で逆にとる手があれば指す', randomMove);
-            postMessage({ move: randomMove });
-            return
-        }
-
-        //玉が危険な位置に行く手を削除
-        collisionMoves.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)));
-        collisionMovesIgnoreTime.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)));
-
-
-
-        //玉が逃げる手があれば指す
-        for (const move of escapeMoves) {
-            if ((move.x === cpuKingPos.x) && (move.y === cpuKingPos.y)) {
-                kingEscapeMoves.push(move);
-            }
-        }
-        if (kingEscapeMoves.length > 0) {
-            const randomIndex = Math.floor(Math.random() * kingEscapeMoves.length);
-            const randomMove = kingEscapeMoves[randomIndex];
-            console.log('calculateCpuMove: 玉が逃げる手があれば指す', randomMove);
-            postMessage({ move: randomMove });
-            return
-        }
-
-        //玉が逃げる手があれば指すIgnoreTime
-        for (const move of escapeMovesIgnoreTime) {
-            if ((move.x === cpuKingPos.x) && (move.y === cpuKingPos.y)) {
-                kingEscapeMovesIgnoreTime.push(move);
-            }
-        }
-        if (kingEscapeMovesIgnoreTime.length > 0) {
-            const randomIndex = Math.floor(Math.random() * kingEscapeMovesIgnoreTime.length);
-            const randomMove = kingEscapeMovesIgnoreTime[randomIndex];
-            console.log('calculateCpuMove: 玉が逃げる手があれば指す', randomMove);
-            postMessage({ move: randomMove });
-            return
-        }
-
-        //取られそう駒で逆にとる手があれば指す
-        if (collisionMoves.length > 0) {
-            const randomIndex = Math.floor(Math.random() * collisionMoves.length);
-            const randomMove = collisionMoves[randomIndex];
-            console.log('calculateCpuMove: 取られそうな駒で逆にとる手があれば指す', randomMove);
-            postMessage({ move: randomMove });
-            return
-        }
-
-        //取られそう駒で逆にとる手があれば指すIgnoreTime
-        if (collisionMovesIgnoreTime.length > 0) {
-            const randomIndex = Math.floor(Math.random() * collisionMovesIgnoreTime.length);
-            const randomMove = collisionMovesIgnoreTime[randomIndex];
-            console.log('calculateCpuMove: 取られそうな駒で逆にとる手があれば指す', randomMove);
-            postMessage({ move: randomMove });
-            return
-        }
-
-        //駒を取れる手を検索
-        for (const move of cpuLeagalMoves) {
-            if (move.ignoretime) continue;
-            const res = board.getCanMovePiece(move.x, move.y, move.nx, move.ny, move.nari, move.teban, servertime);
-            if (res.capture !== null) {
-                cpuCaptureMoves.push(move);
-            }
-        }
-
-        //安全に駒をとれる手を検索
-        for (const move of cpuCaptureMoves) {
-            if (!isDanger(move.x, move.y, move.nx, move.ny, -1)) {
-                safetyCapMoves.push(move);
-            }
-        }
-
-        //安全に駒をとれる手があれば指す
-        if (safetyCapMoves.length > 0) {
-            const randomIndex = Math.floor(Math.random() * safetyCapMoves.length);
-            const randomMove = safetyCapMoves[randomIndex];
-            console.log('calculateCpuMove: 安全に駒をとれる手があれば指す', randomMove);
-            postMessage({ move: randomMove });
-            return
-        }
-
-        //駒を逃げれる手があれば指す
-        if (escapeMoves.length > 0) {
-            const randomIndex = Math.floor(Math.random() * escapeMoves.length);
-            const randomMove = escapeMoves[randomIndex];
-            console.log('calculateCpuMove: 駒を逃げれる手があれば指す', randomMove);
-            postMessage({ move: randomMove });
-            return
-        }
-
-        //駒を取れる手があれば指す
-        if (cpuCaptureMoves.length > 0) {
-            const randomIndex = Math.floor(Math.random() * cpuCaptureMoves.length);
-            const randomMove = cpuCaptureMoves[randomIndex];
-            console.log('calculateCpuMove: 駒を取れる手があれば指す', randomMove);
-            postMessage({ move: randomMove });
-            return
-        }
-    }, 100);
-    setInterval(() => {
-        const servertime = startTime + performance.now();
-        const cpuLeagalMoves = getLeagalMoves(-1, servertime, false);
-        cpuLeagalMoves.filter(item => {
-            if (item.x === cpuKingPos.x && item.y === cpuKingPos.y) {
-                if (isDanger(item.x, item.y, item.nx, item.ny, item.teban)) return false;
-            }
-        })
-        cpuLeagalMoves.push(...getAllLeagalPuts(-1));
-        if (cpuLeagalMoves.length > 0) {
-            const randomIndex = Math.floor(Math.random() * cpuLeagalMoves.length);
-            const randomMove = cpuLeagalMoves[randomIndex];
-            console.log('calculateCpuMove: ランダムに選択された合法手', randomMove);
-            postMessage({ move: randomMove });
-        } else {
-            console.log('calculateCpuMove: 合法手がありません');
-            return null;
-        }
-    }, 1000);
+        const playerLegalMoves = getLeagalMoves(1, servertime, true);
+    }, 2000);
 }
 
 // メインスレッドからのメッセージを受信
@@ -1068,4 +884,5 @@ onmessage = function (e) {
         }
     }
 };
+
 
