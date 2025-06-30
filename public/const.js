@@ -142,7 +142,7 @@ export const PIECE_MOVES = {
   ]
 };
 
-
+export const CHARACTER_FOLDER = "characters25063002"
 export const characterInfo = {
   rei: {
     name: "緋月 零",
@@ -171,7 +171,7 @@ export const characterQuotes = {
   ],
   akira: [
     "…面白い話ね。もう少し聞かせて。",
-    "人は誰でも、何かの駒なのよ。",
-    "私のお店では、どうかお静かに。"
+    "私のお店では、どうかお静かに。",
+    "人は誰でも、何かの駒なのよ。"
   ]
 }

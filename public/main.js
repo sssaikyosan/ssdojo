@@ -6,6 +6,7 @@ import { createTitleScene, roomJoinFailed } from "./scene_title.js";
 import { createPlayScene, endGame } from "./scene_game.js";
 import { createRoomScene, roomUpdate } from "./scene_room.js";
 import { backToRoom, createRoomPlayScene, endRoomGame } from "./scene_roomgame.js";
+import { CHARACTER_FOLDER } from "./const.js";
 
 // 初期化フラグ
 let isInitialized = false;
@@ -238,7 +239,7 @@ function addEventListeners() {
         // selectedCharacterNameがnullでないことを確認
         if (selectedCharacterName) {
           // 存在しない可能性のあるファイル名に対応するため、try-catchで囲むか、事前にファイル存在チェックを行う方が安全ですが、今回はシンプルに実装します。
-          const randomVoiceFile = `/characters25063001/${selectedCharacterName}/voice${randomIndex + 1}.wav`;
+          const randomVoiceFile = `/charaFileName/${selectedCharacterName}/voice${randomIndex + 1}.wav`;
           // playVoice内でvolumeが設定されるため、ここでは音量設定は不要
           audioManager.playVoice(randomVoiceFile);
         }
@@ -386,14 +387,14 @@ const pieceImagePromises = pieceTypes.map(type =>
 const characterImagePromises = characterFiles.map(file =>
   new Promise((resolve, reject) => {
     const img = new Image();
-    img.src = `/characters25063001/${file}/image.png`;
+    img.src = `/${CHARACTER_FOLDER}/${file}/image.png`;
     img.onload = () => {
       const name = file; // 拡張子を除いたファイル名をキーとする
       characterImages[name] = img;
       resolve();
     };
     img.onerror = () => {
-      console.error(`Failed to load image: /characters25063001/${file}/image.png`);
+      console.error(`Failed to load image: /${CHARACTER_FOLDER}/${file}/image.png`);
       // 画像のロードに失敗してもPromiseは解決済みとする
       resolve();
     };

@@ -1,7 +1,7 @@
 import { TextUI } from "./ui_text.js";
 import { characterImages, audioManager } from "./main.js";
 import { OverlayUI, UI } from "./ui.js";
-import { characterQuotes } from "./const.js";
+import { CHARACTER_FOLDER, characterQuotes } from "./const.js";
 
 // キャラクター画像を表示するためのUIクラス
 export class CharacterImageUI extends UI {
@@ -47,7 +47,7 @@ export class CharacterImageUI extends UI {
     if (this.image) {
       for (let i = 0; i < 3; i++) {
         this.videoElement.push(document.createElement('video'));
-        this.videoElement[i].src = `characters25063001/${this.image}/click${i + 1}.webm`;
+        this.videoElement[i].src = `${CHARACTER_FOLDER}/${this.image}/click${i + 1}.webm`;
         this.videoElement[i].loop = false; // ループはしない
         this.videoElement[i].addEventListener('canplaythrough', () => {
           console.log('動画の再生準備ができました:');
@@ -164,7 +164,7 @@ export class CharacterInGameUI extends UI {
     if (this.image) {
       for (let i = 0; i < 1; i++) {
         this.startVideoElement.push(document.createElement('video'));
-        this.startVideoElement[i].src = `characters25063001/${this.image}/start${i + 1}.webm`;
+        this.startVideoElement[i].src = `${CHARACTER_FOLDER}/${this.image}/start${i + 1}.webm`;
         this.startVideoElement[i].loop = false; // ループはしない
         this.startVideoElement[i].addEventListener('canplaythrough', () => {
           console.log('動画の再生準備ができました:');
@@ -185,7 +185,7 @@ export class CharacterInGameUI extends UI {
 
       for (let i = 0; i < 1; i++) {
         this.winVideoElement.push(document.createElement('video'));
-        this.winVideoElement[i].src = `characters25063001/${this.image}/win${i + 1}.webm`;
+        this.winVideoElement[i].src = `${CHARACTER_FOLDER}/${this.image}/win${i + 1}.webm`;
         this.winVideoElement[i].loop = false; // ループはしない
         this.winVideoElement[i].addEventListener('canplaythrough', () => {
           console.log('動画の再生準備ができました:');
