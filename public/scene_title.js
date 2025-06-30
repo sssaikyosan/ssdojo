@@ -335,5 +335,5 @@ function cpuLevelSubmit(level, event) {
     if (playerName == "") setPlayerName("名無しの棋士");
     clearTitleHTML();
     const now = performance.now();
-    setScene(createPlayScene(playerName, `レベル${level}CPU`, null, 1, null, now, 0, 0, level));
+    setScene(createPlayScene(playerName, `CPUレベル${level}`, null, 1, null, now, 0, 0, level));
 }
