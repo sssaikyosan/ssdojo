@@ -92,8 +92,10 @@ export class CharacterImageUI extends UI {
 
   onMouseDown(pos) {
     const randomIndex = Math.floor(Math.random() * 3);
-    this.playVideo(randomIndex);
-    this.spawnVoiceText(randomIndex);
+    if (this.playVideo(randomIndex)) {
+      this.spawnVoiceText(randomIndex);
+    }
+
   }
 
   resize(data) {
@@ -105,15 +107,15 @@ export class CharacterImageUI extends UI {
     // videoElement が存在し、動画が既に再生中、または再生準備ができていない場合は何もしない
     if (this.videoElement.length < 3 || this.isRenderingVideo) {
       console.log('動画の再生準備ができていません、または既に再生中です。');
-      return
+      return false;
     }
     if (!this.videoElement[randomIndex]) {
       console.log('動画の再生準備ができていません、または既に再生中です。');
-      return
+      return false;
     }
     if (this.videoElement[randomIndex].readyState < 4) { // HTMLMediaElement.HAVE_ENOUGH_DATA は 4
       console.log('動画の再生準備ができていません、または既に再生中です。');
-      return;
+      return false;
     }
 
     this.currentVideo = this.videoElement[randomIndex];
@@ -126,6 +128,7 @@ export class CharacterImageUI extends UI {
       this.currentVideo = null;
       this.isRenderingVideo = false; // 再生開始に失敗したらフラグをオフ
     });
+    return true;
   }
 
   spawnVoiceText(randomIndex) {
@@ -137,7 +140,7 @@ export class CharacterImageUI extends UI {
           this.voiceText.text = () => { return `` };
           this.voiceTextOverlay.width = 0;
         }
-      }, 1000);
+      }, 700);
     });
   }
 }
