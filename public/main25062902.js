@@ -191,6 +191,21 @@ function addEventListeners() {
   const voiceVolumeSlider = document.getElementById('voiceVolumeSlider');
 
 
+
+  // 初期表示時にスライダーの値を現在の音量に設定
+  if (bgmVolumeSlider instanceof HTMLInputElement) {
+    bgmVolumeSlider.value = (audioManager.bgmVolume * 100).toString();
+  }
+
+  if (soundVolumeSlider instanceof HTMLInputElement) {
+    soundVolumeSlider.value = (audioManager.soundVolume * 100).toString();
+  }
+
+  // 初期表示時にスライダーの値を現在の音量に設定
+  if (voiceVolumeSlider instanceof HTMLInputElement) {
+    voiceVolumeSlider.value = (audioManager.voiceVolume * 100).toString();
+  }
+
   if (bgmVolumeSlider) {
     bgmVolumeSlider.addEventListener('input', (event) => {
       if (event.target instanceof HTMLInputElement) {
@@ -198,10 +213,6 @@ function addEventListeners() {
         audioManager.setBGMVolume(volume);
       }
     });
-  }
-  // 初期表示時にスライダーの値を現在の音量に設定
-  if (bgmVolumeSlider instanceof HTMLInputElement) {
-    bgmVolumeSlider.value = (audioManager.bgmVolume * 100).toString();
   }
 
   if (soundVolumeSlider) {
@@ -211,9 +222,7 @@ function addEventListeners() {
         audioManager.setSoundVolume(volume);
         audioManager.playSound('sound'); // 効果音を再生
         // 初期表示時にスライダーの値を現在の音量に設定
-        if (soundVolumeSlider instanceof HTMLInputElement) {
-          soundVolumeSlider.value = (audioManager.soundVolume * 100).toString();
-        }
+
       }
     });
   }
@@ -229,17 +238,14 @@ function addEventListeners() {
         // selectedCharacterNameがnullでないことを確認
         if (selectedCharacterName) {
           // 存在しない可能性のあるファイル名に対応するため、try-catchで囲むか、事前にファイル存在チェックを行う方が安全ですが、今回はシンプルに実装します。
-          const randomVoiceFile = `/characters/${selectedCharacterName}/voice00${randomIndex + 1}.wav`;
+          const randomVoiceFile = `/characters/${selectedCharacterName}/voice${randomIndex + 1}.wav`;
           // playVoice内でvolumeが設定されるため、ここでは音量設定は不要
           audioManager.playVoice(randomVoiceFile);
         }
       }
     });
 
-    // 初期表示時にスライダーの値を現在の音量に設定
-    if (voiceVolumeSlider instanceof HTMLInputElement) {
-      voiceVolumeSlider.value = (audioManager.voiceVolume * 100).toString();
-    }
+
   }
 
   // 設定ボタンのイベントリスナーを追加

@@ -1,4 +1,4 @@
-import { characterImages, audioManager } from "./main25062901.js";
+import { characterImages, audioManager } from "./main25062902.js";
 import { UI } from "./ui.js";
 
 // キャラクター画像を表示するためのUIクラス

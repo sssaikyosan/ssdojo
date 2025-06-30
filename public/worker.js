@@ -730,8 +730,6 @@ function level1cpu() {
         collisionMoves.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)));
         collisionMovesIgnoreTime.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)));
 
-
-
         //玉が逃げる手があれば指す
         for (const move of escapeMoves) {
             if ((move.x === cpuKingPos.x) && (move.y === cpuKingPos.y)) {
@@ -811,6 +809,8 @@ function level1cpu() {
             return
         }
 
+        cpuCaptureMoves.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)));
+
         //駒を取れる手があれば指す
         if (cpuCaptureMoves.length > 0) {
             const randomIndex = Math.floor(Math.random() * cpuCaptureMoves.length);
@@ -819,6 +819,9 @@ function level1cpu() {
             postMessage({ move: randomMove });
             return
         }
+
+        //玉が危険な位置に行く手は消去
+        cpuLeagalMoves.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)) || !isDanger(item.x, item.y, item.nx, item.ny, -1));
 
         cpuLeagalMoves.push(...getAllLeagalPuts(-1));
 
