@@ -41,7 +41,9 @@ export class Player {
     }
 
     cancelReady() {
-        this.state = "waiting";
+        if (this.state === ready) {
+            this.state = "waiting";
+        }
     }
 
     joinRoom(roomId, name, characterName) {

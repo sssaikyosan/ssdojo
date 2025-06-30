@@ -191,7 +191,7 @@ export class Room {
         }
         currentList.splice(currentIndex, 1);
         targetList.push(playerId);
-
+        this.cancelReady();
         this.roomUpdate();
     }
 
@@ -272,5 +272,14 @@ export class Room {
             spectatorsNames.push(serverState.players[id].name);
         }
         return { sente: senteNames, gote: goteNames, spectators: spectatorsNames };
+    }
+
+    cancelReady() {
+        for (const id of this.sente) {
+            serverState.players[id].cancelReady();
+        }
+        for (const id of this.gote) {
+            serverState.players[id].cancelReady();
+        }
     }
 }

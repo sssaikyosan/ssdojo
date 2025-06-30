@@ -142,7 +142,7 @@ export const PIECE_MOVES = {
   ]
 };
 
-export const CHARACTER_FOLDER = "characters25063002"
+export const CHARACTER_FOLDER = "characters25070101"
 export const characterInfo = {
   rei: {
     name: "緋月 零",
@@ -161,8 +161,8 @@ export const characterInfo = {
 export const characterQuotes = {
   rei: [
     "…仕事の時間だ。",
-    "お前は知りすぎた。",
-    "…依頼内容を確認した。"
+    "…依頼内容を確認した。",
+    "お前は知りすぎた。"
   ],
   aoi: [
     "はい、お疲れ様でしたー。",
