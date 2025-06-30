@@ -1,6 +1,6 @@
 // public/game_manager.js
 import { BoardUI } from './ui_board.js';
-import { audioManager } from './main25063001.js'; // audio_manager.jsからインポート
+import { audioManager } from './main25063002.js'; // audio_manager.jsからインポート
 import { Board } from './board.js';
 import { CPU } from './cpu.js'; // CPUクラスをインポート
 import { endCPUGame } from './scene_game.js';

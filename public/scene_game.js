@@ -1,4 +1,4 @@
-import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus } from "./main25063001.js";
+import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus } from "./main25063002.js";
 import { Scene } from "./scene.js";
 import { cancelMatchOverlay, createTitleScene, rankingOverlay } from "./scene_title.js";
 import { BackgroundImageUI } from "./ui_background.js";
