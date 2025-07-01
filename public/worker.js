@@ -483,6 +483,13 @@ function normalAlgolysm(servertime) {
     const cpuLeagalMoves = getLeagalMoves(-1, servertime, false);
     const playerLeagalMoves = getLeagalMoves(1, servertime, true);
 
+    for (const move of cpuLeagalMoves) {
+        if (move.nx === playerKingPos.x && move.ny === playerKingPos.ny) {
+            postMessage({ move: move });
+            return true;
+        }
+    }
+
     //放置すると取られる駒を検索
     for (const move of playerLeagalMoves) {
         const res = board.getCanMovePieceIgnoreTime(move.x, move.y, move.nx, move.ny, move.nari, move.teban, servertime);
@@ -592,7 +599,7 @@ function normalAlgolysm(servertime) {
         return true;
     }
 
-    const collisionMovesKingfiltered = collisionMoves.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)));
+    const collisionMovesKingfiltered = collisionMoves.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y) || !isDanger(item.x, item.y, item.nx, item.ny, item.teban)));
 
     //取られそう駒で逆にとる手があれば指す
     if (collisionMovesKingfiltered.length > 0) {
@@ -603,7 +610,7 @@ function normalAlgolysm(servertime) {
         return true;
     }
 
-    const collisionMovesIgnoreTimeKingfiltered = collisionMovesIgnoreTime.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)));
+    const collisionMovesIgnoreTimeKingfiltered = collisionMovesIgnoreTime.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y) || !isDanger(item.x, item.y, item.nx, item.ny, item.teban)));
 
     //取られそう駒で逆にとる手があれば指すIgnoreTime
     if (collisionMovesIgnoreTimeKingfiltered.length > 0) {
@@ -648,7 +655,7 @@ function normalAlgolysm(servertime) {
     }
 
 
-    const cpuCaptureMovesKingfiltered = cpuCaptureMoves.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)));
+    const cpuCaptureMovesKingfiltered = cpuCaptureMoves.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y) || !isDanger(item.x, item.y, item.nx, item.ny, item.teban)));
 
     //駒を取れる手があれば指す
     if (cpuCaptureMovesKingfiltered.length > 0) {
