@@ -454,7 +454,7 @@ let cpuKingPos = { x: 4, y: 0 };
 let playerKingPos = { x: 4, y: 8 };
 
 function getPosLeagalPuts(x, y, teban) {
-    let legalPuts = [];
+    let leagalPuts = [];
     for (const type of UNPROMODED_TYPES) {
         if (type === 'pawn' || type === 'lance') {
             if ((teban === 1 && y === 0) || (teban === -1 && y === 8)) continue;
@@ -462,7 +462,7 @@ function getPosLeagalPuts(x, y, teban) {
             if ((teban === 1 && y < 2) || (teban === -1 && y > 6)) continue;
         }
         if (board.komadaiPieces[teban === 1 ? 'sente' : 'gote'] > 0) {
-            legalPuts.push({
+            leagalPuts.push({
                 x: -1,
                 y: -1,
                 nx: x,
@@ -474,11 +474,11 @@ function getPosLeagalPuts(x, y, teban) {
             });
         }
     }
-    return legalPuts;
+    return leagalPuts;
 }
 
 function getPieceLeagalMoves(x, y, teban, servertime, ignoretime) {
-    const pieceLegalMoves = [];
+    const pieceLeagalMoves = [];
     const selectedPiece = board.map[x][y];
     if (!selectedPiece) return [];
     if (selectedPiece.teban !== teban) return [];
@@ -496,7 +496,7 @@ function getPieceLeagalMoves(x, y, teban, servertime, ignoretime) {
 
             if (board.canPromote(move.y, moveY, teban, selectedPiece.type)) {
                 if (selectedPiece.lastmovetime >= (servertime - MOVETIME)) {
-                    pieceLegalMoves.push({
+                    pieceLeagalMoves.push({
                         x: x,
                         y: y,
                         nx: moveX,
@@ -507,7 +507,7 @@ function getPieceLeagalMoves(x, y, teban, servertime, ignoretime) {
                         ignoretime: true
                     });
                 } else {
-                    pieceLegalMoves.push({
+                    pieceLeagalMoves.push({
                         x: x,
                         y: y,
                         nx: moveX,
@@ -521,7 +521,7 @@ function getPieceLeagalMoves(x, y, teban, servertime, ignoretime) {
             } else {
                 if (board.isTopCell(moveX, moveY, selectedPiece.type, selectedPiece.teban)) break;
                 if (selectedPiece.lastmovetime >= (servertime - MOVETIME)) {
-                    pieceLegalMoves.push({
+                    pieceLeagalMoves.push({
                         x: x,
                         y: y,
                         nx: moveX,
@@ -532,7 +532,7 @@ function getPieceLeagalMoves(x, y, teban, servertime, ignoretime) {
                         ignoretime: true
                     });
                 } else {
-                    pieceLegalMoves.push({
+                    pieceLeagalMoves.push({
                         x: x,
                         y: y,
                         nx: moveX,
@@ -549,7 +549,7 @@ function getPieceLeagalMoves(x, y, teban, servertime, ignoretime) {
             if (piece) break;
         }
     }
-    return pieceLegalMoves;
+    return pieceLeagalMoves;
 }
 
 function isDanger(x, y, nx, ny, teban) {
@@ -880,7 +880,8 @@ function level2cpu() {
     setInterval(() => {
         let copyboard = copyBoard();
         const servertime = startTime + performance.now();
-        const playerLegalMoves = getLeagalMoves(1, servertime, true);
+        const playerLeagalMoves = getLeagalMoves(1, servertime, true);
+        const cpuLeagalMoves = getLeagalMoves(-1, servertime, false);
     }, 2000);
 }
 
