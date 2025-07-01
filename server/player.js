@@ -41,7 +41,7 @@ export class Player {
     }
 
     cancelReady() {
-        if (this.state === ready) {
+        if (this.state === 'ready') {
             this.state = "waiting";
         }
     }

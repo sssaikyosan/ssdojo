@@ -365,6 +365,24 @@ class Board {
         return { res: true, capture: capturePiece };
     }
 
+    getCanMovePieceIgnoreTime(x, y, nx, ny, nari, teban, servertime) {
+        //盤上の駒を動かす場合
+        if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) return { res: false, capture: null };
+        const piece = this.map[x][y];
+        let capturePiece = null;
+
+        //nullチェック
+        if (!piece) return { res: false, capture: null };
+        if (teban !== piece.teban) return { res: false, capture: null };
+        //成りチェック
+        if (nari && !this.canPromote(y, ny, teban, piece.type)) return { res: false, capture: null };
+        //駒の移動が可能かどうかを判定  // エラーチェック: ここでreturn
+        if (!this.canMove(x, y, nx, ny, nari, teban)) return { res: false, capture: null };
+
+        if (this.map[nx][ny]) capturePiece = this.map[nx][ny].type;
+        return { res: true, capture: capturePiece };
+    }
+
     // 駒が相手陣に入ったかどうかを判定
     isInEnemyTerritory(piece, y) {
         if (piece.teban === 1) {
@@ -670,7 +688,7 @@ function level1cpu() {
 
         //放置すると取られる駒を検索
         for (const move of playerLeagalMoves) {
-            const res = board.getCanMovePiece(move.x, move.y, move.nx, move.ny, move.nari, move.teban, servertime);
+            const res = board.getCanMovePieceIgnoreTime(move.x, move.y, move.nx, move.ny, move.nari, move.teban, servertime);
             if (res.capture !== null) {
                 if (move.ignoretime) {
                     playerCaptureMovesIgnoreTime.push(move);
