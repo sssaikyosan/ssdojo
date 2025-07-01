@@ -10,7 +10,7 @@ export class Room {
         this.spectators = []; // 観戦者を格納する配列
         this.board = new Board(); // ゲームの盤面
         this.gameState = 'waiting'; // ゲームの状態 ('waiting', 'playing', 'finished')
-        this.roomType = roomType; // 部屋の種類('rating', 'private')
+        this.roomType = roomType; // 部屋の種類('rating', 'private', kento)
         this.owner = null;
     }
 
@@ -280,6 +280,16 @@ export class Room {
         }
         for (const id of this.gote) {
             serverState.players[id].cancelReady();
+        }
+    }
+
+    changeMode(id, roomtype) {
+        if (id !== owner) return false;
+        if (roomtype === 'private' || roomtype === 'kento') {
+            this.roomtype = this.roomtype;
+            return true;
+        } else {
+            return false;
         }
     }
 }

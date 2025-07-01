@@ -27,6 +27,8 @@ export class Board {
   started = false;
   finished = false;
 
+  currentTesuu = 0;
+
   // 盤面の初期化
   init(servertime, time) {
     this.serverstarttime = servertime;
@@ -209,6 +211,8 @@ export class Board {
       gameManager.boardUI.draggingPiece = null;
     }
 
+    if (result.res) this.currentTesuu++;
+
     return result;
   }
 
@@ -286,5 +290,15 @@ export class Board {
       return { player: teban, text: "トライ勝ち" };
     }
     return { player: 0, text: "" };
+  }
+
+  undoMove() {
+    if (this.kifu.length <= 0) return false;
+    const lastMove = this.kifu.pop();
+    this.map[lastMove.x][lastMove.y] = this.map[lastMove.nx][lastMove.ny];
+    if (lastMove.capturePiece) {
+      this.map[lastMove.nx][lastMove.ny] = { type: lastMove.capturePiece, teban: -lastMove.teban, lastMovetime: lastMove.captime, lastMoveptime: this.starttime }
+      this.currentTesuu--;
+    }
   }
 }

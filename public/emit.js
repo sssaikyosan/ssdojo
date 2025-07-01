@@ -58,3 +58,8 @@ export function sendMovePiece(x, y, nx, ny, nari) {
     gameManager.receiveMove(move);
     return true;
 }
+
+export function sendUndoMove(roomId) {
+    const data = { roomId: roomId };
+    gameManager.socket.emit("undoMove", data);
+}

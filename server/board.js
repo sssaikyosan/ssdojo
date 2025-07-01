@@ -273,4 +273,13 @@ export class Board {
     }
     return { player: 0, text: "" };
   }
+
+  undoMove() {
+    if (this.kifu.length <= 0) return false;
+    const lastMove = this.kifu.pop();
+    this.map[lastMove.x][lastMove.y] = this.map[lastMove.nx][lastMove.ny];
+    if (lastMove.capturePiece) {
+      this.map[lastMove.nx][lastMove.ny] = { type: lastMove.capturePiece, teban: -lastMove.teban, lastMovetime: lastMove.captime, lastMoveptime: this.starttime }
+    }
+  }
 }

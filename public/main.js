@@ -239,7 +239,7 @@ function addEventListeners() {
         // selectedCharacterNameがnullでないことを確認
         if (selectedCharacterName) {
           // 存在しない可能性のあるファイル名に対応するため、try-catchで囲むか、事前にファイル存在チェックを行う方が安全ですが、今回はシンプルに実装します。
-          const randomVoiceFile = `/charaFileName/${selectedCharacterName}/voice${randomIndex + 1}.wav`;
+          const randomVoiceFile = `/${CHARACTER_FOLDER}/${selectedCharacterName}/voice${randomIndex + 1}.wav`;
           // playVoice内でvolumeが設定されるため、ここでは音量設定は不要
           audioManager.playVoice(randomVoiceFile);
         }
