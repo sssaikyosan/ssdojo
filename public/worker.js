@@ -163,6 +163,8 @@ class Board {
     started = false;
     finished = false;
 
+    piecePoint = 0;
+
     // 盤面の初期化
     init(servertime, time) {
         this.serverstarttime = servertime;
@@ -432,6 +434,15 @@ class Board {
         }
         return { player: 0, text: "" };
     }
+
+    undoMove() {
+        if (this.kifu.length <= 0) return false;
+        const lastMove = this.kifu.pop();
+        this.map[lastMove.x][lastMove.y] = this.map[lastMove.nx][lastMove.ny];
+        if (lastMove.capturePiece) {
+            this.map[lastMove.nx][lastMove.ny] = { type: lastMove.capturePiece, teban: -lastMove.teban, lastMovetime: lastMove.captime, lastMoveptime: this.starttime }
+        }
+    }
 }
 
 
@@ -461,7 +472,7 @@ function getPosLeagalPuts(x, y, teban) {
         } else if (type === 'night') {
             if ((teban === 1 && y < 2) || (teban === -1 && y > 6)) continue;
         }
-        if (board.komadaiPieces[teban === 1 ? 'sente' : 'gote'] > 0) {
+        if (board.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type] > 0) {
             leagalPuts.push({
                 x: -1,
                 y: -1,
@@ -615,6 +626,7 @@ function getAllLeagalPuts(teban) {
     for (let i = 0; i < BOARD_SIZE; i++) {
         for (let j = 0; j < BOARD_SIZE; j++) {
             if (board.map[i][j] === null) {
+                console.log("board.map[i][j] === null");
                 leagalPuts.push(...getPosLeagalPuts(i, j, teban));
             }
         }
@@ -864,6 +876,8 @@ function level1cpu() {
         const cpuLeagalMovesKingfiltered = cpuLeagalMoves.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)) || !isDanger(item.x, item.y, item.nx, item.ny, item.teban));
 
         cpuLeagalMovesKingfiltered.push(...getAllLeagalPuts(-1));
+        console.log("getAllLeagalPuts", getAllLeagalPuts(-1));
+        console.log("cpuLeagalMovesKingfiltered", cpuLeagalMovesKingfiltered);
 
         //ここまでの条件に適合する手がなければランダムに選択
         if (cpuLeagalMovesKingfiltered.length > 0) {
@@ -880,7 +894,9 @@ function level2cpu() {
     setInterval(() => {
         let copyboard = copyBoard();
         const servertime = startTime + performance.now();
+        const playerLeagalMovesIgnoreTime = getLeagalMoves(1, servertime, true);
         const playerLeagalMoves = getLeagalMoves(1, servertime, true);
+        const cpuLeagalMovesIgnoreTime = getLeagalMoves(-1, servertime, true);
         const cpuLeagalMoves = getLeagalMoves(-1, servertime, false);
     }, 2000);
 }
