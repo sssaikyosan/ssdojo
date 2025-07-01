@@ -910,7 +910,7 @@ function level2cpu() {
     setInterval(() => {
         const servertime = startTime + performance.now();
         randomMoveNoKingDanger(servertime);
-    }, 3000);
+    }, 500);
 }
 
 function level3cpu() {
