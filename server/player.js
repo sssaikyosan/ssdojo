@@ -41,9 +41,11 @@ export class Player {
     }
 
     cancelReady() {
+        if (!this.roomId) return false;
         if (this.state === 'ready') {
             this.state = "waiting";
         }
+        serverState.rooms[this.roomId].roomUpdate();
     }
 
     joinRoom(roomId, name, characterName) {

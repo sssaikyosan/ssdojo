@@ -163,23 +163,26 @@ export function endRoomGame(data) {
 
     if (gameManager.teban === 0) {
         scene.add(endText);
+        roomResultOverlay.style.display = "block";
     } else if (data.win === gameManager.teban) {
         // 勝利時音声の再生
         if (arryCharacterUI) {
             arryCharacterUI.playWinVideo(0);
         }
         scene.add(winText);
-    } else {
+        roomResultOverlay.style.display = "block";
+    } else if (data.win === -gameManager.teban) {
         // 敵勝利時音声の再生
         if (enemyCharacterUI) {
             enemyCharacterUI.playWinVideo(0);
         }
         scene.add(loseText);
+        roomResultOverlay.style.display = "block";
+    } else {
+        roomUpdate(data);
     }
 
-    roomResultOverlay.style.display = "block";
-
-    gameManager.resetRoom();
+    gameManager.teban = 0;
     gameManager.board.finished = true;
 }
 

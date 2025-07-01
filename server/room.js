@@ -58,14 +58,14 @@ export class Room {
 
     //部屋への通知
     emitToRoom(type, data) {
-        for (const id of this.sente) {
-            io.to(id).emit(type, { ...data, roomteban: 'sente' });
+        for (let i = 0; i < this.sente.length; i++) {
+            io.to(this.sente[i]).emit(type, { ...data, roomteban: 'sente', idx: i });
         }
-        for (const id of this.gote) {
-            io.to(id).emit(type, { ...data, roomteban: 'gote' });
+        for (let i = 0; i < this.gote.length; i++) {
+            io.to(this.gote[i]).emit(type, { ...data, roomteban: 'gote', idx: i });
         }
-        for (const id of this.spectators) {
-            io.to(id).emit(type, { ...data, roomteban: 'spectators' });
+        for (let i = 0; i < this.spectators.length; i++) {
+            io.to(this.spectators[i]).emit(type, { ...data, roomteban: 'spectators', idx: i });
         }
     }
 
@@ -196,6 +196,7 @@ export class Room {
     }
 
     readyToPlay() {
+        this.roomUpdate();
         for (const playerId of this.sente) {
             if (serverState.players[playerId].state !== "ready") return;
         }
@@ -240,7 +241,16 @@ export class Room {
 
     roomUpdate() {
         const names = this.getPlayerNames();
-        this.emitToRoom("roomUpdate", { roomId: this.roomId, sente: names.sente, gote: names.gote, spectators: names.spectators, state: this.gameState });
+        const readys = { sente: [], gote: [] }
+        for (const id of this.sente) {
+            readys.sente.push(serverState.players[id].state === 'ready');
+        }
+
+        for (const id of this.gote) {
+            readys.gote.push(serverState.players[id].state === 'ready');
+        }
+        console.log("readys", readys);
+        this.emitToRoom("roomUpdate", { roomId: this.roomId, sente: names.sente, gote: names.gote, spectators: names.spectators, state: this.gameState, readys: readys });
     }
 
     backToRoom() {

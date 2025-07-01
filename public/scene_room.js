@@ -103,49 +103,62 @@ function cleanOverlay() {
 }
 
 export function roomUpdate(data) {
-    console.log(data.sente);
-
     cleanOverlay();
 
-    data.sente.forEach(name => {
+    for (let i = 0; i < data.sente.length; i++) {
         const pElement = document.createElement('p');
-        pElement.textContent = name;
+        if (data.readys && data.readys.sente[i]) {
+            pElement.textContent = data.sente[i] + '(準備完了)';
+        } else {
+            pElement.textContent = data.sente[i];
+        }
         pElement.style.color = '#FFFFFF'; // テキスト色を白に設定
         senteOverlay.appendChild(pElement);
-    });
+    }
 
-    data.gote.forEach(name => {
+    for (let i = 0; i < data.gote.length; i++) {
         const pElement = document.createElement('p');
-        pElement.textContent = name;
+        if (data.readys && data.readys.gote[i]) {
+            pElement.textContent = data.gote[i] + '(準備完了)';
+        } else {
+            pElement.textContent = data.gote[i];
+        }
         pElement.style.color = '#FFFFFF'; // テキスト色を白に設定
         goteOverlay.appendChild(pElement);
-    });
-
-    data.spectators.forEach(name => {
+    }
+    for (let i = 0; i < data.spectators.length; i++) {
         const pElement = document.createElement('p');
-        pElement.textContent = name;
+        pElement.textContent = data.spectators[i];
         pElement.style.color = '#FFFFFF'; // テキスト色を白に設定
         spectatorsOverlay.appendChild(pElement);
-    });
+    }
+
     if (data.state !== 'playing') {
         playingText.style.display = 'none';
-        if (data.roomteban === 'sente' || data.roomteban === 'gote') {
-            readyOverlay.style.display = 'block';
+        readyOverlay.style.display = 'block';
+        cancelOverlay.style.display = 'none';
+        if (data.roomteban === 'sente') {
+            if (data.readys && data.readys.sente[data.idx]) {
+                readyOverlay.style.display = 'none';
+                cancelOverlay.style.display = 'block';
+            }
+        } else if (data.roomteban === 'gote') {
+            if (data.readys && data.readys.gote[data.idx]) {
+                readyOverlay.style.display = 'none';
+                cancelOverlay.style.display = 'block';
+            }
         } else {
             readyOverlay.style.display = 'none';
+            cancelOverlay.style.display = 'none';
         }
-        cancelOverlay.style.display = 'none';
     }
 }
 
 // コピーボタンのイベントハンドラ
 async function handleCopyIdClick() {
-    const roomIdText = roomIdStr.textContent;
-    // "部屋ID " の部分を除去してIDのみを取得
-    const roomId = roomIdText.replace('部屋ID ', '');
     try {
-        await navigator.clipboard.writeText(roomId);
-        console.log('部屋IDをクリップボードにコピーしました:', roomId);
+        await navigator.clipboard.writeText(currentRoomId);
+        console.log('部屋IDをクリップボードにコピーしました:', currentRoomId);
         // コピー成功メッセージを表示
         if (copySuccessMessage) {
             copySuccessMessage.style.display = 'block';

@@ -13,6 +13,7 @@ export class GameManager {
 
     board;
     boardUI;
+    state = 'waiting';
 
     constructor(socket) {
         this.socket = socket;
