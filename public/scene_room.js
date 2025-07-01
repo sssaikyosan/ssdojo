@@ -18,6 +18,7 @@ export const leaveRoomOverlay = document.getElementById("leaveRoomOverlay");
 const copySuccessMessage = document.getElementById("copySuccessMessage");
 const playingText = document.getElementById("playingText");
 
+const displayRoomIdButton = document.getElementById("displayRoomIdButton");
 const readyButton = document.getElementById("readyButton");
 const cancelButton = document.getElementById("cancelButton");
 const moveToSenteButton = document.getElementById("moveToSenteButton");
@@ -25,7 +26,7 @@ const moveToGoteButton = document.getElementById("moveToGoteButton");
 const moveToSpectatorsButton = document.getElementById("moveToSpectatorsButton");
 const leaveRoomButton = document.getElementById("leaveRoomButton");
 
-
+displayRoomIdButton.addEventListener("click", () => { toggleRoomId(); })
 readyButton.addEventListener("click", () => { ready(); });
 cancelButton.addEventListener("click", () => { cancelReady(); });
 moveToSenteButton.addEventListener("click", () => { moveSubmit('sente'); });
@@ -35,6 +36,9 @@ leaveRoomButton.addEventListener("click", () => { leaveRoom(); });
 
 copyIdButton.addEventListener("click", handleCopyIdClick);
 
+
+let currentRoomId = null;
+
 function moveSubmit(teban) {
     socket.emit("moveTeban", { teban: teban });
 }
@@ -42,6 +46,11 @@ function moveSubmit(teban) {
 function leaveRoom() {
     socket.emit("leaveRoom");
     setScene(createTitleScene());
+    currentRoomId = null;
+    if (displayRoomIdButton.textContent === "部屋IDを非表示") {
+        displayRoomIdButton.textContent = "部屋IDを表示";
+        roomIdStr.textContent = ``
+    }
     roomIdOverlay.style.display = 'none';
     tebanOverlay.style.display = 'none';
     readyOverlay.style.display = 'none';
@@ -174,7 +183,7 @@ export function createRoomScene(data) {
         playingText.style.display = 'none';
     }
 
-    roomIdStr.textContent = `部屋ID ${data.roomId}`
+    currentRoomId = data.roomId;
 
     rankingOverlay.style.display = "none";
     roomIdOverlay.style.display = 'flex';
@@ -194,4 +203,15 @@ export function createRoomScene(data) {
     };
 
     return roomScene;
+}
+
+
+function toggleRoomId() {
+    if (displayRoomIdButton.textContent === "部屋IDを表示") {
+        displayRoomIdButton.textContent = "部屋IDを非表示"
+        roomIdStr.textContent = `${currentRoomId}`
+    } else {
+        displayRoomIdButton.textContent = "部屋IDを表示";
+        roomIdStr.textContent = ``
+    }
 }

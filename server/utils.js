@@ -148,7 +148,7 @@ export function calRating(winEloRating, winGames, loseEloRating, loseGames) {
 }
 
 export function generateRandomString() {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
   let result = '';
   const charactersLength = characters.length;
   for (let i = 0; i < 6; i++) {
