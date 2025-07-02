@@ -459,12 +459,182 @@ class Board {
  * ＊＊＊＊＊＊＊＊＊＊＊＊＊＊
  */
 
+
 let startTime = 0;
 let board;
 let cpuMoves = [];
 let playerMoves = [];
 let cpuKingPos = { x: 4, y: 0 };
 let playerKingPos = { x: 4, y: 8 };
+
+
+function isDanger(x, y, nx, ny, teban) {
+    for (let i = -1; i < 2; i++) {
+        for (let j = -1; j < 2; j++) {
+            if (i === 0 && j === 0) continue;
+            if (i < 0 || i > 8 || j < 0 || j > 8) continue;
+            let attackerX = nx;
+            let attackerY = ny;
+            let recursive = false;
+            while (true) {
+                attackerX += i;
+                attackerY += j;
+                if (attackerX < 0 || attackerX > 8 || attackerY < 0 || attackerY > 8) break;
+                const attacker = board.map[attackerX][attackerY];
+                if (!attacker) {
+                    continue;
+                }
+                if ((attackerX === x) && (attackerY === y)) {
+                    recursive = true;
+                    continue;
+                }
+
+                if (attacker.teban === teban) break;
+                for (const move of PIECE_MOVES[attacker.type]) {
+                    if (move.dx === i && (move.dy === (j * teban))) {
+                        if (recursive) {
+                            if (move.recursive) return true;
+                        } else {
+                            return true;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+    }
+    if (y - 2 * teban >= 0 && y - 2 * teban < 9) {
+        if (x > 0) {
+            const lpiece = board.map[x - 1][y - 2 * teban];
+            if (lpiece && lpiece.type === 'knight') return true;
+        } else if (x < 8) {
+            const rpiece = board.map[x + 1][y - 2 * teban];
+            if (rpiece && rpiece.type === 'knight') return true;
+        }
+    }
+    return false;
+}
+
+function getPieceLeagalMoves(x, y, teban, servertime, ignoretime) {
+    const pieceLeagalMoves = [];
+    const selectedPiece = board.map[x][y];
+    if (!selectedPiece) return [];
+    if (selectedPiece.teban !== teban) return [];
+    if (!ignoretime && (selectedPiece.lastmovetime >= (servertime - MOVETIME))) return [];
+
+    for (const move of PIECE_MOVES[selectedPiece.type]) {
+        let moveX = x;
+        let moveY = y;
+        while (true) {
+            moveX += move.dx * selectedPiece.teban;
+            moveY += move.dy * selectedPiece.teban;
+            if (moveX < 0 || moveX >= BOARD_SIZE || moveY < 0 || moveY >= BOARD_SIZE) break;
+            const piece = board.map[moveX][moveY];
+            if (piece && piece.teban === selectedPiece.teban) break;
+
+            if (board.canPromote(move.y, moveY, teban, selectedPiece.type)) {
+                if (selectedPiece.lastmovetime >= (servertime - MOVETIME)) {
+                    pieceLeagalMoves.push({
+                        x: x,
+                        y: y,
+                        nx: moveX,
+                        ny: moveY,
+                        nari: true,
+                        type: null,
+                        teban: teban,
+                        ignoretime: true
+                    });
+                } else {
+                    pieceLeagalMoves.push({
+                        x: x,
+                        y: y,
+                        nx: moveX,
+                        ny: moveY,
+                        nari: true,
+                        type: null,
+                        teban: teban,
+                        ignoretime: false
+                    });
+                }
+            } else {
+                if (board.isTopCell(moveX, moveY, selectedPiece.type, selectedPiece.teban)) break;
+                if (selectedPiece.lastmovetime >= (servertime - MOVETIME)) {
+                    pieceLeagalMoves.push({
+                        x: x,
+                        y: y,
+                        nx: moveX,
+                        ny: moveY,
+                        nari: false,
+                        type: null,
+                        teban: teban,
+                        ignoretime: true
+                    });
+                } else {
+                    pieceLeagalMoves.push({
+                        x: x,
+                        y: y,
+                        nx: moveX,
+                        ny: moveY,
+                        nari: false,
+                        type: null,
+                        teban: teban,
+                        ignoretime: false
+                    });
+                }
+            }
+
+            if (!move.recursive) break;
+            if (piece) break;
+        }
+    }
+    return pieceLeagalMoves;
+}
+
+// 合法手を取得する関数 (スケルトン - 要具体的な将棋ロジックの実装)
+function getLeagalMoves(teban, servertime, ignoretime) {
+    const leagalMoves = [];
+    if (board === null) return [];
+    for (let i = 0; i < BOARD_SIZE; i++) {
+        for (let j = 0; j < BOARD_SIZE; j++) {
+            if (board.map[i][j]) {
+                leagalMoves.push(...getPieceLeagalMoves(i, j, teban, servertime, ignoretime));
+            }
+        }
+    }
+    return leagalMoves;
+}
+
+function getAllLeagalPuts(teban) {
+    const leagalPuts = [];
+    if (board === null) return;
+    for (let i = 0; i < BOARD_SIZE; i++) {
+        for (let j = 0; j < BOARD_SIZE; j++) {
+            if (board.map[i][j] === null) {
+                console.log("board.map[i][j] === null");
+                leagalPuts.push(...getPosLeagalPuts(i, j, teban));
+            }
+        }
+    }
+    return leagalPuts;
+}
+
+
+
+function copyBoard() {
+    let boardcopy = new Board();
+    boardcopy.serverstarttime = board.serverstarttime;
+    boardcopy.starttime = board.starttime;
+    for (let i = 0; i < BOARD_SIZE; i++) {
+        for (let j = 0; j < BOARD_SIZE; j++) {
+            boardcopy.map[i][j] = { type: board.map[i][j].type, teban: board.map[i][j].teban };
+        }
+    }
+    for (const type of UNPROMODED_TYPES) {
+        boardcopy.komadaiPieces['sente'][type] = board.komadaiPieces['sente'][type];
+        boardcopy.komadaiPieces['gote'][type] = board.komadaiPieces['gote'][type];
+    }
+    return boardcopy;
+}
 
 function normalAlgolysm(servertime) {
 
@@ -533,8 +703,10 @@ function normalAlgolysm(servertime) {
     //取られそうな玉で逆にとる手があれば指す
     for (const move of collisionMoves) {
         if ((move.x === cpuKingPos.x) && (move.y === cpuKingPos.y)) {
+
             if (!isDanger(move.x, move.y, move.nx, move.ny, -1)) {
                 kingCollisionMoves.push(move);
+                console.log("kingIsDanger", isDanger(move.x, move.y, move.nx, move.ny, -1), move);
             }
         }
     }
@@ -550,6 +722,7 @@ function normalAlgolysm(servertime) {
     //取られそうな玉で逆にとる手があれば指す
     for (const move of collisionMovesIgnoreTime) {
         if ((move.x === cpuKingPos.x) && (move.y === cpuKingPos.y)) {
+            console.log("kingIsDanger", isDanger(move.x, move.y, move.nx, move.ny, -1));
             if (!isDanger(move.x, move.y, move.nx, move.ny, -1)) {
                 kingCollisionMovesIgnoreTime.push(move);
             }
@@ -706,178 +879,6 @@ function getPosLeagalPuts(x, y, teban) {
     return leagalPuts;
 }
 
-function getPieceLeagalMoves(x, y, teban, servertime, ignoretime) {
-    const pieceLeagalMoves = [];
-    const selectedPiece = board.map[x][y];
-    if (!selectedPiece) return [];
-    if (selectedPiece.teban !== teban) return [];
-    if (!ignoretime && (selectedPiece.lastmovetime >= (servertime - MOVETIME))) return [];
-
-    for (const move of PIECE_MOVES[selectedPiece.type]) {
-        let moveX = x;
-        let moveY = y;
-        while (true) {
-            moveX += move.dx * selectedPiece.teban;
-            moveY += move.dy * selectedPiece.teban;
-            if (moveX < 0 || moveX >= BOARD_SIZE || moveY < 0 || moveY >= BOARD_SIZE) break;
-            const piece = board.map[moveX][moveY];
-            if (piece && piece.teban === selectedPiece.teban) break;
-
-            if (board.canPromote(move.y, moveY, teban, selectedPiece.type)) {
-                if (selectedPiece.lastmovetime >= (servertime - MOVETIME)) {
-                    pieceLeagalMoves.push({
-                        x: x,
-                        y: y,
-                        nx: moveX,
-                        ny: moveY,
-                        nari: true,
-                        type: null,
-                        teban: teban,
-                        ignoretime: true
-                    });
-                } else {
-                    pieceLeagalMoves.push({
-                        x: x,
-                        y: y,
-                        nx: moveX,
-                        ny: moveY,
-                        nari: true,
-                        type: null,
-                        teban: teban,
-                        ignoretime: false
-                    });
-                }
-            } else {
-                if (board.isTopCell(moveX, moveY, selectedPiece.type, selectedPiece.teban)) break;
-                if (selectedPiece.lastmovetime >= (servertime - MOVETIME)) {
-                    pieceLeagalMoves.push({
-                        x: x,
-                        y: y,
-                        nx: moveX,
-                        ny: moveY,
-                        nari: false,
-                        type: null,
-                        teban: teban,
-                        ignoretime: true
-                    });
-                } else {
-                    pieceLeagalMoves.push({
-                        x: x,
-                        y: y,
-                        nx: moveX,
-                        ny: moveY,
-                        nari: false,
-                        type: null,
-                        teban: teban,
-                        ignoretime: false
-                    });
-                }
-            }
-
-            if (!move.recursive) break;
-            if (piece) break;
-        }
-    }
-    return pieceLeagalMoves;
-}
-
-function isDanger(x, y, nx, ny, teban) {
-    for (let i = -1; i < 2; i++) {
-        for (let j = -1; j < 2; j++) {
-            if (i === 0 && j === 0) continue;
-            if (i < 0 || i > 8 || j < 0 || j > 8) continue;
-            let attackerX = nx;
-            let attackerY = ny;
-            let recursive = false;
-            while (true) {
-                attackerX += i;
-                attackerY += j;
-                if (attackerX < 0 || attackerX > 8 || attackerY < 0 || attackerY > 8) break;
-                const attacker = board.map[attackerX][attackerY];
-                if (!attacker || ((attackerX === x) && (attackerY === y))) {
-                    recursive = true;
-                    continue;
-                }
-                if (attacker.teban === teban) break;
-                for (const move of PIECE_MOVES[attacker.type]) {
-                    if (move.dx === i && (move.dy === (j * teban))) {
-                        if (recursive) {
-                            if (move.recursive) return true;
-                        } else {
-                            return true;
-                        }
-                    }
-                }
-                break;
-            }
-        }
-    }
-    if (y - 2 * teban >= 0 && y - 2 * teban < 9) {
-        if (x > 0) {
-            const lpiece = board.map[x - 1][y - 2 * teban];
-            if (lpiece && lpiece.type === 'knight') return true;
-        } else if (x < 8) {
-            const rpiece = board.map[x + 1][y - 2 * teban];
-            if (rpiece && rpiece.type === 'knight') return true;
-        }
-    }
-    return false;
-}
-
-// 合法手を取得する関数 (スケルトン - 要具体的な将棋ロジックの実装)
-function getLeagalMoves(teban, servertime, ignoretime) {
-    const leagalMoves = [];
-    if (board === null) return [];
-    for (let i = 0; i < BOARD_SIZE; i++) {
-        for (let j = 0; j < BOARD_SIZE; j++) {
-            if (board.map[i][j]) {
-                leagalMoves.push(...getPieceLeagalMoves(i, j, teban, servertime, ignoretime));
-            }
-        }
-    }
-    return leagalMoves;
-}
-
-function getAllLeagalPuts(teban) {
-    const leagalPuts = [];
-    if (board === null) return;
-    for (let i = 0; i < BOARD_SIZE; i++) {
-        for (let j = 0; j < BOARD_SIZE; j++) {
-            if (board.map[i][j] === null) {
-                console.log("board.map[i][j] === null");
-                leagalPuts.push(...getPosLeagalPuts(i, j, teban));
-            }
-        }
-    }
-    return leagalPuts;
-}
-
-function copyBoard() {
-    let boardcopy = new Board();
-    boardcopy.serverstarttime = board.serverstarttime;
-    boardcopy.starttime = board.starttime;
-    for (let i = 0; i < BOARD_SIZE; i++) {
-        for (let j = 0; j < BOARD_SIZE; j++) {
-            boardcopy.map[i][j] = { type: board.map[i][j].type, teban: board.map[i][j].teban };
-        }
-    }
-    for (const type of UNPROMODED_TYPES) {
-        boardcopy.komadaiPieces['sente'][type] = board.komadaiPieces['sente'][type];
-        boardcopy.komadaiPieces['gote'][type] = board.komadaiPieces['gote'][type];
-    }
-    return boardcopy;
-}
-
-function setcpu(lev) {
-    //レベル０アルゴリズム（ランダムムーブ）
-    if (lev === '0') {
-        level0cpu();
-    } else if (lev === '1') {
-        level1cpu();
-    } else if (lev === '2') {
-        level2cpu();
-    }
-}
 
 function randomMove(servertime) {
     const cpuLeagalMoves = getLeagalMoves(-1, servertime, false);
@@ -890,6 +891,20 @@ function randomMove(servertime) {
     } else {
         console.log('calculateCpuMove: 合法手がありません');
         return null;
+    }
+}
+
+
+
+
+function setcpu(lev) {
+    //レベル０アルゴリズム（ランダムムーブ）
+    if (lev === '0') {
+        level0cpu();
+    } else if (lev === '1') {
+        level1cpu();
+    } else if (lev === '2') {
+        level2cpu();
     }
 }
 
@@ -946,12 +961,15 @@ onmessage = function (e) {
 
     if (e.data[0] === "move") {
         const move = e.data[1];
-        board.movePieceLocal(e.data[1]);
-        if (move.x === cpuKingPos.x && move.y === cpuKingPos.y) {
-            cpuKingPos = { x: move.nx, y: move.ny };
-        } else if (move.x === playerKingPos.x && move.y === playerKingPos.y) {
-            playerKingPos = { x: move.nx, y: move.ny };
-        }
+        this.setTimeout(() => {
+            board.movePieceLocal(move);
+            if (move.x === cpuKingPos.x && move.y === cpuKingPos.y) {
+                cpuKingPos = { x: move.nx, y: move.ny };
+            } else if (move.x === playerKingPos.x && move.y === playerKingPos.y) {
+                playerKingPos = { x: move.nx, y: move.ny };
+            }
+        }, 200)
+
     }
 };
 

@@ -397,6 +397,18 @@ const characterImagePromises = characterFiles.map(file =>
       // 画像のロードに失敗してもPromiseは解決済みとする
       resolve();
     };
+    const img_silhouet = new Image();
+    img_silhouet.src = `/${CHARACTER_FOLDER}/${file}/image_silhouette.png`;
+    img_silhouet.onload = () => {
+      const name = file; // 拡張子を除いたファイル名をキーとする
+      characterImages[name + '_silhouette'] = img_silhouet;
+      resolve();
+    };
+    img_silhouet.onerror = () => {
+      console.error(`Failed to load image: /${CHARACTER_FOLDER}/${file}/image_silhouette.png`);
+      // 画像のロードに失敗してもPromiseは解決済みとする
+      resolve();
+    };
   })
 );
 

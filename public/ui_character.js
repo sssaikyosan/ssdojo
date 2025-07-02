@@ -21,7 +21,6 @@ export class CharacterImageUI extends UI {
     this.image = params.image;
     this.width = params.width;
     this.height = params.height;
-    this.lastVideoidx = CHARA_QUOTES[params.image].length;
 
     this.textsize = 0.035;
     this.voiceTextOverlay = new OverlayUI({
@@ -43,7 +42,6 @@ export class CharacterImageUI extends UI {
     });
     this.voiceTextOverlay.add(this.voiceText);
     this.add(this.voiceTextOverlay);
-    this.init();
   }
   init() {
     this.videoElement = [];
@@ -95,12 +93,11 @@ export class CharacterImageUI extends UI {
 
   onMouseDown(pos) {
     let randomIndex = Math.floor(Math.random() * CHARA_QUOTES[this.image].length - 1);
-    if (randomIndex <= this.lastVideoidx) {
+    if (randomIndex >= this.lastVideoidx) {
       randomIndex++;
     }
     if (this.playVideo(randomIndex)) {
       this.spawnVoiceText(randomIndex);
-      this.lastVideoidx = randomIndex;
     }
   }
 
@@ -134,6 +131,7 @@ export class CharacterImageUI extends UI {
       this.currentVideo = null;
       this.isRenderingVideo = false; // 再生開始に失敗したらフラグをオフ
     });
+    this.lastVideoidx = randomIndex;
     return true;
   }
 
@@ -177,6 +175,7 @@ export class CharacterInGameUI extends UI {
     this.height = params.height;
     this.init();
   }
+
   init() {
     if (this.image) {
       for (let i = 0; i < 1; i++) {

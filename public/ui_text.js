@@ -16,6 +16,8 @@ export class TextUI extends UI {
     this.outlineColor = params.outlineColor;
     this.doubleOutlineColor = params.doubleOutlineColor;
     this.backgroundColor = params.backgroundColor;
+    this.nextline = 30;
+    this.lineoffset = 0.1;
   }
 
   draw(ctx, scale) {
@@ -53,18 +55,32 @@ export class TextUI extends UI {
       ctx.fillRect(backgroundX, backgroundY, backgroundWidth, backgroundHeight);
     }
     const size = this.size * scale;
+    let length = this.text().length;
+    let line = 0;
     switch (this.colors.length) {
       case 1:
-        drawText(ctx, this.text(), x, y, size, this.colors[0], this.textBaseline, this.position);
+        while (length > line * this.nextline) {
+          drawText(ctx, this.text().substring(line * this.nextline, (line + 1) * this.nextline), x, y + line * (size + size * this.lineoffset), size, this.colors[0], this.textBaseline, this.position);
+          line++;
+        }
         break;
       case 2:
-        drawTextWithOutline(ctx, this.text(), x, y, size, this.colors, this.textBaseline, this.position);
+        while (length > line * this.nextline) {
+          drawTextWithOutline(ctx, this.text().substring(line * this.nextline, (line + 1) * this.nextline), x, y + line * (size + size * this.lineoffset) * scale, size, this.colors, this.textBaseline, this.position);
+          line++;
+        }
         break;
       case 3:
-        drawTextWithDoubleOutline(ctx, this.text(), x, y, size, this.colors, this.textBaseline, this.position);
+        while (length > line * this.nextline) {
+          drawTextWithDoubleOutline(ctx, this.text().substring(line * this.nextline, (line + 1) * this.nextline), x, y + line * (size + size * this.lineoffset), size, this.colors, this.textBaseline, this.position);
+          line++;
+        }
         break;
       default:
-        drawText(ctx, this.text(), x, y, size, this.colors[0], this.textBaseline, this.position);
+        while (length > line * this.nextline) {
+          drawText(ctx, this.text().substring(line * this.nextline, (line + 1) * this.nextline), x, y + line * (size + size * this.lineoffset), size, this.colors[0], this.textBaseline, this.position);
+          line++;
+        }
         break;
     }
     ctx.restore();

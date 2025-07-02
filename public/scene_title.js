@@ -184,6 +184,7 @@ export function createTitleScene() {
         height: 0.7,
         touchable: true
     });
+    titleCharacter.init();
 
     titleScene.add(title);
     titleScene.add(onlineText);
@@ -223,6 +224,15 @@ export function createTitleScene() {
 
 // キャラクター選択シーン
 export function createCharacterSelectScene() {
+    const playBGMOnce = () => {
+        if (audioManager.currentBGM === null) {
+            audioManager.playBGM('title');
+        }
+
+        document.removeEventListener('click', playBGMOnce); // イベントリスナーを解除
+    };
+    document.addEventListener('click', playBGMOnce);
+
     let selectScene = new Scene();
     const backgroundImageUI = new BackgroundImageUI({ image: title_img });
     selectScene.add(backgroundImageUI);
@@ -235,6 +245,7 @@ export function createCharacterSelectScene() {
         height: 0.7,
         touchable: true
     });
+    titleCharacter.init();
 
     const selectTitle = new TextUI({
         text: () => "キャラクター選択",
@@ -243,8 +254,6 @@ export function createCharacterSelectScene() {
         size: 0.06,
         colors: ["#bbdd44", "#000000", "#FFFFFF"]
     });
-
-
 
 
     // キャラクター一覧を表示
@@ -259,11 +268,35 @@ export function createCharacterSelectScene() {
         y: -0.1,
         width: 1,
         height: 0.5,
-        color: "#222222bb"
+        color: "#111122bb"
     });
 
-    selectScene.add(titleCharacter);
+    let profileOverlayUI = new OverlayUI({
+        x: 0.4,
+        y: 0.38,
+        width: 1,
+        height: 0.15,
+        color: "#111122bb"
+    });
+
+    const characterProfileText = new TextUI({
+        text: () => {
+            return characterInfo[selectedCharacterName].profile;
+        },
+        x: -0.05,
+        y: 0.35,
+        size: 0.03,
+        colors: ["#ffffff", "#000000", "#00000000"],
+        textBaseline: 'middle',
+        position: 'left'
+    });
+
+
+
     selectScene.add(overlayUI);
+    selectScene.add(profileOverlayUI);
+    selectScene.add(characterProfileText);
+    selectScene.add(titleCharacter);
     selectScene.add(selectTitle);
 
 
@@ -274,7 +307,7 @@ export function createCharacterSelectScene() {
         const y = startY + row * (characterSize + padding);
 
         const characterUI = new CharacterImageUI({
-            image: characterName,
+            image: characterName + '_silhouette',
             x: x,
             y: y,
             width: characterSize,
@@ -292,7 +325,9 @@ export function createCharacterSelectScene() {
             colors: ["#bbdd44", "#000000", "#00000000"],
             textBaseline: 'bottom',
             position: 'center'
-        })
+        });
+
+
 
         // キャラクターがクリックされたときの処理
         characterUI.onMouseDown = () => {
@@ -301,6 +336,14 @@ export function createCharacterSelectScene() {
             titleCharacter.stopVideo();
             titleCharacter.image = characterName;
             titleCharacter.init();
+            titleCharacter.videoElement[0].addEventListener('canplaythrough', () => {
+                if (titleCharacter.playVideo(0)) {
+                    titleCharacter.spawnVoiceText(0);
+                }
+            });
+            characterProfileText.text = () => {
+                return characterInfo[characterName].profile;
+            }
         };
 
         selectScene.add(characterUI);

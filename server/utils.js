@@ -125,7 +125,7 @@ export function removeCharFromArray(arr, charToRemove) {
 }
 
 export function getDisplayRating(elorate, games) {
-  return elorate - (100 - games) * 5;
+  return elorate - (200 - games) * 5;
 }
 
 export function calRating(winEloRating, winGames, loseEloRating, loseGames) {
