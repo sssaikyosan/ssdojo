@@ -14,12 +14,14 @@ export class CharacterImageUI extends UI {
   voiceTextOverlay;
   voiceText;
   textfade = 0;
+  lastVideoidx = 0;
 
   constructor(params) {
     super(params);
     this.image = params.image;
     this.width = params.width;
     this.height = params.height;
+    this.lastVideoidx = CHARA_QUOTES[params.image].length;
 
     this.textsize = 0.035;
     this.voiceTextOverlay = new OverlayUI({
@@ -44,6 +46,7 @@ export class CharacterImageUI extends UI {
     this.init();
   }
   init() {
+    this.videoElement = [];
     if (this.image) {
       for (let i = 0; i < CHARA_QUOTES[this.image].length; i++) {
         this.videoElement.push(document.createElement('video'));
@@ -91,11 +94,14 @@ export class CharacterImageUI extends UI {
   }
 
   onMouseDown(pos) {
-    const randomIndex = Math.floor(Math.random() * CHARA_QUOTES[this.image].length);
+    let randomIndex = Math.floor(Math.random() * CHARA_QUOTES[this.image].length - 1);
+    if (randomIndex <= this.lastVideoidx) {
+      randomIndex++;
+    }
     if (this.playVideo(randomIndex)) {
       this.spawnVoiceText(randomIndex);
+      this.lastVideoidx = randomIndex;
     }
-
   }
 
   resize(data) {
@@ -129,6 +135,17 @@ export class CharacterImageUI extends UI {
       this.isRenderingVideo = false; // 再生開始に失敗したらフラグをオフ
     });
     return true;
+  }
+
+  stopVideo() {
+    if (this.currentVideo) {
+      this.currentVideo.pause();
+      this.currentVideo.currentTime = 0;
+      this.currentVideo = null;
+      this.isRenderingVideo = false;
+      this.voiceText.text = () => { return `` };
+      this.voiceTextOverlay.width = 0;
+    }
   }
 
   spawnVoiceText(randomIndex) {

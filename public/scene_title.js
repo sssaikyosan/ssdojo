@@ -8,7 +8,6 @@ import { BackgroundImageUI } from "./ui_background.js";
 import { CharacterImageUI } from "./ui_character.js";
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
-import { getAfterStr } from "./utils.js";
 import { characterInfo } from "./const.js";
 
 export const rankingOverlay = document.getElementById("rankingOverlay");
@@ -28,12 +27,13 @@ const cpulevel0Button = document.getElementById("cpulevel0Button");
 const cpulevel1Button = document.getElementById("cpulevel1Button");
 const cpulevel2Button = document.getElementById("cpulevel2Button");
 
-
+const charaSubmitButton = document.getElementById("charaSubmitButton");
 const makeRoomButton = document.getElementById("makeRoomButton");
 const joinRoomButton = document.getElementById("joinRoomButton");
 const submitNameButton = document.getElementById("submitNameButton");
 const charaSelectButton = document.getElementById("charaSelectButton");
 
+charaSubmitButton.addEventListener("click", charaSubmit);
 cpuButton.addEventListener("click", cpuButtonSubmit);
 cpulevel0Button.addEventListener("click", function (event) {
     cpuLevelSubmit('0', event);
@@ -83,6 +83,7 @@ const loading = new LoadingUI({
 
 
 function clearTitleHTML() {
+    charaSubmitButton.style.display = "none";
     cpumatchOverlay.style.display = "none";
     cpulevelOverlay.style.display = "none";
     roomMakeOverlay.style.display = "none";
@@ -94,6 +95,7 @@ function clearTitleHTML() {
 
 //タイトルシーン
 export function createTitleScene() {
+    clearTitleHTML();
 
     let titleScene = new Scene();
     const backgroundImageUI = new BackgroundImageUI({ image: title_img });
@@ -205,6 +207,7 @@ export function createTitleScene() {
     titleScene.destroy = () => {
         document.removeEventListener('click', playBGMOnce);
 
+
         submitNameButton.removeEventListener("click", handleNameSubmit);
         makeRoomButton.removeEventListener("click", makeRoomSubmit);
         joinRoomButton.removeEventListener("click", joinRoomSubmit);
@@ -224,9 +227,18 @@ export function createCharacterSelectScene() {
     const backgroundImageUI = new BackgroundImageUI({ image: title_img });
     selectScene.add(backgroundImageUI);
 
+    let titleCharacter = new CharacterImageUI({
+        image: selectedCharacterName, // 初期表示はなし
+        x: -0.55, // 中央に配置
+        y: 0.15, // 適切なY座標に調整
+        width: 0.7,
+        height: 0.7,
+        touchable: true
+    });
+
     const selectTitle = new TextUI({
         text: () => "キャラクター選択",
-        x: 0,
+        x: 0.4,
         y: -0.25,
         size: 0.06,
         colors: ["#bbdd44", "#000000", "#FFFFFF"]
@@ -237,19 +249,20 @@ export function createCharacterSelectScene() {
 
     // キャラクター一覧を表示
     const charactersPerRow = 3; // 1行に表示するキャラクター数
-    const characterSize = 0.4; // キャラクター画像の表示サイズ
+    const characterSize = 0.3; // キャラクター画像の表示サイズ
     const padding = 0.01; // キャラクター間の余白
-    const startX = -(charactersPerRow * (characterSize + padding) - characterSize - 2 * padding) / 2; // 開始X座標
-    const startY = 0.04; // 開始Y座標
+    const startX = -(charactersPerRow * (characterSize + padding) - characterSize - 2 * padding) / 2 + 0.4; // 開始X座標
+    const startY = -0.04; // 開始Y座標
 
     let overlayUI = new OverlayUI({
-        x: 0.0,
-        y: -0.02,
-        width: 1.3,
-        height: 0.65,
+        x: 0.4,
+        y: -0.1,
+        width: 1,
+        height: 0.5,
         color: "#222222bb"
     });
 
+    selectScene.add(titleCharacter);
     selectScene.add(overlayUI);
     selectScene.add(selectTitle);
 
@@ -274,7 +287,7 @@ export function createCharacterSelectScene() {
                 return characterInfo[characterName].name;
             },
             x: x,
-            y: y + characterSize / 2 + 0.04,
+            y: y + characterSize / 3 + 0.04,
             size: 0.03,
             colors: ["#bbdd44", "#000000", "#00000000"],
             textBaseline: 'bottom',
@@ -284,9 +297,10 @@ export function createCharacterSelectScene() {
         // キャラクターがクリックされたときの処理
         characterUI.onMouseDown = () => {
             setSelectedCharacterName(characterName);
-            localStorage.setItem('selectedCharacter', selectedCharacterName);
-            console.log(`Selected character: ${selectedCharacterName}`);
-            setScene(createTitleScene());
+            localStorage.setItem('selectedCharacter', characterName);
+            titleCharacter.stopVideo();
+            titleCharacter.image = characterName;
+            titleCharacter.init();
         };
 
         selectScene.add(characterUI);
@@ -294,6 +308,8 @@ export function createCharacterSelectScene() {
     });
 
     clearTitleHTML();
+    rankingOverlay.style.display = "none";
+    charaSubmitButton.style.display = "block";
 
     return selectScene;
 }
@@ -336,4 +352,9 @@ function cpuLevelSubmit(level, event) {
     clearTitleHTML();
     const now = performance.now();
     setScene(createPlayScene(playerName, `CPUレベル${level}`, null, 1, null, now, 0, 0, level));
+}
+
+
+function charaSubmit() {
+    setScene(createTitleScene());
 }

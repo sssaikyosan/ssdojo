@@ -146,15 +146,18 @@ export const CHARACTER_FOLDER = "characters25070101"
 export const characterInfo = {
   rei: {
     name: "緋月 零",
-    romaji: "Hizuki Rei"
+    romaji: "Hizuki Rei",
+    profile: "夜の街を拠点とする、謎に包まれたフリーランスの「解決屋」あるいはエージェント。どんな困難な依頼でも、法に触れるか否かを問わず、高額な報酬と引き換えに完璧に遂行すると噂される。"
   },
   aoi: {
     name: "水瀬 葵",
-    romaji: "Minase Aoi"
+    romaji: "Minase Aoi",
+    profile: "都内の高校に通う、ごく普通の目立たない女子高生。しかし夜になると、その姿は伝説的な天才ゲーマー兼ホワイトハッカー「サイバー・セレネ」へと変貌する。"
   },
   akira: {
     name: "日輪 晶",
-    romaji: "Hinowa Akira"
+    romaji: "Hinowa Akira",
+    profile: "街の片隅で、会員制の隠れ家ジャズバー「Solstice」を経営する若き女性オーナー。その裏の顔は、裏社会のあらゆる情報が集まる中立の情報屋「オラクル」。"
   }
 }
 
