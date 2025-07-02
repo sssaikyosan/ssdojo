@@ -6,7 +6,7 @@ import { createTitleScene, roomJoinFailed } from "./scene_title.js";
 import { createPlayScene, endGame } from "./scene_game.js";
 import { createRoomScene, roomUpdate } from "./scene_room.js";
 import { backToRoom, createRoomPlayScene, endRoomGame } from "./scene_roomgame.js";
-import { CHARACTER_FOLDER } from "./const.js";
+import { CHARA_QUOTES, CHARACTER_FOLDER } from "./const.js";
 
 // 初期化フラグ
 let isInitialized = false;
@@ -235,12 +235,11 @@ function addEventListeners() {
         audioManager.setVoiceVolume(volume);
 
         // キャラクターのランダムボイス再生（音量設定の確認用）
-        const randomIndex = Math.floor(Math.random() * 3);
+
         // selectedCharacterNameがnullでないことを確認
         if (selectedCharacterName) {
-          // 存在しない可能性のあるファイル名に対応するため、try-catchで囲むか、事前にファイル存在チェックを行う方が安全ですが、今回はシンプルに実装します。
+          const randomIndex = Math.floor(Math.random() * CHARA_QUOTES[selectedCharacterName].length);
           const randomVoiceFile = `/${CHARACTER_FOLDER}/${selectedCharacterName}/voice${randomIndex + 1}.wav`;
-          // playVoice内でvolumeが設定されるため、ここでは音量設定は不要
           audioManager.playVoice(randomVoiceFile);
         }
       }
