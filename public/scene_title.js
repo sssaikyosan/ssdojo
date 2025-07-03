@@ -509,23 +509,27 @@ export function createCharacterSelectScene(titleCharacter) {
 
 export function roomJoinFailed(scene) {
     const roomJoinFailedOverlay = new OverlayUI({
-        x: 0.6,
-        y: 0.3,
-        width: 0.3,
-        height: 0.06,
+        x: 0.5,
+        y: 0.24,
+        width: 0.26,
+        height: 0.04,
         color: '#187a1c'
     });
-    const roomJoinFailedtext = new OverlayUI({
+    const roomJoinFailedtext = new TextUI({
+        text: () => {
+            return "入室に失敗しました"
+        },
         x: 0,
-        y: 0,
-        size: 0.03
+        y: 0.002,
+        size: 0.025,
+        colors: ['#ffffff', '#00000000', '#00000000']
     });
     roomJoinFailedOverlay.add(roomJoinFailedtext);
     scene.add(roomJoinFailedOverlay);
     // 2秒後にメッセージを非表示にする
     setTimeout(() => {
         scene.remove(roomJoinFailedOverlay);
-    }, 2000);
+    }, 2500);
 }
 
 function cpuButtonSubmit() {

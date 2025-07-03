@@ -166,8 +166,9 @@ function resizeHTML() {
     target = window.innerHeight;
     offsetX = (window.innerWidth - window.innerHeight / scene.aspect) / 2;
   }
-  nameInput.style = `font-size:${(Math.floor(target * 0.03)).toString()}px; padding: 6px; position: absolute; left: ${(target * 0.5 * 16 / 9 + offsetX).toString()}px; bottom: ${(target * 0.05 + offsetY).toString()}px; width:${(target * 0.35).toString()}px; height: ${(target * 0.04).toString()}px; transform: translate(-50%, 0%);`;
-  roomIdInput.style = `font-size:${(Math.floor(target * 0.025)).toString()}px; padding: 6px; position: absolute; right: ${(target * 0.26 * 16 / 9 + offsetX).toString()}px; bottom: ${(target * 0.18 + offsetY).toString()}px; width:${(target * 0.12).toString()}px; height: ${(target * 0.03).toString()}px; transform: translate(100%, 0%);`;
+
+  nameInput.style = `display: ${nameInput.style.display}; font-size:${(Math.floor(target * 0.03)).toString()}px; padding: 6px; position: absolute; left: ${(target * 0.5 * 16 / 9 + offsetX).toString()}px; bottom: ${(target * 0.05 + offsetY).toString()}px; width:${(target * 0.35).toString()}px; height: ${(target * 0.04).toString()}px; transform: translate(-50%, 0%);`;
+  roomIdInput.style = `display: ${roomIdInput.style.display}; font-size:${(Math.floor(target * 0.025)).toString()}px; padding: 6px; position: absolute; right: ${(target * 0.26 * 16 / 9 + offsetX).toString()}px; bottom: ${(target * 0.18 + offsetY).toString()}px; width:${(target * 0.12).toString()}px; height: ${(target * 0.03).toString()}px; transform: translate(100%, 0%);`;
 }
 
 // イベントリスナーを追加
