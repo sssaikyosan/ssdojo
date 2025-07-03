@@ -9,9 +9,11 @@ import { CharacterImageUI } from "./ui_character.js";
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
 import { characterInfo } from "./const.js";
+import { ImageUI } from "./ui_image.js";
 
 export const rankingOverlay = document.getElementById("rankingOverlay");
 export const cancelMatchOverlay = document.getElementById("cancelMatchOverlay");
+export const discordButton = document.getElementById("discordButton");
 
 const cpumatchOverlay = document.getElementById("cpumatchOverlay");
 const cpulevelOverlay = document.getElementById("cpulevelOverlay");
@@ -26,6 +28,7 @@ const cpuButton = document.getElementById("cpuButton");
 const cpulevel0Button = document.getElementById("cpulevel0Button");
 const cpulevel1Button = document.getElementById("cpulevel1Button");
 const cpulevel2Button = document.getElementById("cpulevel2Button");
+
 
 const charaSubmitButton = document.getElementById("charaSubmitButton");
 const makeRoomButton = document.getElementById("makeRoomButton");
@@ -83,6 +86,7 @@ const loading = new LoadingUI({
 
 
 function clearTitleHTML() {
+    discordButton.style.display = "none"
     charaSubmitButton.style.display = "none";
     cpumatchOverlay.style.display = "none";
     cpulevelOverlay.style.display = "none";
@@ -197,6 +201,7 @@ export function createTitleScene() {
     if (savedName) {
         nameInput.value = savedName;
     }
+    discordButton.style.display = "block";
     cpumatchOverlay.style.display = "block";
     rankingOverlay.style.display = "block";
     roomMakeOverlay.style.display = "flex";
@@ -250,7 +255,7 @@ export function createCharacterSelectScene() {
     const selectTitle = new TextUI({
         text: () => "キャラクター選択",
         x: 0.4,
-        y: -0.25,
+        y: -0.23,
         size: 0.06,
         colors: ["#bbdd44", "#000000", "#FFFFFF"]
     });
@@ -258,16 +263,16 @@ export function createCharacterSelectScene() {
 
     // キャラクター一覧を表示
     const charactersPerRow = 3; // 1行に表示するキャラクター数
-    const characterSize = 0.3; // キャラクター画像の表示サイズ
-    const padding = 0.01; // キャラクター間の余白
-    const startX = -(charactersPerRow * (characterSize + padding) - characterSize - 2 * padding) / 2 + 0.4; // 開始X座標
+    const characterSize = 0.25; // キャラクター画像の表示サイズ
+    const padding = 0.06; // キャラクター間の余白
+    const startX = -(charactersPerRow * (characterSize + padding) - characterSize - padding) / 2 + 0.4; // 開始X座標
     const startY = -0.04; // 開始Y座標
 
     let overlayUI = new OverlayUI({
         x: 0.4,
-        y: -0.1,
+        y: -0.07,
         width: 1,
-        height: 0.5,
+        height: 0.45,
         color: "#111122bb"
     });
 
@@ -306,8 +311,16 @@ export function createCharacterSelectScene() {
         const x = startX + col * (characterSize + padding);
         const y = startY + row * (characterSize + padding);
 
-        const characterUI = new CharacterImageUI({
-            image: characterName + '_silhouette',
+        const faceOverlayUI = new OverlayUI({
+            x: x,
+            y: y,
+            width: characterSize + 0.01,
+            height: characterSize + 0.01,
+            color: "#ffffff"
+        });
+
+        const characterUI = new ImageUI({
+            image: characterName + '_face',
             x: x,
             y: y,
             width: characterSize,
@@ -320,7 +333,7 @@ export function createCharacterSelectScene() {
                 return characterInfo[characterName].name;
             },
             x: x,
-            y: y + characterSize / 3 + 0.04,
+            y: y + characterSize / 3 + 0.09,
             size: 0.03,
             colors: ["#bbdd44", "#000000", "#00000000"],
             textBaseline: 'bottom',
@@ -330,7 +343,7 @@ export function createCharacterSelectScene() {
 
 
         // キャラクターがクリックされたときの処理
-        characterUI.onMouseDown = () => {
+        faceOverlayUI.onMouseDown = () => {
             setSelectedCharacterName(characterName);
             localStorage.setItem('selectedCharacter', characterName);
             titleCharacter.stopVideo();
@@ -346,11 +359,14 @@ export function createCharacterSelectScene() {
             }
         };
 
-        selectScene.add(characterUI);
-        selectScene.add(characterNameText);
+        selectScene.add(faceOverlayUI);
+        faceOverlayUI.add(characterUI);
+        faceOverlayUI.add(characterNameText);
     });
 
     clearTitleHTML();
+
+    discordButton.style.display = "block";
     rankingOverlay.style.display = "none";
     charaSubmitButton.style.display = "block";
 

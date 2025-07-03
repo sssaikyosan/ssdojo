@@ -641,8 +641,6 @@ function normalAlgolysm(servertime) {
     const cpuCaptureMoves = [];
     const playerCaptureMoves = [];
     const playerCaptureMovesIgnoreTime = [];
-    const kingCollisionMoves = [];
-    const kingCollisionMovesIgnoreTime = [];
     const kingEscapeMoves = [];
     const kingEscapeMovesIgnoreTime = [];
     const collisionMoves = [];
@@ -681,6 +679,7 @@ function normalAlgolysm(servertime) {
             };
             //放置すると取られる駒で逃げる手を検索
             if (!isDanger(targetmove.x, targetmove.y, targetmove.nx, targetmove.ny, -1)) {
+                console.log(targetmove.x, targetmove.y, targetmove.nx, targetmove.ny, targetmove.teban);
                 escapeMoves.push(targetmove);
             }
         }
@@ -695,21 +694,21 @@ function normalAlgolysm(servertime) {
             };
             //放置すると取られる駒で逃げる手を検索
             if (!isDanger(targetmove.x, targetmove.y, targetmove.nx, targetmove.ny, -1)) {
+                console.log(targetmove.x, targetmove.y, targetmove.nx, targetmove.ny, targetmove.teban);
                 escapeMovesIgnoreTime.push(targetmove);
             }
         }
     }
 
-    //取られそうな玉で逆にとる手があれば指す
-    for (const move of collisionMoves) {
-        if ((move.x === cpuKingPos.x) && (move.y === cpuKingPos.y)) {
-
-            if (!isDanger(move.x, move.y, move.nx, move.ny, -1)) {
-                kingCollisionMoves.push(move);
-                console.log("kingIsDanger", isDanger(move.x, move.y, move.nx, move.ny, -1), move);
-            }
+    const kingCollisionMoves = collisionMoves.filter(item => {
+        if ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)) return false;
+        if (!isDanger(item.x, item.y, item.nx, item.ny, -1)) {
+            console.log(item.x, item.y, item.nx, item.ny, item.teban);
+            return true;
         }
-    }
+        return false;
+    });
+
     if (kingCollisionMoves.length > 0) {
         const randomIndex = Math.floor(Math.random() * kingCollisionMoves.length);
         const randomMove = kingCollisionMoves[randomIndex];
@@ -718,16 +717,15 @@ function normalAlgolysm(servertime) {
         return true;
     }
 
-
-    //取られそうな玉で逆にとる手があれば指す
-    for (const move of collisionMovesIgnoreTime) {
-        if ((move.x === cpuKingPos.x) && (move.y === cpuKingPos.y)) {
-            console.log("kingIsDanger", isDanger(move.x, move.y, move.nx, move.ny, -1));
-            if (!isDanger(move.x, move.y, move.nx, move.ny, -1)) {
-                kingCollisionMovesIgnoreTime.push(move);
-            }
+    const kingCollisionMovesIgnoreTime = collisionMovesIgnoreTime.filter(item => {
+        if ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)) return false;
+        if (!isDanger(item.x, item.y, item.nx, item.ny, -1)) {
+            console.log(item.x, item.y, item.nx, item.ny, item.teban);
+            return true;
         }
-    }
+        return false;
+    });
+
     if (kingCollisionMovesIgnoreTime.length > 0) {
         const randomIndex = Math.floor(Math.random() * kingCollisionMovesIgnoreTime.length);
         const randomMove = kingCollisionMovesIgnoreTime[randomIndex];
@@ -772,7 +770,14 @@ function normalAlgolysm(servertime) {
         return true;
     }
 
-    const collisionMovesKingfiltered = collisionMoves.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y) || !isDanger(item.x, item.y, item.nx, item.ny, item.teban)));
+    const collisionMovesKingfiltered = collisionMoves.filter(item => {
+        if ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)) return true;
+        if (!isDanger(item.x, item.y, item.nx, item.ny, -1)) {
+            console.log(item.x, item.y, item.nx, item.ny, item.teban);
+            return true;
+        }
+        return false;
+    });
 
     //取られそう駒で逆にとる手があれば指す
     if (collisionMovesKingfiltered.length > 0) {
@@ -783,7 +788,14 @@ function normalAlgolysm(servertime) {
         return true;
     }
 
-    const collisionMovesIgnoreTimeKingfiltered = collisionMovesIgnoreTime.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y) || !isDanger(item.x, item.y, item.nx, item.ny, item.teban)));
+    const collisionMovesIgnoreTimeKingfiltered = collisionMovesIgnoreTime.filter(item => {
+        if ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)) return true;
+        if (!isDanger(item.x, item.y, item.nx, item.ny, -1)) {
+            console.log(item.x, item.y, item.nx, item.ny, item.teban);
+            return true;
+        }
+        return false;
+    });
 
     //取られそう駒で逆にとる手があれば指すIgnoreTime
     if (collisionMovesIgnoreTimeKingfiltered.length > 0) {
@@ -805,6 +817,7 @@ function normalAlgolysm(servertime) {
     //安全に駒をとれる手を検索
     for (const move of cpuCaptureMoves) {
         if (!isDanger(move.x, move.y, move.nx, move.ny, -1)) {
+            console.log(move.x, move.y, move.nx, move.ny, move.teban);
             safetyCapMoves.push(move);
         }
     }
@@ -823,18 +836,6 @@ function normalAlgolysm(servertime) {
         const randomIndex = Math.floor(Math.random() * escapeMoves.length);
         const randomMove = escapeMoves[randomIndex];
         console.log('calculateCpuMove: 駒を逃げれる手があれば指す', randomMove);
-        postMessage({ move: randomMove });
-        return true;
-    }
-
-
-    const cpuCaptureMovesKingfiltered = cpuCaptureMoves.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y) || !isDanger(item.x, item.y, item.nx, item.ny, item.teban)));
-
-    //駒を取れる手があれば指す
-    if (cpuCaptureMovesKingfiltered.length > 0) {
-        const randomIndex = Math.floor(Math.random() * cpuCaptureMovesKingfiltered.length);
-        const randomMove = cpuCaptureMovesKingfiltered[randomIndex];
-        console.log('calculateCpuMove: 駒を取れる手があれば指す', randomMove);
         postMessage({ move: randomMove });
         return true;
     }
@@ -921,18 +922,18 @@ function level1cpu() {
         if (!normalAlgolysm(servertime)) {
             randomMoveNoKingDanger(servertime);
         }
-    }, 3000);
+    }, 2000);
 }
 
 function level2cpu() {
     setInterval(() => {
         const servertime = startTime + performance.now();
         normalAlgolysm(servertime);
-    }, 190);
+    }, 500);
     setInterval(() => {
         const servertime = startTime + performance.now();
         randomMoveNoKingDanger(servertime);
-    }, 1000);
+    }, 1500);
 }
 
 function level3cpu() {

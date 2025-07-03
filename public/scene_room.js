@@ -1,7 +1,7 @@
 // ルームUIを定義するファイル
 import { Scene } from "./scene.js";
 import { battle_img, setScene, socket } from "./main.js"; // setScene関数をインポート
-import { createTitleScene, rankingOverlay } from "./scene_title.js"; // タイトルシーンに戻るために必要
+import { createTitleScene, discordButton, rankingOverlay } from "./scene_title.js"; // タイトルシーンに戻るために必要
 import { createPlayScene } from "./scene_game.js";
 import { BackgroundImageUI } from "./ui_background.js";
 
@@ -198,6 +198,7 @@ export function createRoomScene(data) {
 
     currentRoomId = data.roomId;
 
+    discordButton.style.display = "block";
     rankingOverlay.style.display = "none";
     roomIdOverlay.style.display = 'flex';
     tebanOverlay.style.display = 'flex';
