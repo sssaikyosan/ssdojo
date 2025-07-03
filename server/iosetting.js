@@ -34,6 +34,7 @@ export function ioSetup() {
         });
 
         socket.on("createRoom", (data) => {
+            console.log("createRoom");
             if (!data.name || !data.characterName || !data.userId) return;
             if (data.name.length > 30 || data.characterName.length > 50 || data.userId.length > 50) return;
             if (serverState.players[socket.id].roomId !== null) return;

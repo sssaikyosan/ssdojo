@@ -2,7 +2,7 @@ import { Keyboard } from "./keyboard.js";
 import { GameManager } from "./game_manager.js";
 import { Board } from './board.js';
 import { AudioManager } from "./audio_manager.js"; // audio_manager.jsからインポート
-import { createTitleScene, roomJoinFailed } from "./scene_title.js";
+import { createTitleScene, nameInput, playCountText, ratingText, roomIdInput, roomJoinFailed, updateRanking } from "./scene_title.js";
 import { createPlayScene, endGame } from "./scene_game.js";
 import { createRoomScene, roomUpdate } from "./scene_room.js";
 import { backToRoom, createRoomPlayScene, endRoomGame } from "./scene_roomgame.js";
@@ -22,6 +22,7 @@ export let scene = null; // scene変数はmain.jsで管理
 export let playerName = "";
 export let userId = null;
 export let serverStatus = { online: 0, roomCount: 0, topPlayers: [] };
+export let playerStatus = { playcount: 0, rating: 500 }
 
 export let playerRatingElement = null;
 export let gamesPlayedElement = null;
@@ -44,7 +45,6 @@ export let selectedCharacterName = null; // 選択されたキャラクターの
 export function setSelectedCharacterName(name) {
   selectedCharacterName = name;
 }
-const cancelMatchButton = document.getElementById("cancelMatchButton");
 export const title_img = new Image(1920, 1080);
 title_img.src = '/images/title.png';
 
@@ -88,17 +88,15 @@ export function setPlayerName(name) {
 }
 
 export function setStatus(rating, games) {
-  if (playerRatingElement) {
-    playerRatingElement.textContent = `レート: ${Math.round(rating)}`;
-  }
-  if (gamesPlayedElement) {
-    gamesPlayedElement.textContent = `試合数: ${games}`;
-  }
-}
+  playerStatus.playcount = games;
+  playerStatus.rating = rating;
 
-function cancelMatchSubmit() {
-  console.log("cancelMatch");
-  socket.emit("cancelMatch");
+  playCountText.text = () => {
+    return `試合数:${games}`
+  }
+  ratingText.text = () => {
+    return `レート:${Math.round(rating)}`
+  }
 }
 
 
@@ -144,9 +142,10 @@ function init() {
 
   resizeCanvas();
 
+
   gameManager = new GameManager(socket);
-  cancelMatchButton.addEventListener("click", cancelMatchSubmit);
   setScene(createTitleScene()); // タイトルシーン作成時に選択されたキャラクターを使用
+  resizeHTML();
   roop();
 }
 
@@ -154,6 +153,21 @@ function init() {
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+}
+
+function resizeHTML() {
+  let target = 0;
+  let offsetX = 0;
+  let offsetY = 0;
+  if (window.innerHeight > window.innerWidth * scene.aspect) {
+    target = window.innerWidth * scene.aspect;
+    offsetY = (window.innerHeight - target) / 2;
+  } else {
+    target = window.innerHeight;
+    offsetX = (window.innerWidth - window.innerHeight / scene.aspect) / 2;
+  }
+  nameInput.style = `font-size:${(Math.floor(target * 0.03)).toString()}px; padding: 6px; position: absolute; left: ${(target * 0.5 * 16 / 9 + offsetX).toString()}px; bottom: ${(target * 0.05 + offsetY).toString()}px; width:${(target * 0.35).toString()}px; height: ${(target * 0.04).toString()}px; transform: translate(-50%, 0%);`;
+  roomIdInput.style = `font-size:${(Math.floor(target * 0.025)).toString()}px; padding: 6px; position: absolute; right: ${(target * 0.26 * 16 / 9 + offsetX).toString()}px; bottom: ${(target * 0.18 + offsetY).toString()}px; width:${(target * 0.12).toString()}px; height: ${(target * 0.03).toString()}px; transform: translate(100%, 0%);`;
 }
 
 // イベントリスナーを追加
@@ -165,6 +179,7 @@ function addEventListeners() {
     if (scene && scene.resize) {
       scene.resize({ scale: 1 }); // 仮のスケール値
     }
+    resizeHTML();
   });
 
   canvas.addEventListener('mousedown', (event) => {
@@ -268,17 +283,9 @@ function setupSocket() {
   // 待機人数の更新
   socket.on('serverStatus', (data) => {
     serverStatus = data;
+    updateRanking();
     // ランキング表示を更新
-    for (let i = 0; i < 10; i++) {
-      const rankElement = document.getElementById(`ranking${i}`);
-      if (rankElement) {
-        if (serverStatus.topPlayers.length <= i) {
-          rankElement.innerText = `${i + 1}位 none`;
-        } else {
-          rankElement.innerText = `${i + 1}位 ${Math.round(serverStatus.topPlayers[i].rating)} ${serverStatus.topPlayers[i].name}`;
-        }
-      }
-    }
+
   });
 
   // レーティングを受信
@@ -344,12 +351,13 @@ function setupSocket() {
   });
 
   socket.on("roomJoined", (data) => {
+    console.log("roomJoined");
     setScene(createRoomScene(data));
   });
 
   socket.on("roomJoinFailed", (data) => {
     setScene(createTitleScene());
-    roomJoinFailed();
+    roomJoinFailed(scene);
   });
 
   socket.on("roomUpdate", (data) => {

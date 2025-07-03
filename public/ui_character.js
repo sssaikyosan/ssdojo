@@ -25,8 +25,8 @@ export class CharacterImageUI extends UI {
     this.textsize = 0.035;
     this.voiceTextOverlay = new OverlayUI({
       color: 'rgba(15,63,31,0.8)',
-      x: params.x + 0.2,
-      y: params.y + 0.15,
+      x: 0.2,
+      y: 0.15,
       width: 0,
       height: 0.035 + 0.04
     });
@@ -34,8 +34,8 @@ export class CharacterImageUI extends UI {
       text: () => {
         return "";
       },
-      x: params.x + 0.21,
-      y: params.y + 0.15,
+      x: 0.0,
+      y: 0.0,
       size: 0.035,
       colors: ["#ffffff", "#00000000", "#00000000"],
       position: 'center'
@@ -73,7 +73,7 @@ export class CharacterImageUI extends UI {
     // 動画が再生可能で、動画を描画中の場合は動画フレームを描画
     if (this.currentVideo && this.isRenderingVideo && !this.currentVideo.paused && !this.currentVideo.ended && this.currentVideo.currentTime !== 0) {
       try {
-        ctx.drawImage(this.currentVideo, this.x * scale - this.width / 2 * scale, this.y * scale - this.height / 2 * scale, this.width * scale, this.height * scale);
+        ctx.drawImage(this.currentVideo, - this.width / 2 * scale, - this.height / 2 * scale, this.width * scale, this.height * scale);
       } catch (e) {
         // 動画がまだ描画可能な状態でない場合のエラーを無視
         if (!(e instanceof DOMException && e.name === 'InvalidStateError')) {
@@ -86,7 +86,7 @@ export class CharacterImageUI extends UI {
       // 動画を描画中でない場合、または動画がない場合は画像を描画
       if (this.image && characterImages[this.image]) {
         // 画像を中央揃えで描画
-        ctx.drawImage(characterImages[this.image], this.x * scale - this.width / 2 * scale, this.y * scale - this.height / 2 * scale, this.width * scale, this.height * scale);
+        ctx.drawImage(characterImages[this.image], - this.width / 2 * scale, - this.height / 2 * scale, this.width * scale, this.height * scale);
       }
     }
   }
@@ -226,7 +226,7 @@ export class CharacterInGameUI extends UI {
     // 動画が再生可能で、動画を描画中の場合は動画フレームを描画
     if (this.currentVideo !== null && this.isRenderingVideo && !this.currentVideo.paused && !this.currentVideo.ended && this.currentVideo.currentTime !== 0) {
       try {
-        ctx.drawImage(this.currentVideo, this.x * scale - this.width / 2 * scale, this.y * scale - this.height / 2 * scale, this.width * scale, this.height * scale);
+        ctx.drawImage(this.currentVideo, -this.width / 2 * scale, -this.height / 2 * scale, this.width * scale, this.height * scale);
       } catch (e) {
         // 動画がまだ描画可能な状態でない場合のエラーを無視
         if (!(e instanceof DOMException && e.name === 'InvalidStateError')) {
@@ -239,7 +239,7 @@ export class CharacterInGameUI extends UI {
       // 動画を描画中でない場合、または動画がない場合は画像を描画
       if (this.image && characterImages[this.image]) {
         // 画像を中央揃えで描画
-        ctx.drawImage(characterImages[this.image], this.x * scale - this.width / 2 * scale, this.y * scale - this.height / 2 * scale, this.width * scale, this.height * scale);
+        ctx.drawImage(characterImages[this.image], -this.width / 2 * scale, -this.height / 2 * scale, this.width * scale, this.height * scale);
       }
     }
   }

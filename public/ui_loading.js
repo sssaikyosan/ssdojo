@@ -12,15 +12,13 @@ export class LoadingUI extends UI {
     this.loadingAngle = 0;
   }
 
-  draw(ctx, scale) {
+  renderSelf(ctx, scale) {
     ctx.save();
-    const x = this.x * scale;
-    const y = this.y * scale;
     const radius = this.radius * scale;
     ctx.strokeStyle = "#FFFFFF";
     ctx.lineWidth = 5;
     ctx.beginPath();
-    ctx.arc(x, y, radius, this.loadingAngle, this.loadingAngle + Math.PI / 2);
+    ctx.arc(0, 0, radius, this.loadingAngle, this.loadingAngle + Math.PI / 2);
     ctx.stroke();
 
     // 角度を更新

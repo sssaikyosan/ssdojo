@@ -28,7 +28,11 @@ export class Player {
     }
 
     cancelMatch() {
-        this.state = "waiting";
+        if (this.state = "matching") {
+            this.state = "waiting";
+            return true;
+        };
+        return false;
     }
 
     goToPlay(roomId) {

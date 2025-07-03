@@ -1,7 +1,7 @@
 //タイトルシーン要素
 
 import { createPlayScene } from "./scene_game.js";
-import { serverStatus, title_img, audioManager, canvas, setPlayerName, playerName, socket, selectedCharacterName, userId, setScene, characterFiles, setSelectedCharacterName } from "./main.js";
+import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, userId, setScene, characterFiles, setSelectedCharacterName } from "./main.js";
 import { Scene } from "./scene.js";
 import { OverlayUI } from "./ui.js";
 import { BackgroundImageUI } from "./ui_background.js";
@@ -10,53 +10,114 @@ import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
 import { characterInfo } from "./const.js";
 import { ImageUI } from "./ui_image.js";
+import { ButtonUI } from "./ui_button.js";
 
-export const rankingOverlay = document.getElementById("rankingOverlay");
-export const cancelMatchOverlay = document.getElementById("cancelMatchOverlay");
 export const discordButton = document.getElementById("discordButton");
 
-const cpumatchOverlay = document.getElementById("cpumatchOverlay");
-const cpulevelOverlay = document.getElementById("cpulevelOverlay");
-const roomMakeOverlay = document.getElementById("roomMakeOverlay");
-const playButtonOverlay = document.getElementById("playButtonOverlay");
-const nameInputOverlay = document.getElementById("nameInputOverlay");
-const charaSelectOverlay = document.getElementById("charaSelectOverlay");
+export const roomIdInput = /** @type {HTMLInputElement} */ (document.getElementById("roomIdInput"));
+export const nameInput = /** @type {HTMLInputElement} */ (document.getElementById("nameInput"));
 
-const nameInput = /** @type {HTMLInputElement} */ (document.getElementById("nameInput"));
-
-const cpuButton = document.getElementById("cpuButton");
-const cpulevel0Button = document.getElementById("cpulevel0Button");
-const cpulevel1Button = document.getElementById("cpulevel1Button");
-const cpulevel2Button = document.getElementById("cpulevel2Button");
-
-
-const charaSubmitButton = document.getElementById("charaSubmitButton");
-const makeRoomButton = document.getElementById("makeRoomButton");
-const joinRoomButton = document.getElementById("joinRoomButton");
-const submitNameButton = document.getElementById("submitNameButton");
-const charaSelectButton = document.getElementById("charaSelectButton");
-
-charaSubmitButton.addEventListener("click", charaSubmit);
-cpuButton.addEventListener("click", cpuButtonSubmit);
-cpulevel0Button.addEventListener("click", function (event) {
-    cpuLevelSubmit('0', event);
-});
-cpulevel1Button.addEventListener("click", function (event) {
-    cpuLevelSubmit('1', event);
-});
-cpulevel2Button.addEventListener("click", function (event) {
-    cpuLevelSubmit('2', event);
+const cpuLevelOverlay = new OverlayUI({
+    x: 0.73,
+    y: 0.12,
+    height: 0.18,
+    width: 0.14,
+    visible: false
 });
 
-let cpumatch = false;
+for (let i = 0; i < 3; i++) {
+    const cpulevelButton = new ButtonUI({
+        text: `レベル${i}`,
+        x: 0.0,
+        y: 0.058 - i * 0.055,
+        height: 0.05,
+        width: 0.12,
+        color: '#3241c9',
+        textSize: 0.025,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            cpuLevelSubmit(i.toString());
+        }
+    });
+    cpuLevelOverlay.add(cpulevelButton);
+}
 
-const title = new TextUI({
-    text: () => "リアルタイム将棋",
+export const statusOverlay = new OverlayUI({
+    x: -0.78,
+    y: 0.43,
+    width: 0.2,
+    height: 0.1,
+    color: '#111122bb'
+});
+
+export const playCountText = new TextUI({
+    text: () => `試合数: -`,
     x: 0,
-    y: -0.3, // 配置を調整
-    size: 0.12,
-    colors: ["#c2a34f", "#000000", "#ffffff"]
+    y: -0.015,
+    size: 0.025,
+    colors: ["#ffffff", "#00000000", "#00000000"],
+    position: 'center'
 });
+
+export const ratingText = new TextUI({
+    text: () => `レート: -`,
+    x: 0,
+    y: 0.025,
+    size: 0.025,
+    colors: ["#ffffff", "#00000000", "#00000000"],
+    position: 'center'
+});
+
+export const cancelMatchButton = new ButtonUI({
+    text: 'キャンセル',
+    x: 0.65,
+    y: 0.4,
+    height: 0.08,
+    width: 0.24,
+    color: '#df398c',
+    textSize: 0.04,
+    textColors: ['#ffffffff', '#00000000', '#00000000'],
+    onClick: () => {
+        socket.emit('cancelMatch');
+    }
+});
+
+const rankingOverlay = new OverlayUI({
+    x: 0.72,
+    y: -0.22,
+    width: 0.3,
+    height: 0.36
+});
+
+const rankingTitle = new TextUI({
+    text: () => {
+        return `ランキング`
+    },
+    x: 0,
+    y: -0.15,
+    size: 0.03,
+    colors: ["#ffffffff", "#00000000", "#00000000"]
+});
+
+for (let i = 0; i < 10; i++) {
+    const rankingText = new TextUI({
+        text: () => {
+            return ``
+        },
+        x: -0.13,
+        y: -0.11 + i * 0.03,
+        size: 0.022,
+        colors: ["#ffffffff", "#00000000", "#00000000"],
+        position: 'left'
+    });
+    rankingOverlay.add(rankingText);
+}
+
+rankingOverlay.add(rankingTitle);
+statusOverlay.add(playCountText);
+statusOverlay.add(ratingText);
+
+
 const onlineText = new TextUI({
     text: () => `部屋数: ${serverStatus.roomCount}, オンライン: ${serverStatus.online}人`,
     x: 0,
@@ -65,8 +126,6 @@ const onlineText = new TextUI({
     colors: ["#ffffff", "#00000000", "#00000000"],
     position: 'center'
 });
-
-
 
 const matchingText = new TextUI({
     text: () => {
@@ -78,32 +137,28 @@ const matchingText = new TextUI({
     colors: ["#ffffff", "#00000000", "#00000000"],
     position: 'center'
 });
+
 const loading = new LoadingUI({
     x: 0.2,
     y: 0.4,
     radius: 0.03,
 });
 
-
 function clearTitleHTML() {
-    discordButton.style.display = "none"
-    charaSubmitButton.style.display = "none";
-    cpumatchOverlay.style.display = "none";
-    cpulevelOverlay.style.display = "none";
-    roomMakeOverlay.style.display = "none";
-    playButtonOverlay.style.display = "none";
-    nameInputOverlay.style.display = "none";
-    charaSelectOverlay.style.display = "none";
-    cancelMatchOverlay.style.display = "none";
+    discordButton.style.display = "none";
+    roomIdInput.style.display = "none";
+    nameInput.style.display = "none";
 }
 
 //タイトルシーン
-export function createTitleScene() {
+export function createTitleScene(savedTitleCharacter = null) {
     clearTitleHTML();
 
     let titleScene = new Scene();
     const backgroundImageUI = new BackgroundImageUI({ image: title_img });
     titleScene.add(backgroundImageUI);
+    cpuLevelOverlay.visible = false;
+
     // 初回クリックでBGMを再生するためのイベントリスナー
     const playBGMOnce = () => {
         if (audioManager.currentBGM === null) {
@@ -122,9 +177,14 @@ export function createTitleScene() {
         // マッチングを開始
         socket.emit("requestMatch", { name: playerName, characterName: selectedCharacterName, userId: userId });
         clearTitleHTML();
-        cancelMatchOverlay.style.display = "block";
+        titleScene.remove(joinRoomButton);
+        titleScene.remove(makeRoomButton);
+        titleScene.remove(cpuButton);
+        titleScene.remove(cpuLevelOverlay);
+        titleScene.remove(charaSelectButton);
         titleScene.add(matchingText);
         titleScene.add(loading);
+        titleScene.add(cancelMatchButton);
     }
 
     function makeRoomSubmit() {
@@ -134,67 +194,140 @@ export function createTitleScene() {
         // ルーム作成をサーバーにリクエスト
         socket.emit("createRoom", { name: playerName, characterName: selectedCharacterName, userId: userId });
         clearTitleHTML();
-        titleScene.add(loading);
     }
+
+
 
     function joinRoomSubmit() {
         setPlayerName(nameInput.value.trim());
         localStorage.setItem("playerName", playerName);
         if (playerName == "") setPlayerName("名無しの棋士");
-        const roomIdInput = /** @type {HTMLInputElement} */ (document.getElementById("roomIdInput"));
         const roomId = roomIdInput.value.trim();
         if (roomId) {
             // ルーム参加をサーバーにリクエスト
             socket.emit("joinRoom", { roomId: roomId, name: playerName, characterName: selectedCharacterName, userId: userId });
             clearTitleHTML();
-            titleScene.add(loading);
         }
     }
-
-
 
     function charaSelectSubmit() {
-        setScene(createCharacterSelectScene());
+        setScene(createCharacterSelectScene(titleCharacter));
     }
 
-    for (let i = 0; i < 10; i++) {
-        const rankElement = document.getElementById(`ranking${i}`);
-        if (rankElement) {
-            if (serverStatus.topPlayers.length < i + 1) {
-                rankElement.innerText = `${i + 1}位 none`;
-            } else {
-                rankElement.innerText = `${i + 1}位 ${Math.round(serverStatus.topPlayers[i].rating)} ${serverStatus.topPlayers[i].name}`;
-            }
-        }
-    }
+    updateRanking();
 
-
-
-
-
-
-
-
-    submitNameButton.addEventListener("click", handleNameSubmit);
-    makeRoomButton.addEventListener("click", makeRoomSubmit);
-    joinRoomButton.addEventListener("click", joinRoomSubmit);
-    charaSelectButton.addEventListener("click", charaSelectSubmit);
-
-    let titleCharacter = new CharacterImageUI({
-        image: selectedCharacterName, // 初期表示はなし
-        x: -0.55, // 中央に配置
-        y: 0.15, // 適切なY座標に調整
-        width: 0.7,
-        height: 0.7,
-        touchable: true
+    const title = new TextUI({
+        text: () => "リアルタイム将棋",
+        x: 0,
+        y: -0.3, // 配置を調整
+        size: 0.12,
+        colors: ["#c2a34f", "#000000", "#ffffff"]
     });
-    titleCharacter.init();
-
     titleScene.add(title);
-    titleScene.add(onlineText);
+
+    let titleCharacter = savedTitleCharacter;
+    if (titleCharacter === null) {
+        titleCharacter = new CharacterImageUI({
+            image: selectedCharacterName, // 初期表示はなし
+            x: -0.55, // 中央に配置
+            y: 0.15, // 適切なY座標に調整
+            width: 0.7,
+            height: 0.7,
+            touchable: true
+        });
+        titleCharacter.init();
+    }
     titleScene.add(titleCharacter);
 
-    console.log(serverStatus);
+    const playButton = new ButtonUI({
+        text: 'オンライン対戦',
+        x: 0.65,
+        y: 0.4,
+        height: 0.1,
+        width: 0.4,
+        color: '#df398c',
+        textSize: 0.05,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            handleNameSubmit();
+            titleScene.remove(playButton);
+        }
+    });
+    titleScene.add(playButton);
+
+    const makeRoomButton = new ButtonUI({
+        text: '部屋作成',
+        x: 0.78,
+        y: 0.3,
+        height: 0.05,
+        width: 0.12,
+        color: '#3241c9',
+        textSize: 0.025,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            makeRoomSubmit();
+        }
+    });
+    titleScene.add(makeRoomButton);
+
+    const joinRoomButton = new ButtonUI({
+        text: '部屋参加',
+        x: 0.64,
+        y: 0.3,
+        height: 0.05,
+        width: 0.12,
+        color: '#3241c9',
+        textSize: 0.025,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            joinRoomSubmit();
+        }
+    });
+    titleScene.add(joinRoomButton);
+
+    const cpuButton = new ButtonUI({
+        text: 'CPU対戦',
+        x: 0.78,
+        y: 0.24,
+        height: 0.05,
+        width: 0.12,
+        color: '#3241c9',
+        textSize: 0.025,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            cpuButtonSubmit();
+        }
+    });
+    titleScene.add(cpuButton);
+
+    const charaSelectButton = new ButtonUI({
+        text: 'キャラ変更',
+        x: -0.58,
+        y: 0.45,
+        height: 0.06,
+        width: 0.16,
+        color: '#3241c9',
+        textSize: 0.028,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            titleCharacter.touchable = false;
+            charaSelectSubmit();
+            const cantouchCharacter = () => {
+                titleCharacter.touchable = true;
+            }
+            document.addEventListener('mouseup', () => {
+                cantouchCharacter();
+                document.removeEventListener('mouseUp', cantouchCharacter)
+            });
+        }
+    });
+
+    titleScene.add(rankingOverlay);
+    titleScene.add(charaSelectButton);
+    titleScene.add(statusOverlay);
+    titleScene.add(onlineText);
+    titleScene.add(cpuLevelOverlay);
+
 
     const savedName = localStorage.getItem("playerName");
 
@@ -202,25 +335,8 @@ export function createTitleScene() {
         nameInput.value = savedName;
     }
     discordButton.style.display = "block";
-    cpumatchOverlay.style.display = "block";
-    rankingOverlay.style.display = "block";
-    roomMakeOverlay.style.display = "flex";
-    nameInputOverlay.style.display = "flex";
-    playButtonOverlay.style.display = "flex";
-    charaSelectOverlay.style.display = "flex";
-
-    // シーン破棄時のイベントリスナー削除
-    titleScene.destroy = () => {
-        document.removeEventListener('click', playBGMOnce);
-
-
-        submitNameButton.removeEventListener("click", handleNameSubmit);
-        makeRoomButton.removeEventListener("click", makeRoomSubmit);
-        joinRoomButton.removeEventListener("click", joinRoomSubmit);
-        charaSelectButton.removeEventListener("click", charaSelectSubmit);
-        cpumatch = false;
-    };
-
+    roomIdInput.style.display = "flex";
+    nameInput.style.display = "flex";
     return titleScene;
 }
 
@@ -228,7 +344,8 @@ export function createTitleScene() {
 
 
 // キャラクター選択シーン
-export function createCharacterSelectScene() {
+export function createCharacterSelectScene(titleCharacter) {
+    console.log(titleCharacter);
     const playBGMOnce = () => {
         if (audioManager.currentBGM === null) {
             audioManager.playBGM('title');
@@ -242,16 +359,6 @@ export function createCharacterSelectScene() {
     const backgroundImageUI = new BackgroundImageUI({ image: title_img });
     selectScene.add(backgroundImageUI);
 
-    let titleCharacter = new CharacterImageUI({
-        image: selectedCharacterName, // 初期表示はなし
-        x: -0.55, // 中央に配置
-        y: 0.15, // 適切なY座標に調整
-        width: 0.7,
-        height: 0.7,
-        touchable: true
-    });
-    titleCharacter.init();
-
     const selectTitle = new TextUI({
         text: () => "キャラクター選択",
         x: 0.4,
@@ -263,8 +370,8 @@ export function createCharacterSelectScene() {
 
     // キャラクター一覧を表示
     const charactersPerRow = 3; // 1行に表示するキャラクター数
-    const characterSize = 0.25; // キャラクター画像の表示サイズ
-    const padding = 0.06; // キャラクター間の余白
+    const characterSize = 0.22; // キャラクター画像の表示サイズ
+    const padding = 0.08; // キャラクター間の余白
     const startX = -(charactersPerRow * (characterSize + padding) - characterSize - padding) / 2 + 0.4; // 開始X座標
     const startY = -0.04; // 開始Y座標
 
@@ -296,6 +403,20 @@ export function createCharacterSelectScene() {
         position: 'left'
     });
 
+    const charaSubmitButton = new ButtonUI({
+        text: "決定",
+        x: 0.4,
+        y: 0.22,
+        height: 0.07,
+        width: 0.15,
+        color: '#3241c9',
+        textSize: 0.03,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            setScene(createTitleScene(titleCharacter));
+        }
+    });
+
 
 
     selectScene.add(overlayUI);
@@ -303,6 +424,7 @@ export function createCharacterSelectScene() {
     selectScene.add(characterProfileText);
     selectScene.add(titleCharacter);
     selectScene.add(selectTitle);
+    selectScene.add(charaSubmitButton);
 
 
     characterFiles.forEach((characterName, index) => {
@@ -316,29 +438,43 @@ export function createCharacterSelectScene() {
             y: y,
             width: characterSize + 0.01,
             height: characterSize + 0.01,
-            color: "#ffffff"
+            color: "#ffffff",
+            touchable: true
         });
 
         const characterUI = new ImageUI({
             image: characterName + '_face',
-            x: x,
-            y: y,
+            x: 0,
+            y: 0,
             width: characterSize,
-            height: characterSize,
-            touchable: true // クリック可能にする
+            height: characterSize
         });
 
         const characterNameText = new TextUI({
             text: () => {
                 return characterInfo[characterName].name;
             },
-            x: x,
-            y: y + characterSize / 3 + 0.09,
+            x: 0,
+            y: characterSize / 3 + 0.10,
             size: 0.03,
             colors: ["#bbdd44", "#000000", "#00000000"],
             textBaseline: 'bottom',
             position: 'center'
         });
+
+        faceOverlayUI.onTouch = () => {
+            faceOverlayUI.width = (characterSize + 0.01) * 1.1;
+            faceOverlayUI.height = (characterSize + 0.01) * 1.1;
+            characterUI.width = characterSize * 1.1;
+            characterUI.height = characterSize * 1.1;
+        }
+
+        faceOverlayUI.unTouch = () => {
+            faceOverlayUI.width = characterSize + 0.01;
+            faceOverlayUI.height = characterSize + 0.01;
+            characterUI.width = characterSize;
+            characterUI.height = characterSize;
+        }
 
 
 
@@ -367,44 +503,36 @@ export function createCharacterSelectScene() {
     clearTitleHTML();
 
     discordButton.style.display = "block";
-    rankingOverlay.style.display = "none";
-    charaSubmitButton.style.display = "block";
 
     return selectScene;
 }
 
-
-export function roomJoinFailed() {
-    const roomJoinFailedMessage = document.getElementById('roomJoinFailedMessage');
-    if (roomJoinFailedMessage.style.display === 'block') return;
-    roomJoinFailedMessage.style.display = 'block';
-    // 強制的にリフローを発生させてトランジションを有効にする
-    roomJoinFailedMessage.offsetHeight;
-    roomJoinFailedMessage.style.opacity = '1';
+export function roomJoinFailed(scene) {
+    const roomJoinFailedOverlay = new OverlayUI({
+        x: 0.6,
+        y: 0.3,
+        width: 0.3,
+        height: 0.06,
+        color: '#187a1c'
+    });
+    const roomJoinFailedtext = new OverlayUI({
+        x: 0,
+        y: 0,
+        size: 0.03
+    });
+    roomJoinFailedOverlay.add(roomJoinFailedtext);
+    scene.add(roomJoinFailedOverlay);
     // 2秒後にメッセージを非表示にする
     setTimeout(() => {
-        roomJoinFailedMessage.style.opacity = '0';
-        // トランジション完了後にdisplayをnoneにする
-        roomJoinFailedMessage.addEventListener('transitionend', function handler() {
-            roomJoinFailedMessage.style.display = 'none';
-            roomJoinFailedMessage.removeEventListener('transitionend', handler);
-        });
+        scene.remove(roomJoinFailedOverlay);
     }, 2000);
 }
 
-
 function cpuButtonSubmit() {
-    cpumatch = !cpumatch;
-    if (cpumatch) {
-        console.log(cpumatch);
-        cpulevelOverlay.style.display = "block";
-    } else {
-        console.log(cpumatch);
-        cpulevelOverlay.style.display = "none";
-    }
-
+    cpuLevelOverlay.visible = !cpuLevelOverlay.visible;
 }
-function cpuLevelSubmit(level, event) {
+
+function cpuLevelSubmit(level) {
     setPlayerName(nameInput.value.trim());
     localStorage.setItem("playerName", playerName);
     if (playerName == "") setPlayerName("名無しの棋士");
@@ -413,7 +541,18 @@ function cpuLevelSubmit(level, event) {
     setScene(createPlayScene(playerName, `CPUレベル${level}`, null, 1, null, now, 0, 0, level));
 }
 
-
-function charaSubmit() {
-    setScene(createTitleScene());
+export function updateRanking() {
+    if (serverStatus && serverStatus.topPlayers) {
+        for (let i = 0; i < 10; i++) {
+            if (serverStatus.topPlayers[i]) {
+                rankingOverlay.childs[i].text = () => {
+                    return `${i + 1}位:${Math.round(serverStatus.topPlayers[i].rating)} ${serverStatus.topPlayers[i].name}`;
+                }
+            } else {
+                rankingOverlay.childs[i].text = () => {
+                    return ``;
+                }
+            }
+        }
+    }
 }

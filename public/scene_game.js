@@ -1,12 +1,10 @@
 import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus } from "./main.js";
 import { Scene } from "./scene.js";
-import { cancelMatchOverlay, createTitleScene, rankingOverlay } from "./scene_title.js";
+import { createTitleScene } from "./scene_title.js";
 import { BackgroundImageUI } from "./ui_background.js";
 import { CharacterInGameUI } from "./ui_character.js";
 import { TextUI } from "./ui_text.js";
 
-
-export const statusOverlay = document.getElementById("statusOverlay");
 export const changeRating = document.getElementById("changeRating");
 
 const resultOverlay = document.getElementById("resultOverlay");
@@ -205,12 +203,6 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
         console.log('動画の再生準備ができました:');
     });
 
-
-
-    cancelMatchOverlay.style.display = "none";
-    statusOverlay.style.display = "none";
-    rankingOverlay.style.display = "none";
-
     playScene.add(playerCharacterUI); // プレイヤーのキャラクター画像UIをシーンに追加
     playScene.add(opponentCharacterUI); // 相手プレイヤーのキャラクター画像UIをシーンに追加
     playScene.add(gameManager.boardUI);
@@ -234,7 +226,6 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
 
 export function backToTitle() {
     resultOverlay.style.display = "none";
-    statusOverlay.style.display = "block";
     setScene(createTitleScene());
     audioManager.playBGM('title');
 }

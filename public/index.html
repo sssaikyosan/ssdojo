@@ -50,8 +50,8 @@
       text-align: center;
       border: none;
       border-radius: 10px;
-
       font-size: 24px;
+      width: 350px;
       white-space: nowrap;
     }
 
@@ -187,27 +187,6 @@
       /* フェードイン・アウトのアニメーション */
     }
 
-    /* ルーム参加失敗メッセージのスタイル */
-    #roomJoinFailedMessage {
-      position: absolute;
-      bottom: 160px;
-      right: 400px;
-      background-color: #187a1c;
-      /* 赤色の背景 */
-      color: white;
-      padding: 5px;
-      border-radius: 5px;
-      z-index: 10;
-      display: none;
-      /* 初期状態では非表示 */
-      opacity: 0;
-      /* 初期状態では透明 */
-      transition: opacity 0.5s ease-in-out;
-      /* フェードイン・アウトのアニメーション */
-      font-size: 20px;
-      text-align: center;
-    }
-
     /* Discordボタンの基本スタイル */
     .discord-button {
       display: inline-block;
@@ -257,7 +236,7 @@
   <canvas id="shogiCanvas" tabindex="0"></canvas>
 
   <div id="rankingOverlay" class="overlay"
-    style="display: block; position: absolute; top: 70px; right: 10px; transform: translate(-0%, -0%); width: 260px;background-color: #000000b0;">
+    style="display: none; position: absolute; top: 70px; right: 10px; transform: translate(-0%, -0%); width: 260px;background-color: #000000b0;">
     <p id="rankingtitle" class="whiteText" style="font-size: 24;">ランキング</p>
     <p id="ranking0" class="whiteText" style="text-align: left; font-size: 18px;">１位: -</p>
     <p id="ranking1" class="whiteText" style="text-align: left; font-size: 18px;">２位: -</p>
@@ -271,45 +250,15 @@
     <p id="ranking9" class="whiteText" style="text-align: left; font-size: 18px;">１０位: -</p>
   </div>
 
-  <div id="roomMakeOverlay" class="overlay"
-    style="display: flex; padding: 8px; position: absolute; bottom: 160px; right: 40px; transform: translate(0%, 0%);">
-    <input type="text" id="roomIdInput" placeholder="部屋ID" maxlength="6">
-    <button id="joinRoomButton" class="blueButton"
-      style="font-size: 20px; padding:5px 7px; border-radius: 5px;">ルーム参加</button>
-    <button id="makeRoomButton" class="blueButton"
-      style="font-size: 20px; padding:5px 7px; border-radius: 5px;">ルーム作成</button>
-  </div>
-  <div>
-    <button id="charaSubmitButton" class="blueButton"
-      style="display: none; position: absolute; bottom: 21%; left: 70%;  font-size: 40px; padding:10px 15px; border-radius: 10px; transform: translate(-50%, -50%);">決定</button>
+  <input type="text" id="nameInput" placeholder="名前" maxlength="12"
+    style="display: none; font-size: 24px; position: absolute; bottom: 5%; left: 50%; width:350px; height:30px; transform: translate(-50%, 0%);">
+  <input type="text" id="roomIdInput" placeholder="部屋ID" maxlength="6"
+    style="display: none; font-size: 20px; padding: 6px; position: absolute; bottom: 18%; left: 72%; width:100px; height:20px; transform: translate(0%, 0%);">
+  <button id="charaSubmitButton" class="blueButton"
+    style="display: none; position: absolute; bottom: 21%; left: 70%;  font-size: 40px; padding:10px 15px; border-radius: 10px; transform: translate(-50%, -50%);">決定</button>
   </div>
 
-  <div id="cancelMatchOverlay" class="overlay"
-    style="display: none; padding: 8px; position: absolute; bottom: 60px; right: 120px; transform: translate(0%, 0%);">
-    <button id="cancelMatchButton" class="blueButton"
-      style="font-size: 36px; padding:5px 7px; border-radius: 5px; background-color: #df398c;">キャンセル</button>
-  </div>
 
-  <div id="cpumatchOverlay" class="overlay"
-    style="display: none; padding: 8px; position: absolute; bottom: 225px; right: 40px; transform: translate(0%, 0%);">
-    <button id="cpuButton" class="blueButton"
-      style="font-size: 20px; padding:5px 7px; border-radius: 5px;">CPU対戦</button>
-  </div>
-  <div id="cpulevelOverlay" class="overlay"
-    style="display: none; padding: 5px 10px; position: absolute; bottom: 285px; right: 40px; transform: translate(0%, 0%);">
-
-    <button id="cpulevel2Button" class="blueButton"
-      style="display:block; font-size: 20px; margin:4px 0px 5px 0px; padding:5px 7px; border-radius: 5px;">レベル2</button>
-    <button id="cpulevel1Button" class="blueButton"
-      style="display:block; font-size: 20px; margin:4px 0px 5px 0px; padding:5px 7px; border-radius: 5px;">レベル1</button>
-    <button id="cpulevel0Button" class="blueButton"
-      style="display:block; font-size: 20px; margin:4px 0px 5px 0px; padding:5px 7px; border-radius: 5px;">レベル0</button>
-  </div>
-
-  <div id="nameInputOverlay" class="overlay"
-    style="display: none; position: absolute; bottom: 40px; left: 50%; transform: translate(-50%, 0%);">
-    <input type="text" id="nameInput" placeholder="名前" maxlength="20">
-  </div>
 
   <div id="roomui">
     <div id="roomIdOverlay" class="overlay"
@@ -354,15 +303,6 @@
       style="position: absolute; bottom:100px; left:50%; display: none; transform: translate(-50%, 0%);">
       <button id="leaveRoomButton" class="roomButton" style="width:120px;">退室</button>
     </div>
-    <!-- ルーム参加失敗メッセージ -->
-    <div id="roomJoinFailedMessage" class="overlay">ルームへの参加に失敗しました</div>
-  </div>
-
-
-  <div id="playButtonOverlay" class="overlay"
-    style="display: flex; position: absolute; bottom: 40px; right: 40px; transform: translate(0%, 0%);">
-    <button id="submitNameButton" class="blueButton"
-      style="font-size: 48px; background-color: #df398c;">オンライン対戦</button>
   </div>
 
   <div id="charaSelectOverlay" class="overlay"
@@ -377,11 +317,6 @@
   <div id="roomResultOverlay" class="overlay"
     style="display: none; position: absolute; top: 70%; left: 50%; transform: translate(-50%, -50%);">
     <button id="toRoomButton" class="blueButton">戻る</button>
-  </div>
-  <div id="statusOverlay" class="overlay"
-    style="display: block;  margin:10px; position: absolute; bottom: 20px; left: 20px; text-align: left;">
-    <p id="gamesPlayedText" class="whiteText">試合数: -</p>
-    <p id="playerRating" class="whiteText">レート: -</p>
   </div>
 
   <!-- 設定ボタンを追加 -->

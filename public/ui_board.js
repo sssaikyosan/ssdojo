@@ -16,6 +16,7 @@ export class BoardUI extends UI {
   hoveredCell = null;
   started = false;
   lastsend = null;
+  touchable = true;
 
   constructor(params) {
     super(params);
@@ -29,6 +30,7 @@ export class BoardUI extends UI {
     });
     this.komadai = komadai;
     this.teban = params.teban;
+
   }
 
   init(teban) {
@@ -117,6 +119,7 @@ export class BoardUI extends UI {
   getBoardPosition(pos) {
     const x = Math.floor(pos.x / CELL_SIZE + BOARD_SIZE / 2);
     const y = Math.floor(pos.y / CELL_SIZE + BOARD_SIZE / 2);
+    console.log(x, y);
     let resX = 0;
     let resY = 0;
 

@@ -1,10 +1,9 @@
-import { rankingOverlay } from "./scene_title.js";
 import { BackgroundImageUI } from "./ui_background.js";
 import { CharacterInGameUI } from "./ui_character.js";
 import { TextUI } from "./ui_text.js";
 import { audioManager, battle_img, gameManager, scene, selectedCharacterName, setScene, socket } from "./main.js";
 import { Scene } from "./scene.js";
-import { countDownText, endText, loseText, statusOverlay, timeText, winText, opponentCharacter, setOpponentCharacter } from "./scene_game.js";
+import { countDownText, endText, loseText, timeText, winText, opponentCharacter, setOpponentCharacter } from "./scene_game.js";
 import { roomIdOverlay, tebanOverlay, readyOverlay, cancelOverlay, leaveRoomOverlay, createRoomScene, roomUpdate } from "./scene_room.js";
 
 const roomResultOverlay = document.getElementById("roomResultOverlay");
@@ -127,9 +126,6 @@ export function createRoomPlayScene(senteName, senteCharacter, goteName, goteCha
     });
 
     roomResultOverlay.style.display = "none";
-    statusOverlay.style.display = "none";
-    rankingOverlay.style.display = "none";
-
     roomIdOverlay.style.display = 'none';
     tebanOverlay.style.display = 'none';
     readyOverlay.style.display = 'none';
@@ -150,7 +146,6 @@ export function handleToRoomClick() {
 
 export function backToRoom(data) {
     roomResultOverlay.style.display = "none";
-    statusOverlay.style.display = "block";
     setScene(createRoomScene(data));
     audioManager.playBGM('title');
 }

@@ -13,26 +13,19 @@ export class TextUI extends UI {
     this.textBaseline = params.textBaseline;
     this.position = params.position;
     this.colors = params.colors;
-    this.outlineColor = params.outlineColor;
-    this.doubleOutlineColor = params.doubleOutlineColor;
     this.backgroundColor = params.backgroundColor;
     this.nextline = 30;
     this.lineoffset = 0.1;
   }
 
-  draw(ctx, scale) {
-    ctx.save();
-    const x = this.x * scale;
-    const y = this.y * scale;
+  renderSelf(ctx, scale) {
     if (this.backgroundColor) {
       const textWidth = this.getTextWidth(ctx, scale);
-      const paddingX = 0.0; // 横方向のパディング (ゲーム内座標)
-      const paddingY = 0.0; // 縦方向のパディング (ゲーム内座標)
-      const backgroundWidth = (textWidth + paddingX + this.size * 0.4) * scale;
-      const backgroundHeight = (this.size + paddingY + this.size * 0.4) * scale;
+      const backgroundWidth = (textWidth + this.size * 0.4) * scale;
+      const backgroundHeight = (this.size + this.size * 0.4) * scale;
 
-      let backgroundX = x;
-      let backgroundY = y;
+      let backgroundX = 0;
+      let backgroundY = 0;
 
       // テキストの位置揃えに合わせて背景の位置を調整
       if (this.position === 'center') {
@@ -60,30 +53,29 @@ export class TextUI extends UI {
     switch (this.colors.length) {
       case 1:
         while (length > line * this.nextline) {
-          drawText(ctx, this.text().substring(line * this.nextline, (line + 1) * this.nextline), x, y + line * (size + size * this.lineoffset), size, this.colors[0], this.textBaseline, this.position);
+          drawText(ctx, this.text().substring(line * this.nextline, (line + 1) * this.nextline), 0, line * (size + size * this.lineoffset), size, this.colors[0], this.textBaseline, this.position);
           line++;
         }
         break;
       case 2:
         while (length > line * this.nextline) {
-          drawTextWithOutline(ctx, this.text().substring(line * this.nextline, (line + 1) * this.nextline), x, y + line * (size + size * this.lineoffset) * scale, size, this.colors, this.textBaseline, this.position);
+          drawTextWithOutline(ctx, this.text().substring(line * this.nextline, (line + 1) * this.nextline), 0, line * (size + size * this.lineoffset), size, this.colors, this.textBaseline, this.position);
           line++;
         }
         break;
       case 3:
         while (length > line * this.nextline) {
-          drawTextWithDoubleOutline(ctx, this.text().substring(line * this.nextline, (line + 1) * this.nextline), x, y + line * (size + size * this.lineoffset), size, this.colors, this.textBaseline, this.position);
+          drawTextWithDoubleOutline(ctx, this.text().substring(line * this.nextline, (line + 1) * this.nextline), 0, line * (size + size * this.lineoffset), size, this.colors, this.textBaseline, this.position);
           line++;
         }
         break;
       default:
         while (length > line * this.nextline) {
-          drawText(ctx, this.text().substring(line * this.nextline, (line + 1) * this.nextline), x, y + line * (size + size * this.lineoffset), size, this.colors[0], this.textBaseline, this.position);
+          drawText(ctx, this.text().substring(line * this.nextline, (line + 1) * this.nextline), 0, line * (size + size * this.lineoffset), size, this.colors[0], this.textBaseline, this.position);
           line++;
         }
         break;
     }
-    ctx.restore();
   }
   /**
      * テキストの描画幅を取得します。

@@ -2,10 +2,9 @@ import { canvas } from "./main.js";
 
 export class Scene {
   scale = 0;
-  aspect = 3 / 4;
+  aspect = 9 / 16;
   offsetX = 0;
   offsetY = 0;
-  htmls = [];
   ui_lists = [];
   lastFrameTime = performance.now();
 
@@ -43,9 +42,9 @@ export class Scene {
 
   touchCheck(event, str) {
     const pos = this.getGamePosition(event);
-    this.ui_lists.forEach(ui => {
-      ui.touchCheck(pos, str);
-    });
+    for (let i = 0; i < this.ui_lists.length; i++) {
+      this.ui_lists[this.ui_lists.length - i - 1].touchCheck(pos, str);
+    }
   }
 
   resize() {
