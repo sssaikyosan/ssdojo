@@ -300,6 +300,69 @@ export function createTitleScene(savedTitleCharacter = null) {
     });
     titleScene.add(cpuButton);
 
+    const ruleOverlay = new OverlayUI({
+        x: 0,
+        y: 0,
+        height: 0.4,
+        width: 0.8,
+        visible: false
+    });
+
+    const ruleTitle = new TextUI({
+        text: () => {
+            return 'ルール'
+        },
+        x: 0,
+        y: -0.14,
+        size: 0.06,
+        colors: ['#ffffffff', '#000000ff', '#00000000'],
+    });
+
+    const ruleText = new TextUI({
+        text: () => {
+            return '駒の動きは通常の将棋と同じですが一部特殊ルールがあります。　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　１:歩は自陣（下から3マスまで）にしか打てません。その他の　　駒は通常通りどこにでも打てます。　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　２:トライ勝利ルールを採用しています。自玉が敵玉の開始位置（先手なら5一、後手なら5九)に到達したら勝利となります。'
+        },
+        x: 0,
+        y: -0.06,
+        size: 0.025,
+        colors: ['#ffffffff', '#00000000', '#00000000'],
+    });
+
+    const closeRuleButton = new ButtonUI({
+        text: '閉じる',
+        x: 0,
+        y: 0.16,
+        width: 0.15,
+        height: 0.05,
+        color: '#3241c9',
+        textSize: 0.032,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            ruleOverlay.visible = false;
+        }
+    });
+
+    ruleOverlay.add(ruleTitle);
+    ruleOverlay.add(ruleText);
+    ruleOverlay.add(closeRuleButton);
+
+    const ruleButton = new ButtonUI({
+        text: 'ルール',
+        x: 0.78,
+        y: 0.02,
+        height: 0.05,
+        width: 0.12,
+        color: '#3241c9',
+        textSize: 0.025,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            ruleOverlay.visible = true;
+        }
+    });
+    titleScene.add(ruleOverlay);
+    titleScene.add(ruleButton);
+
+
     const charaSelectButton = new ButtonUI({
         text: 'キャラ変更',
         x: -0.58,

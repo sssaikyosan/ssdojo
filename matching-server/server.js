@@ -1,64 +1,124 @@
 import 'dotenv/config';
-
 import express from 'express';
-import https from 'https';
 import http from 'http';
-import { Server } from 'socket.io';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-import { ioSetup } from './iosetting.js';
-import { ServerState } from './serverstate.js'
-
-export const __filename = fileURLToPath(import.meta.url);
-export const __dirname = path.dirname(__filename);
-export const RATING_FILE = path.join(__dirname, '../Data/ratings.json');
+// import { Server } from 'socket.io'; // Socket.IOは使用しない
+import axios from 'axios'; // HTTPリクエスト送信のため
 
 const app = express();
+const server = http.createServer(app);
+// const io = new Server(server); // Socket.IOは使用しない
+
+// 利用可能なゲームサーバーのリスト
+const availableGameServers = [];
+
+// クライアントとゲームサーバー情報のマッピング
+const clientGameServerMap = new Map();
+
+// マッチングキュー (userIdのみを格納)
+const matchQueue = [];
+
+// ゲームサーバー登録エンドポイント
+app.post('/register_game_server', express.json(), (req, res) => {
+    const { address } = req.body;
+    if (address && !availableGameServers.includes(address)) {
+        availableGameServers.push(address);
+        console.log(`Game server registered: ${address}`);
+        res.status(200).send('Registered successfully');
+    } else {
+        res.status(400).send('Invalid request or server already registered');
+    }
+});
+
+// クライアント向けゲームサーバー情報取得エンドポイント
+app.get('/get_my_room_info', (req, res) => {
+    const userId = req.query.userId; // クライアント識別のためのパラメータ
+    if (userId && clientGameServerMap.has(userId)) {
+        const roomInfo = clientGameServerMap.get(userId);
+        // 情報提供後、マッピングから削除するかはクライアントの実装によるが、
+        // 一度取得したら削除する方がシンプルかもしれない。
+        // clientGameServerMap.delete(userId); // 必要に応じてコメント解除
+        res.status(200).json(roomInfo);
+    } else {
+        res.status(404).send('Room info not found for this user');
+    }
+});
+
+// クライアントからのマッチング要求を受け付けるエンドポイント
+app.post('/request_match', express.json(), (req, res) => {
+    const { userId } = req.body; // クライアントからユーザーIDを受け取る想定
+    if (userId) {
+        console.log(`Match request from user: ${userId}`);
+        // 既にキューにいるか確認
+        const existingPlayer = matchQueue.find(id => id === userId);
+        if (!existingPlayer) {
+            matchQueue.push(userId);
+            console.log(`User ${userId} added to match queue.`);
+            // マッチング処理を実行
+            processMatchQueue();
+            res.status(200).send('Match request received');
+        } else {
+            console.log(`User ${userId} is already in the match queue.`);
+            res.status(200).send('Already in queue'); // 既にキューにいる場合も成功とする
+        }
+    } else {
+        res.status(400).send('Invalid request');
+    }
+});
 
 
-// SSL証明書の読み込みオプション
-let server;
-if (process.env.NODE_ENV === 'development') {
-    app.use(express.static(path.join(__dirname, '..', 'public')));
-    // ルートパスへのリクエストにindex.htmlを送信
-    app.get('/', (req, res) => {
-        res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
-    });
-    server = http.createServer(app);
-} else {
-    const options = {
-        key: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/privkey.pem'),
-        cert: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/fullchain.pem')
-    };
-    server = https.createServer(options, app);
-}
+// マッチング処理関数 (簡易版)
+const processMatchQueue = async () => {
+    console.log(`Processing match queue. Current queue size: ${matchQueue.length}`);
+    // 少なくとも2人いて、利用可能なゲームサーバーがある場合
+    if (matchQueue.length >= 2 && availableGameServers.length > 0) {
+        // キューの先頭から2人を取り出す
+        const player1Id = matchQueue.shift();
+        const player2Id = matchQueue.shift();
 
-const socketOptions = {
-    cors: {
-        origin: ['https://ssdojo.net', 'http://localhost:5000'], // 許可するオリジンを具体的に指定
-        credentials: true
+        // 利用可能なゲームサーバーを一つ選択 (ここでは単純にリストの先頭)
+        const gameServerAddress = availableGameServers[0];
+
+        // 部屋IDを生成 (簡易版)
+        const roomId = `room_${Date.now()}_${player1Id}_${player2Id}`;
+
+        try {
+            // ゲームサーバーに部屋作成を指示
+            console.log(`Requesting room creation on ${gameServerAddress} for room ${roomId}`);
+            // ゲームサーバーにはユーザーIDのリストを渡す
+            const response = await axios.post(`${gameServerAddress}/create_room`, { roomId, players: [player1Id, player2Id] });
+
+            if (response.status === 200) {
+                console.log(`Room ${roomId} created successfully on ${gameServerAddress}`);
+                // クライアントとゲームサーバー情報のマッピングを保存
+                clientGameServerMap.set(player1Id, { serverAddress: gameServerAddress, roomId: roomId });
+                clientGameServerMap.set(player2Id, { serverAddress: gameServerAddress, roomId: roomId });
+
+                // クライアントへの通知は行わない。クライアントが /get_my_room_info をポーリングして取得する想定。
+
+                console.log(`Match found: ${player1Id} and ${player2Id} in room ${roomId} on ${gameServerAddress}`);
+
+            } else {
+                console.error(`Failed to create room on ${gameServerAddress}. Status: ${response.status}`);
+                // 部屋作成失敗時はキューに戻すか、エラーハンドリング
+                matchQueue.unshift(player1Id, player2Id); // 一旦キューに戻す
+            }
+
+        } catch (error) {
+            console.error(`Error requesting room creation on ${gameServerAddress}:`, error.message);
+            // エラー発生時はキューに戻すか、エラーハンドリング
+            matchQueue.unshift(player1Id, player2Id); // 一旦キューに戻す
+        }
+        // マッチングが成立した場合、再度キューを処理して次のマッチングを探す
+        processMatchQueue();
     }
 };
 
 
-export const io = new Server(server, socketOptions);
-export const serverState = new ServerState(io);
-
-serverState.loadRatings(); // レーティングデータを読み込む
-serverState.getTopPlayers();
-
-// HTTPSサーバーを起動
-const PORT = 5000;
+const PORT = process.env.PORT || 3000; // マッチングサーバーのポート
 server.listen(PORT, () => {
-    console.log(new Date(), `HTTPS Server is running on port ${PORT})`);
+    console.log(`Matching Server is running on port ${PORT}`);
 });
 
-ioSetup();
-
-// 1秒ごとにマッチメイキングを実行
-setInterval(() => {
-    serverState.matchMaking();
-    serverState.sendServerStatus();
-}, 1000); // 1秒ごとに実行
+// 一定間隔でマッチングキューを処理 (Polling方式)
+// クライアントからのリクエスト時にprocessMatchQueueを呼び出す方式と併用しても良い
+// setInterval(processMatchQueue, 5000); // 例: 5秒ごとにキューをチェック

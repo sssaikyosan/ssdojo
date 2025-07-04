@@ -301,6 +301,8 @@ class Board {
             for (let i = 0; i < BOARD_SIZE; i++) {
                 if (this.map[x][i] && this.map[x][i].type === 'pawn' && this.map[x][i].teban === teban) return true;
             }
+            if (teban === 1 && y < 6) return true;
+            if (teban === -1 && y > 2) return true;
         }
         return false;
     }

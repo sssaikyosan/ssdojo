@@ -65,9 +65,13 @@ export class GameManager {
         this.boardUI.lastsend = null;
         const result = this.board.movePieceLocal(move);
         if (result.res) {
-            if (this.boardUI.draggingPiece && move.nx === this.boardUI.draggingPiece.x && move.ny === this.boardUI.draggingPiece.y) {
-                this.boardUI.draggingPiece = null;
-                this.boardUI.draggingPiecePos = null;
+            if (this.boardUI.draggingPiece) {
+                if (move.nx === this.boardUI.draggingPiece.x && move.ny === this.boardUI.draggingPiece.y) {
+                    this.boardUI.draggingPiece = null;
+                    this.boardUI.draggingPiecePos = null;
+                } else if (move.type && move.teban === this.teban && this.board.komadaiPieces[move.teban === 1 ? 'sente' : 'gote'][move.type] === 0 && this.boardUI.draggingPiece.type === move.type) {
+                    this.boardUI.draggingPiece = null;
+                }
             }
             audioManager.playSound("sound");
 

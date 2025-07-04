@@ -172,7 +172,6 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
         width: 0.48, // サイズ調整
         height: 0.48
     });
-
     // 相手プレイヤーのキャラクター画像UIを追加
     opponentCharacterUI = new CharacterInGameUI({
         image: opponentCharacterName, // 相手プレイヤー名からキャラクター名を生成（仮）
@@ -181,6 +180,7 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
         width: 0.48, // サイズ調整
         height: 0.48
     });
+
 
     if (teban === 1) {
         senteCharacter = playerCharacterUI;
@@ -233,6 +233,21 @@ export function backToTitle() {
 export function endGame(data) {
     if (gameManager.teban === 0) {
         changeRating.textContent = "レート変動 なし(観戦)";
+        if (data.winPlayer === 1 && playerCharacterUI.image) {
+            playerCharacterUI.playWinVideo(0);
+            playerCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                resultOverlay.style.display = "block";
+            });
+        } else if (data.winPlayer === -1 && opponentCharacterUI.image) {
+            opponentCharacterUI.playWinVideo(0);
+            opponentCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                resultOverlay.style.display = "block";
+            });
+        } else {
+            setTimeout(() => {
+                resultOverlay.style.display = "block";
+            }, 1000);
+        }
     } else if (data.winPlayer === gameManager.teban) {
         const oldrate = Math.round(data.winRating);
         const newrate = Math.round(data.newWinRating);
@@ -240,8 +255,15 @@ export function endGame(data) {
         scene.add(winText);
         setStatus(newrate, data.winGames);
         // 勝利時音声の再生
-        if (playerCharacterUI) {
+        if (playerCharacterUI.image) {
             playerCharacterUI.playWinVideo(0);
+            playerCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                resultOverlay.style.display = "block";
+            });
+        } else {
+            setTimeout(() => {
+                resultOverlay.style.display = "block";
+            }, 1000);
         }
     } else {
         const oldrate = Math.round(data.loseRating);
@@ -250,12 +272,19 @@ export function endGame(data) {
         scene.add(loseText);
         setStatus(newrate, data.loseGames);
         // 敵勝利時音声の再生
-        if (opponentCharacterUI) {
+        if (opponentCharacterUI.image) {
             opponentCharacterUI.playWinVideo(0);
+            opponentCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                resultOverlay.style.display = "block";
+            });
+        } else {
+            setTimeout(() => {
+                resultOverlay.style.display = "block";
+            }, 1000);
         }
     }
 
-    resultOverlay.style.display = "block";
+
     // Use the named function for adding the listener
 
     gameManager.resetRoom();
@@ -267,17 +296,29 @@ export function endCPUGame(data) {
     if (data.winPlayer === gameManager.teban) {
         scene.add(winText);
         // 勝利時音声の再生
-        if (playerCharacterUI) {
+        if (playerCharacterUI.image) {
             playerCharacterUI.playWinVideo(0);
+            playerCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                resultOverlay.style.display = "block";
+            });
+        } else {
+            setTimeout(() => {
+                resultOverlay.style.display = "block";
+            }, 1000);
         }
     } else {
         scene.add(loseText);
         // 敵勝利時音声の再生
-        if (opponentCharacterUI) {
+        if (opponentCharacterUI.image) {
             opponentCharacterUI.playWinVideo(0);
+            opponentCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                resultOverlay.style.display = "block";
+            });
+        } else {
+            setTimeout(() => {
+                resultOverlay.style.display = "block";
+            }, 1000);
         }
     }
-
-    resultOverlay.style.display = "block";
     gameManager.board.finished = true;
 }

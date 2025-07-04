@@ -345,19 +345,29 @@ export class BoardUI extends UI {
       return false;
     }
 
-    if (this.draggingPiece.x < 0) return;
-
-    for (const move of PIECE_MOVES[this.draggingPiece.type]) {
-      let moveX = this.draggingPiece.x + move.dx * this.teban;
-      let moveY = this.draggingPiece.y + move.dy * this.teban;
-      while (moveX >= 0 && moveX < BOARD_SIZE && moveY >= 0 && moveY < BOARD_SIZE) {
-        const piece = this.board.map[moveX][moveY];
-        if (piece && piece.teban === this.teban) break;
-        if (drawSquare(moveX, moveY, this.teban)) return true;
-        if (!move.recursive) break;
-        if (piece) break;
-        moveX += move.dx * this.teban;
-        moveY += move.dy * this.teban;
+    if (this.draggingPiece.x < 0) {
+      for (let i = 0; i < BOARD_SIZE; i++) {
+        for (let j = 0; j < BOARD_SIZE; j++) {
+          if (this.board.map[i][j] === null) {
+            if (this.board.isNihu(i, j, this.draggingPiece.type, gameManager.teban)) continue;
+            if (this.board.isTopCell(i, j, this.draggingPiece.type, gameManager.teban)) continue;
+            drawSquare(i, j, this.teban);
+          }
+        }
+      }
+    } else {
+      for (const move of PIECE_MOVES[this.draggingPiece.type]) {
+        let moveX = this.draggingPiece.x + move.dx * this.teban;
+        let moveY = this.draggingPiece.y + move.dy * this.teban;
+        while (moveX >= 0 && moveX < BOARD_SIZE && moveY >= 0 && moveY < BOARD_SIZE) {
+          const piece = this.board.map[moveX][moveY];
+          if (piece && piece.teban === this.teban) break;
+          if (drawSquare(moveX, moveY, this.teban)) return true;
+          if (!move.recursive) break;
+          if (piece) break;
+          moveX += move.dx * this.teban;
+          moveY += move.dy * this.teban;
+        }
       }
     }
   }

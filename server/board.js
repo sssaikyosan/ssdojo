@@ -149,12 +149,14 @@ export class Board {
     return false;
   }
 
-  //二歩判定
+  //二歩判定,特殊ルール判定（歩は自陣にしか打てない）
   isNihu(x, y, type, teban) {
     if (type === 'pawn') {
       for (let i = 0; i < BOARD_SIZE; i++) {
         if (this.map[x][i] && this.map[x][i].type === 'pawn' && this.map[x][i].teban === teban) return true;
       }
+      if (teban === 1 && y < 6) return true;
+      if (teban === -1 && y > 2) return true;
     }
     return false;
   }

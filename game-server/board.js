@@ -1,4 +1,3 @@
-import { gameManager } from "./main.js";
 import { BOARD_SIZE, MOVETIME, PIECE_MOVES, UNPROMODED_TYPES } from "./const.js";
 import { getPromotedType, getUnPromotedType } from "./utils.js";
 
@@ -16,18 +15,11 @@ export class Board {
     sente: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 },
     gote: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 }
   };
-  // komadaiServerTime = { sente: 0, gote: 0 };
-  // komadaipTime = { sente: 0, gote: 0 };
   kifu = [];
 
   serverstarttime = 0;
   starttime = 0;
   time = 0;
-  matched = false;
-  started = false;
-  finished = false;
-
-  currentTesuu = 0;
 
   // 盤面の初期化
   init(servertime, time) {
@@ -36,11 +28,6 @@ export class Board {
     // this.komadaipTime = { sente: time, gote: time };
     this.starttime = time;
     this.time = time;
-    this.matched = true;
-    this.komadaiPieces = {
-      sente: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 },
-      gote: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 }
-    };
     this.map = [[null, null, null, null, null, null, null, null, null],
     [null, null, null, null, null, null, null, null, null],
     [null, null, null, null, null, null, null, null, null],
@@ -50,6 +37,11 @@ export class Board {
     [null, null, null, null, null, null, null, null, null],
     [null, null, null, null, null, null, null, null, null],
     [null, null, null, null, null, null, null, null, null]];
+    this.komadaiPieces = {
+      sente: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 },
+      gote: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 }
+    };
+    this.kifu = [];
     this.initPieces(1);
     this.initPieces(-1);
   }
@@ -84,6 +76,12 @@ export class Board {
   //無から駒を配置する関数
   setPiece(x, y, type, teban) {
     this.map[x][y] = { type: type, teban: teban, lastmovetime: this.serverstarttime, lastmoveptime: this.starttime };
+  }
+
+  //駒を駒台へ移動させる関数
+  returnToKomadai(type, teban) {
+    this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type]++;
+    return;
   }
 
   //指定したマスへの移動が合法手か判定
@@ -134,14 +132,6 @@ export class Board {
   //指定した位置に駒を打てるか判定
   canPut(x, y, type, teban, servertime) {
     // if (servertime - (teban === 1 ? this.komadaiServerTime.sente : this.komadaiServerTime.gote) < MOVETIME) return false;
-    if (this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type] <= 0) return false
-    if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE || this.map[x][y]) return false;
-    if (this.isTopCell(x, y, type, teban)) return false;
-    if (this.isNihu(x, y, type, teban)) return false;
-    return true;
-  }
-
-  canPutPlace(x, y, type, teban) {
     if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE || this.map[x][y]) return false;
     if (this.isTopCell(x, y, type, teban)) return false;
     if (this.isNihu(x, y, type, teban)) return false;
@@ -159,14 +149,12 @@ export class Board {
     return false;
   }
 
-  //二歩判定,特殊ルール判定（歩は自陣にしか打てない）
+  //二歩判定
   isNihu(x, y, type, teban) {
     if (type === 'pawn') {
       for (let i = 0; i < BOARD_SIZE; i++) {
         if (this.map[x][i] && this.map[x][i].type === 'pawn' && this.map[x][i].teban === teban) return true;
       }
-      if (teban === 1 && y < 6) return true;
-      if (teban === -1 && y > 2) return true;
     }
     return false;
   }
@@ -185,11 +173,13 @@ export class Board {
   putPieceLocal(data) {
     const { x, y, nx, ny, type, nari, teban, roomId, servertime } = data;
     const lmp = performance.now();
+    if (this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type] <= 0) return { res: false, capture: null };
     if (!this.canPut(nx, ny, type, teban, servertime)) return { res: false, capture: null };
     this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type]--;
 
     this.map[nx][ny] = { type: type, teban: teban, lastmovetime: servertime, lastmoveptime: lmp };
-
+    // this.komadaiServerTime[teban === 1 ? 'sente' : 'gote'] = servertime;
+    // this.komadaipTime[teban === 1 ? 'sente' : 'gote'] = lmp;
     this.kifu.push({ x: -2 + teban, y: -2 + teban, nx: nx, ny: ny });
     return { res: true, capture: null };
   }
@@ -207,11 +197,6 @@ export class Board {
     if (!result.res) return { res: false, capture: null };
 
     this.movePiece(data, result.capture, lmp);
-    if (gameManager.boardUI.draggingPiece && gameManager.boardUI.draggingPiece.x === x && gameManager.boardUI.draggingPiece.y === y) {
-      gameManager.boardUI.draggingPiece = null;
-    }
-
-    if (result.res) this.currentTesuu++;
 
     return result;
   }
@@ -274,15 +259,12 @@ export class Board {
     return true;
   }
 
-
+  //勝敗判定
   checkGameEnd(data) {
-    const { nx, ny, teban } = data;
+    const { x, y, nx, ny, type, nari, teban, roomId, servertime } = data;
 
-    if (this.komadaiPieces["sente"]["king2"] > 0) {
-      return { player: 1, text: "勝利" };
-    }
-    if (this.komadaiPieces["gote"]["king"] > 0) {
-      return { player: -1, text: "勝利" };
+    if (this.komadaiPieces["sente"]["king2"] > 0 || this.komadaiPieces["gote"]["king"] > 0) {
+      return { player: teban, text: "勝利" };
     }
     if (this.map[nx][ny].type === "king" && teban === 1 && nx === 4 && ny === 0) {
       return { player: teban, text: "トライ勝ち" };
@@ -298,7 +280,6 @@ export class Board {
     this.map[lastMove.x][lastMove.y] = this.map[lastMove.nx][lastMove.ny];
     if (lastMove.capturePiece) {
       this.map[lastMove.nx][lastMove.ny] = { type: lastMove.capturePiece, teban: -lastMove.teban, lastMovetime: lastMove.captime, lastMoveptime: this.starttime }
-      this.currentTesuu--;
     }
   }
 }
