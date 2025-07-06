@@ -4,117 +4,42 @@ import fs from 'fs';
 import { getDisplayRating, calRating, generateRandomString } from './utils.js';
 import { Room } from './room.js';
 
-import sqlite3 from 'sqlite3'; // sqlite3 モジュールをインポート
-
-const DB_PATH = './Data/game.db'; // データベースファイルのパス
+import { Postgure } from './postgure.js'; // Postgure クラスをインポート
 
 export class ServerState {
     timecount = 0;
     rooms = {};
     players = {};
-    ratings = {}; // メモリ上のキャッシュとして残す
-    topPlayers = [];
-    db; // SQLiteデータベース接続用のプロパティ
+    // ratings = {}; // メモリ上のキャッシュは使用しない
+    topPlayers = []; // トッププレイヤーリストはキャッシュとして保持する可能性あり、または取得時に都度利用
+    postgureDb; // Postgure クラスのインスタンスを保持
 
     constructor(io) {
         this.io = io;
-        this.initDatabase(); // データベース初期化処理
+        this.postgureDb = new Postgure(); // Postgure のインスタンスを作成
     }
 
-    // データベースの初期化と接続
-    initDatabase() {
-        this.db = new sqlite3.Database(DB_PATH, (err) => {
-            if (err) {
-                console.error('データベース接続エラー:', err.message);
-            } else {
-                console.log('SQLiteデータベースに接続しました。');
-                this.createRatingsTable(); // テーブル作成処理
-                this.loadRatings(); // データベースからレーティングデータを読み込み
-            }
-        });
+    // プレイヤーのレーティングデータをデータベースに保存（挿入または更新）(Postgure クラスに処理を委譲)
+    async savePlayerInfo(data) { // メソッド名を変更
+        console.log(`Saving player info for UserID: ${data.player_id} via Postgure...`);
+        await this.postgureDb.savePlayerInfo(data);
     }
 
-    // ratings テーブルの作成
-    createRatingsTable() {
-        const sql = `
-            CREATE TABLE IF NOT EXISTS ratings (
-                player_id TEXT PRIMARY KEY,
-                total_games INTEGER DEFAULT 0,
-                rating REAL DEFAULT 1500,
-                last_login DATETIME,
-                name TEXT
-            )
-        `;
-        this.db.run(sql, (err) => {
-            if (err) {
-                console.error('ratingsテーブル作成エラー:', err.message);
-            } else {
-                console.log('ratingsテーブルが存在しないため作成しました、または既に存在します。');
-            }
-        });
-    }
-
-    // プレイヤーのレーティングデータをSQLiteに保存（挿入または更新）
-    saveRatings(userId, ratingData) {
-        const sql = `
-            INSERT INTO ratings (player_id, total_games, rating, last_login, name)
-            VALUES (?, ?, ?, ?, ?)
-            ON CONFLICT(player_id) DO UPDATE SET
-                total_games = excluded.total_games,
-                rating = excluded.rating,
-                last_login = excluded.last_login,
-                name = excluded.name
-        `;
-        this.db.run(sql, [userId, ratingData.games, ratingData.rating, ratingData.lastLogin.toISOString(), ratingData.name], (err) => {
-            if (err) {
-                console.error(`レーティングデータ保存エラー (UserID: ${userId}):`, err.message);
-            } else {
-                console.log(`レーティングデータを保存しました (UserID: ${userId})`);
-            }
-        });
-    }
-
-    // レーティングデータをSQLiteから読み込み
-    loadRatings() {
-        const sql = `SELECT * FROM ratings`;
-        this.db.all(sql, [], (err, rows) => {
-            if (err) {
-                console.error('レーティングデータ読み込みエラー:', err.message);
-                this.ratings = {}; // エラー時はキャッシュをクリア
-            } else {
-                this.ratings = {}; // 既存のキャッシュをクリア
-                rows.forEach((row) => {
-                    this.ratings[row.player_id] = {
-                        rating: row.rating,
-                        games: row.total_games,
-                        lastLogin: new Date(row.last_login), // DATETIME文字列をDateオブジェクトに変換
-                        name: row.name
-                    };
-                });
-                console.log(`SQLiteから${rows.length}件のレーティングデータを読み込みました`);
-            }
-        });
-    }
-
-    // 新しいプレイヤーのレーティングデータを作成し、SQLiteに保存
-    makeRating(userId, name) {
-        if (this.ratings[userId]) return false; // キャッシュに存在する場合は作成しない
-
-        const initialRatingData = { rating: 1500, games: 0, lastLogin: new Date(), name: name };
-        this.ratings[userId] = initialRatingData; // キャッシュに追加
-
-        // SQLiteに保存
-        this.saveRatings(userId, initialRatingData);
-
-        return true;
+    async getPlayerInfo(player_id) { // 非同期にする
+        const playerInfo = await this.postgureDb.readPlayerInfo(player_id);
+        if (!playerInfo) {
+            const player_id = uuid();
+            const initialPlayerInfo = { player_id: player_id, rating: 1500, total_games: 0, lastLogin: new Date(), name: '' };
+            console.log(`Create player info for UserID: ${player_id} via Postgure...`);
+            await this.postgureDb.savePlayerInfo(initialPlayerInfo);
+            return initialPlayerInfo;
+        }
+        return playerInfo;
     }
 
     addPlayer(socket) {
         if (!socket.id) return false;
         this.players[socket.id] = new Player(socket);
-        // プレイヤーが接続した際に、ユーザーIDが確定したら makeRating または loadRatings を呼び出す必要がある。
-        // 現在のコードではユーザーIDの確定タイミングが不明確なため、ここでは処理を追加しない。
-        // ユーザーIDと名前は、ログイン機能などで別途設定されることを想定する。
         return true;
     }
 
@@ -128,7 +53,7 @@ export class ServerState {
         return true;
     }
 
-    matchMaking() {
+    matchMakingProcess() {
         const matchMakingPlayers = [];
         for (const playerId in this.players) {
             if (this.players[playerId].state === "matching") {
@@ -142,52 +67,61 @@ export class ServerState {
                 const player1 = matchMakingPlayers.shift();
                 const player2 = matchMakingPlayers.shift();
 
-                const roomId = uuid();  // ルームIDを生成
+                this.matchMake(player1, player2);
 
-                this.rooms[roomId] = new Room(roomId, 'rating');
-                this.rooms[roomId].addPlayer(player1, 'sente');
-                this.rooms[roomId].addPlayer(player2, 'gote');
-
-                const time = performance.now();
-                this.rooms[roomId].startGame(time);
-
-                // 両プレイヤーにマッチング完了を通知
-                // userId の取得方法が不明確だが、ratingProcess で使われている前提なのでそのままにする
-                const rate1 = this.ratings[this.players[player1].userId];
-                const rate2 = this.ratings[this.players[player2].userId];
-
-                const player1rating = getDisplayRating(rate1.rating, rate1.games);
-                const player2rating = getDisplayRating(rate2.rating, rate2.games);
 
                 console.log("matched", this.players[player1].characterName);
                 console.log("matched", this.players[player2].characterName);
 
-                this.players[player1].goToPlay(roomId);
-                this.io.to(this.players[player1].socket.id).emit("matchFound", {
-                    roomId: roomId,
-                    teban: 1,
-                    servertime: time,
-                    name: this.players[player2].name,
-                    characterName: this.players[player2].characterName,
-                    rating: player1rating,
-                    opponentRating: player2rating
-                });
-
-                this.players[player2].goToPlay(roomId);
-                this.io.to(this.players[player2].socket.id).emit("matchFound", {
-                    roomId: roomId,
-                    teban: -1,
-                    servertime: time,
-                    name: this.players[player1].name,
-                    characterName: this.players[player1].characterName,
-                    rating: player2rating,
-                    opponentRating: player1rating
-                });
 
                 console.log(new Date(), `Matched players: (先手:${this.players[player1].name}) vs (後手:${this.players[player2].name})`);
             }
         }
     }
+
+    async matchMake(player1, player2) {
+        const roomId = uuid();  // ルームIDを生成
+
+        this.rooms[roomId] = new Room(roomId, 'rating');
+        this.rooms[roomId].addPlayer(player1, 'sente');
+        this.rooms[roomId].addPlayer(player2, 'gote');
+
+        const player1Info = await this.postgureDb.readPlayerInfo(this.players[player1].player_id);
+        const player2Info = await this.postgureDb.readPlayerInfo(this.players[player2].player_id);
+
+        if (!player1Info) return false;
+        if (!player2Info) return false;
+
+        const player1rating = getDisplayRating(player1Info.rating, player1Info.total_games);
+        const player2rating = getDisplayRating(player2Info.rating, player2Info.total_games);
+
+        const time = performance.now();
+        this.rooms[roomId].startGame(time);
+
+        this.players[player1].goToPlay(roomId);
+        this.io.to(this.players[player1].socket.id).emit("matchFound", {
+            roomId: roomId,
+            teban: 1,
+            servertime: time,
+            name: this.players[player2].name,
+            characterName: this.players[player2].characterName,
+            rating: player1rating, // レーティング情報は ratingProcess の結果を利用するか、ここで取得
+            opponentRating: player2rating // レーティング情報は ratingProcess の結果を利用するか、ここで取得
+        });
+
+        this.players[player2].goToPlay(roomId);
+        this.io.to(this.players[player2].socket.id).emit("matchFound", {
+            roomId: roomId,
+            teban: -1,
+            servertime: time,
+            name: this.players[player1].name,
+            characterName: this.players[player1].characterName,
+            rating: player2rating, // レーティング情報は ratingProcess の結果を利用するか、ここで取得
+            opponentRating: player1rating // レーティング情報は ratingProcess の結果を利用するか、ここで取得
+        });
+        return true;
+    }
+
     //部屋の削除
     deleteRoom(roomId) {
         if (this.rooms[roomId].sente && this.players[this.rooms[roomId].sente]) {
@@ -204,91 +138,146 @@ export class ServerState {
         delete this.rooms[roomId];
     }
 
-    sendServerStatus() {
+    async sendServerStatus() { // 非同期になる可能性が高い
         const online = Object.keys(this.players).length;
         const roomCount = Object.keys(this.rooms).length;
-        const topPlayers = this.getTopPlayers();
+        const topPlayers = await this.postgureDb.readTopPlayers();
+        console.log(topPlayers);
         this.io.emit("serverStatus", { online: online, roomCount: roomCount, topPlayers: topPlayers });
         this.timecount++;
     }
 
-    getTopPlayers() {
-        const playersWithRating = [];
 
-        // Object.entries を for...of で反復処理し、分割代入でキーと値を取得
-        for (const [id, ratingData] of Object.entries(this.ratings)) {
-            const playerrating = getDisplayRating(ratingData.rating, ratingData.games);
-            playersWithRating.push({ name: ratingData.name, rating: playerrating });
-        }
-
-        // 評価値に基づいて降順にソート
-        playersWithRating.sort((a, b) => b.rating - a.rating);
-
-        // トップ10のプレイヤーを取得
-        const top = playersWithRating.slice(0, 10);
-        this.topPlayers = top;
-        return top;
-    }
-
-
-    ratingProcess(win, sente, gote, text) {
+    async ratingProcess(win, sente, gote, text) {
         if (!this.players[sente] || !this.players[gote]) {
             console.log('プレイヤーが存在しません');
             return { winPlayer: win, text: text }
         }
 
-        const winPlayerId = win === 1 ? this.players[sente].userId : this.players[gote].userId;
-        const losePlayerId = win === 1 ? this.players[gote].userId : this.players[sente].userId;
+        const winPlayerId = this.players[sente].player_id;
+        const losePlayerId = this.players[gote].player_id;
 
-        if (winPlayerId && losePlayerId && this.ratings[winPlayerId] && this.ratings[losePlayerId]) {
-            const winEloRating = this.ratings[winPlayerId].rating;
-            const loseEloRating = this.ratings[losePlayerId].rating;
+        // レーティング情報をデータベースから取得 (Postgure 経由)
+        const winRatingData = await this.postgureDb.readPlayerInfo(winPlayerId);
+        const loseRatingData = await this.postgureDb.readPlayerInfo(losePlayerId);
 
-            const winGames = this.ratings[winPlayerId].games;
-            const loseGames = this.ratings[losePlayerId].games;
+
+        if (winPlayerId && losePlayerId && winRatingData && loseRatingData) {
+            const winEloRating = winRatingData.rating;
+            const loseEloRating = loseRatingData.rating;
+
+            const winGames = winRatingData.total_games;
+            const loseGames = loseRatingData.total_games;
 
             const rateData = calRating(winEloRating, winGames, loseEloRating, loseGames);
 
-            this.ratings[winPlayerId].rating = rateData.newWinRating;
-            this.ratings[losePlayerId].rating = rateData.newLoseRating;
+            // 新しいレーティングデータオブジェクトを作成
+            const newWinRatingData = {
+                player_id: winPlayerId,
+                rating: rateData.newWinRating,
+                total_games: winGames + 1,
+                lastLogin: new Date(),
+                name: this.players[sente].name
+            };
+            const newLoseRatingData = {
+                player_id: losePlayerId,
+                rating: rateData.newLoseRating,
+                total_games: loseGames + 1,
+                lastLogin: new Date(),
+                name: this.players[gote].name
+            };
 
-            console.log(`レーティング更新: ${winPlayerId}: ${this.ratings[winPlayerId].rating} (${winEloRating}), ${losePlayerId}: ${this.ratings[losePlayerId].rating} (${loseEloRating})`);
+            console.log(`レーティング更新: ${winPlayerId}: ${newWinRatingData.rating} (${winEloRating}), ${losePlayerId}: ${newLoseRatingData.rating} (${loseEloRating})`);
 
-            this.ratings[winPlayerId].games++;
-            this.ratings[losePlayerId].games++;
+            // レーティングデータをデータベースに保存 (Postgure 経由)
+            await this.savePlayerInfo(newWinRatingData);
+            await this.savePlayerInfo(newLoseRatingData);
 
-            this.ratings[this.players[sente].userId].name = this.players[sente].name;
-            this.ratings[this.players[gote].userId].name = this.players[gote].name;
+            const winRating = getDisplayRating(winEloRating, winGames);
+            const newWinRating = getDisplayRating(rateData.newWinRating, winGames + 1);
+            const loseRating = getDisplayRating(loseEloRating, loseGames);
+            const newLoseRating = getDisplayRating(rateData.newLoseRating, loseGames + 1);
 
-            // レーティングデータをSQLiteに保存
-            this.saveRatings(winPlayerId, this.ratings[winPlayerId]);
-            this.saveRatings(losePlayerId, this.ratings[losePlayerId]);
+            // トッププレイヤーリストを取得
+            let currentTopPlayers = await this.postgureDb.readTopPlayers();
+
+            // 勝利プレイヤーの新しい表示レーティングがトップ30に入るか判定
+            const minTopRating = currentTopPlayers.length < 30 ? -Infinity : getDisplayRating(currentTopPlayers[currentTopPlayers.length - 1].rating, currentTopPlayers[currentTopPlayers.length - 1].total_games);
+
+            let replaceTop = false;
+
+            if (newWinRating >= minTopRating) {
+                replaceTop = true;
+                console.log(`勝利プレイヤー ${newWinRatingData.name} (${newWinRating}) がトップ10圏内に入りました。`);
+                // トッププレイヤーリストに勝利プレイヤーを追加（または更新）
+                const existingIndex = currentTopPlayers.findIndex(p => p.player_id === newWinRatingData.player_id);
+                if (existingIndex > -1) {
+                    currentTopPlayers[existingIndex] = {
+                        rank: 0, // 既存プレイヤーの場合は情報を更新
+                        player_id: newWinRatingData.player_id,
+                        total_games: newWinRatingData.total_games,
+                        rating: newWinRatingData.rating,
+                        last_login: newWinRatingData.lastLogin,
+                        name: newWinRatingData.name
+                    };
+                } else { // 新規トッププレイヤーの場合は追加
+                    currentTopPlayers.push({
+                        rank: 0,
+                        player_id: newWinRatingData.player_id,
+                        total_games: newWinRatingData.total_games,
+                        rating: newWinRatingData.rating,
+                        last_login: newWinRatingData.lastLogin,
+                        name: newWinRatingData.name
+                    });
+                }
+            }
+            if (loseRating >= minTopRating) {
+                replaceTop = true;
+                // トッププレイヤーリストに勝利プレイヤーを追加（または更新）
+                const existingIndex = currentTopPlayers.findIndex(p => p.player_id === newLoseRatingData.player_id);
+                if (existingIndex > -1) {
+                    currentTopPlayers[existingIndex] = {
+                        rank: 0, // 既存プレイヤーの場合は情報を更新
+                        player_id: newWinRatingData.player_id,
+                        total_games: newWinRatingData.total_games,
+                        rating: newWinRatingData.rating,
+                        last_login: newWinRatingData.lastLogin,
+                        name: newWinRatingData.name
+                    };
+                }
+            }
+
+            if (replaceTop) {
+                // レーティングの高い順にソート
+                currentTopPlayers.sort((a, b) => getDisplayRating(b.rating, b.total_games) - getDisplayRating(a.rating, a.total_games));
+
+                // トップ30に絞る
+                currentTopPlayers = currentTopPlayers.slice(0, 30);
+
+                for (let i = 0; i < currentTopPlayers.length; i++) {
+                    currentTopPlayers[i].rank = i + 1;
+                }
+
+                // データベースのトッププレイヤーリストを更新
+                await this.postgureDb.saveTopPlayers(currentTopPlayers);
+                console.log('トッププレイヤーリストを更新しました。');
+            }
 
             const data = {
                 winPlayer: win,
                 text: text,
-                winRating: getDisplayRating(winEloRating, winGames),
-                newWinRating: getDisplayRating(rateData.newWinRating, winGames + 1),
-                winGames: this.ratings[winPlayerId].games,
-                loseRating: getDisplayRating(loseEloRating, loseGames),
-                newLoseRating: getDisplayRating(rateData.newLoseRating, loseGames + 1),
-                loseGames: this.ratings[losePlayerId].games
+                winRating: winRating,
+                newWinRating: newWinRating,
+                winGames: newWinRatingData.total_games, // 更新後のゲーム数を使用
+                loseRating: loseRating,
+                newLoseRating: newLoseRating,
+                loseGames: newLoseRatingData.total_games // 更新後のゲーム数を使用
             }
             return data;
         } else {
             console.error(`レーティング情報が見つかりませんでした。Win Player ID: ${winPlayerId}, Lose Player ID: ${losePlayerId}`);
             return { winPlayer: win, text: text };
         }
-    }
-
-    getUserRating(userId) {
-        if (!this.ratings[userId]) return null;
-        return getDisplayRating(this.ratings[userId].rating, this.ratings[userId].games)
-    }
-
-    getUserGames(userId) {
-        if (!this.ratings[userId]) return null;
-        return this.ratings[userId].games;
     }
 
 
@@ -331,5 +320,11 @@ export class ServerState {
         if (!this.players[id]) return;
         if (!this.players[id].roomId) return;
         return this.rooms[this.players[id].roomId].backToRoom();
+    }
+
+    // アプリケーション終了時にデータベース接続プールを終了する
+    async closeDatabase() {
+        console.log('Closing database connection pool via Postgure...');
+        await this.postgureDb.end();
     }
 }

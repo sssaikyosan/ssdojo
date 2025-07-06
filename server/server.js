@@ -46,9 +46,6 @@ const socketOptions = {
 export const io = new Server(server, socketOptions);
 export const serverState = new ServerState(io);
 
-serverState.loadRatings(); // レーティングデータを読み込む
-serverState.getTopPlayers();
-
 // HTTPSサーバーを起動
 const PORT = 5000;
 server.listen(PORT, () => {
@@ -59,6 +56,6 @@ ioSetup();
 
 // 1秒ごとにマッチメイキングを実行
 setInterval(() => {
-  serverState.matchMaking();
+  serverState.matchMakingProcess();
   serverState.sendServerStatus();
-}, 1000); // 1秒ごとに実行
+}, 2000); // 2秒ごとに実行

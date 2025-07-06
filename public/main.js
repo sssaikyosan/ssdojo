@@ -20,9 +20,8 @@ export let emitter = null;
 export let socket = null;
 export let scene = null; // scene変数はmain.jsで管理
 export let playerName = "";
-export let userId = null;
+export let player_id = null;
 export let serverStatus = { online: 0, roomCount: 0, topPlayers: [] };
-export let playerStatus = { playcount: 0, rating: 500 }
 
 export let playerRatingElement = null;
 export let gamesPlayedElement = null;
@@ -87,12 +86,9 @@ export function setPlayerName(name) {
   playerName = name;
 }
 
-export function setStatus(rating, games) {
-  playerStatus.playcount = games;
-  playerStatus.rating = rating;
-
+export function setStatus(rating, total_games) {
   playCountText.text = () => {
-    return `試合数:${games}`
+    return `試合数:${total_games}`
   }
   ratingText.text = () => {
     return `レート:${Math.round(rating)}`
@@ -119,10 +115,9 @@ function init() {
   keyboard.init(canvas);
 
   // ユーザーIDの読み込みまたは生成
-  userId = localStorage.getItem('shogiUserId');
-  if (!userId) {
-    userId = generateUniqueId(); // 後で実装する関数
-    localStorage.setItem('shogiUserId', userId);
+  player_id = localStorage.getItem('shogiUserId');
+  if (!player_id) {
+    player_id = 'create';
   }
 
   // キャラクターの読み込みまたは選択
@@ -139,14 +134,12 @@ function init() {
 
   // イベントリスナーの追加
   addEventListeners();
-
   resizeCanvas();
 
 
+
   gameManager = new GameManager(socket);
-  setScene(createTitleScene()); // タイトルシーン作成時に選択されたキャラクターを使用
-  resizeHTML();
-  roop();
+
 }
 
 // キャンバスのリサイズ
@@ -279,19 +272,27 @@ function addEventListeners() {
 
 function setupSocket() {
   // ユーザーIDをサーバーに送信
-  socket.emit('sendUserId', { userId: userId });
+  socket.emit('sendUserId', { player_id: player_id });
 
   // 待機人数の更新
   socket.on('serverStatus', (data) => {
     serverStatus = data;
     updateRanking();
     // ランキング表示を更新
+  });
 
+  socket.on('easyLogin', (data) => {
+    player_id = data.player_id;
+    localStorage.setItem('shogiUserId', player_id);
+    setStatus(data.rating, data.total_games);
+    setScene(createTitleScene());
+    resizeHTML();
+    roop();
   });
 
   // レーティングを受信
   socket.on('receiveRating', (data) => {
-    setStatus(data.rating, data.games);
+    setStatus(data.rating, data.total_games);
   });
 
   // マッチングが成立したときの処理

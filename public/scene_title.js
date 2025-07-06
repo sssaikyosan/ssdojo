@@ -1,7 +1,7 @@
 //タイトルシーン要素
 
 import { createPlayScene } from "./scene_game.js";
-import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, userId, setScene, characterFiles, setSelectedCharacterName } from "./main.js";
+import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, player_id, setScene, characterFiles, setSelectedCharacterName } from "./main.js";
 import { Scene } from "./scene.js";
 import { OverlayUI } from "./ui.js";
 import { BackgroundImageUI } from "./ui_background.js";
@@ -175,7 +175,7 @@ export function createTitleScene(savedTitleCharacter = null) {
         localStorage.setItem("playerName", playerName);
         if (playerName == "") setPlayerName("名無しの棋士");
         // マッチングを開始
-        socket.emit("requestMatch", { name: playerName, characterName: selectedCharacterName, userId: userId });
+        socket.emit("requestMatch", { name: playerName, characterName: selectedCharacterName, player_id: player_id });
         clearTitleHTML();
         titleScene.remove(joinRoomButton);
         titleScene.remove(makeRoomButton);
@@ -192,7 +192,7 @@ export function createTitleScene(savedTitleCharacter = null) {
         localStorage.setItem("playerName", playerName);
         if (playerName == "") setPlayerName("名無しの棋士");
         // ルーム作成をサーバーにリクエスト
-        socket.emit("createRoom", { name: playerName, characterName: selectedCharacterName, userId: userId });
+        socket.emit("createRoom", { name: playerName, characterName: selectedCharacterName, player_id: player_id });
         clearTitleHTML();
     }
 
@@ -205,7 +205,7 @@ export function createTitleScene(savedTitleCharacter = null) {
         const roomId = roomIdInput.value.trim();
         if (roomId) {
             // ルーム参加をサーバーにリクエスト
-            socket.emit("joinRoom", { roomId: roomId, name: playerName, characterName: selectedCharacterName, userId: userId });
+            socket.emit("joinRoom", { roomId: roomId, name: playerName, characterName: selectedCharacterName, player_id: player_id });
             clearTitleHTML();
         }
     }
@@ -317,10 +317,9 @@ export function createTitleScene(savedTitleCharacter = null) {
         size: 0.06,
         colors: ['#ffffffff', '#000000ff', '#00000000'],
     });
-
     const ruleText = new TextUI({
         text: () => {
-            return '駒の動きは通常の将棋と同じですが一部特殊ルールがあります。　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　１:歩は自陣（下から3マスまで）にしか打てません。その他の　　駒は通常通りどこにでも打てます。　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　２:トライ勝利ルールを採用しています。自玉が敵玉の開始位置（先手なら5一、後手なら5九)に到達したら勝利となります。'
+            return '駒の動きは通常の将棋と同じですが一部特殊ルールがあります。　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　１:歩は自陣側４段目までにしか打てません。その他の駒は通常　　通りどこにでも打てます。　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　２:トライ勝利ルールを採用しています。自玉が敵玉の開始位置（先手なら5一、後手なら5九)に到達したら勝利となります。'
         },
         x: 0,
         y: -0.06,

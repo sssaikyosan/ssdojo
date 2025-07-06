@@ -124,8 +124,8 @@ export function removeCharFromArray(arr, charToRemove) {
   return arr.filter(char => char !== charToRemove);
 }
 
-export function getDisplayRating(elorate, games) {
-  return elorate - (200 - games) * 5;
+export function getDisplayRating(elorate, total_games) {
+  return elorate - (200 - total_games) * 5;
 }
 
 export function calRating(winEloRating, winGames, loseEloRating, loseGames) {

@@ -69,14 +69,14 @@ export class Room {
         }
     }
 
-    async gameFinished(win, text, playerId = null) {
+    gameFinished(win, text, playerId = null) {
         console.log('gameend', this);
         if (this.roomType === 'rating') {
             if (this.sente.length !== 1 || this.gote.length !== 1) {
                 console.log('プレイ人数に不正');
                 return
             }
-            const data = await serverState.ratingProcess(win, this.sente[0], this.gote[0], text);
+            const data = serverState.ratingProcess(win, this.sente[0], this.gote[0], text);
             this.emitToRoom("endGame", data);
 
             serverState.players[this.sente[0]].state = 'waiting';
