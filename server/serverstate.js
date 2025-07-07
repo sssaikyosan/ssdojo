@@ -11,7 +11,6 @@ export class ServerState {
     rooms = {};
     players = {};
     // ratings = {}; // メモリ上のキャッシュは使用しない
-    topPlayers = []; // トッププレイヤーリストはキャッシュとして保持する可能性あり、または取得時に都度利用
     postgureDb; // Postgure クラスのインスタンスを保持
 
     constructor(io) {
@@ -139,10 +138,37 @@ export class ServerState {
     }
 
     async sendServerStatus() { // 非同期になる可能性が高い
+        for (const roomId of Object.keys(this.rooms)) {
+            for (const id of this.rooms[roomId].sente) {
+                if (!this.players[id]) {
+                    this.rooms[roomId].leaveRoom(id);
+                }
+            }
+            for (const id of this.rooms[roomId].gote) {
+                if (!this.players[id]) {
+                    this.rooms[roomId].leaveRoom(id);
+                }
+            }
+            for (const id of this.rooms[roomId].spectators) {
+                if (!this.players[id]) {
+                    this.rooms[roomId].leaveRoom(id);
+                }
+            }
+        }
         const online = Object.keys(this.players).length;
         const roomCount = Object.keys(this.rooms).length;
-        const topPlayers = await this.postgureDb.readTopPlayers();
-        console.log(topPlayers);
+        const topinfo = await this.postgureDb.readTopPlayers();
+        console.log(topinfo);
+        const topPlayers = [];
+
+        for (let i = 0; i < 10; i++) {
+            if (topinfo.length - 1 < i) {
+                break;
+            }
+            const displayRating = getDisplayRating(topinfo[i].rating, topinfo[i].total_games);
+            topPlayers.push({ name: topinfo[i].name, rating: displayRating });
+        }
+        console.log("top", topPlayers);
         this.io.emit("serverStatus", { online: online, roomCount: roomCount, topPlayers: topPlayers });
         this.timecount++;
     }
@@ -154,8 +180,16 @@ export class ServerState {
             return { winPlayer: win, text: text }
         }
 
-        const winPlayerId = this.players[sente].player_id;
-        const losePlayerId = this.players[gote].player_id;
+        let winPlayer = this.players[sente];
+        let losePlayer = this.players[gote];
+        let winPlayerId = this.players[sente].player_id;
+        let losePlayerId = this.players[gote].player_id;
+        if (win === -1) {
+            winPlayerId = this.players[gote].player_id;
+            losePlayerId = this.players[sente].player_id;
+            winPlayer = this.players[gote];
+            losePlayer = this.players[sente];
+        }
 
         // レーティング情報をデータベースから取得 (Postgure 経由)
         const winRatingData = await this.postgureDb.readPlayerInfo(winPlayerId);
@@ -177,14 +211,14 @@ export class ServerState {
                 rating: rateData.newWinRating,
                 total_games: winGames + 1,
                 lastLogin: new Date(),
-                name: this.players[sente].name
+                name: winPlayer.name
             };
             const newLoseRatingData = {
                 player_id: losePlayerId,
                 rating: rateData.newLoseRating,
                 total_games: loseGames + 1,
                 lastLogin: new Date(),
-                name: this.players[gote].name
+                name: losePlayer.name
             };
 
             console.log(`レーティング更新: ${winPlayerId}: ${newWinRatingData.rating} (${winEloRating}), ${losePlayerId}: ${newLoseRatingData.rating} (${loseEloRating})`);
@@ -238,11 +272,11 @@ export class ServerState {
                 if (existingIndex > -1) {
                     currentTopPlayers[existingIndex] = {
                         rank: 0, // 既存プレイヤーの場合は情報を更新
-                        player_id: newWinRatingData.player_id,
-                        total_games: newWinRatingData.total_games,
-                        rating: newWinRatingData.rating,
-                        last_login: newWinRatingData.lastLogin,
-                        name: newWinRatingData.name
+                        player_id: newLoseRatingData.player_id,
+                        total_games: newLoseRatingData.total_games,
+                        rating: newLoseRatingData.rating,
+                        last_login: newLoseRatingData.lastLogin,
+                        name: newLoseRatingData.name
                     };
                 }
             }

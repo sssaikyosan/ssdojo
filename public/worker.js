@@ -897,6 +897,42 @@ function randomMove(servertime) {
     }
 }
 
+// function minimax(playerLeagalMovesIgnoreTime, cpuLeagalMovesIgnoreTime, point, depth, alpha, beta, isMaximizing) {
+//     // 終了条件をチェック（この例では深さが0に達した場合）
+//     if (depth === 0) return point;
+
+//     let bestMove = null
+//     let bestValue = isMaximizing ? -Infinity : Infinity
+
+//     // プレイヤーのターン（最小化側）
+//     if (!isMaximizing) {
+//         for (const move of playerLeagalMovesIgnoreTime) {
+//             const newPoint = point - evaluateMove(move)
+//             const value = minimax(playerLeagalMovesIgnoreTime, cpuLeagalMovesIgnoreTime, newPoint, depth - 1, alpha, beta, true)
+
+//             if (value < bestValue) {
+//                 bestValue = value
+//                 bestMove = move
+//                 alpha = Math.max(alpha, bestValue)
+//                 if (beta <= alpha) break; // βカット
+//             }
+//         }
+//     } else {
+//         // CPUのターン（最大化側）
+//         for (const move of cpuLeagalMovesIgnoreTime) {
+//             const newPoint = point + evaluateMove(move)
+//             const value = minimax(playerLeagalMovesIgnoreTime, cpuLeagalMovesIgnoreTime, newPoint, depth - 1, alpha, beta, false)
+
+//             if (value > bestValue) {
+//                 bestValue = value
+//                 bestMove = move
+//                 beta = Math.min(beta, bestValue)
+//                 if (beta <= alpha) break; // αカット
+//             }
+//         }
+//     }
+// }
+
 
 
 
@@ -971,7 +1007,7 @@ onmessage = function (e) {
             } else if (move.x === playerKingPos.x && move.y === playerKingPos.y) {
                 playerKingPos = { x: move.nx, y: move.ny };
             }
-        }, 200)
+        }, 350)
 
     }
 };

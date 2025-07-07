@@ -79,17 +79,21 @@ export class Room {
             const data = await serverState.ratingProcess(win, this.sente[0], this.gote[0], text);
             this.emitToRoom("endGame", data);
 
-            serverState.players[this.sente[0]].state = 'waiting';
-            serverState.players[this.gote[0]].state = 'waiting';
+            if (serverState.players[this.sente[0]]) {
+                serverState.players[this.sente[0]].state = 'waiting';
+            }
+            if (serverState.players[this.gote[0]]) {
+                serverState.players[this.gote[0]].state = 'waiting';
+            }
             serverState.deleteRoom(this.roomId);
         } else {
             for (const id of this.sente) {
-                if (id === playerId) continue;
+                if (!serverState.players[id]) continue;
                 serverState.players[id].state = 'waiting';
                 this.spectators.push(id);
             }
             for (const id of this.gote) {
-                if (id === playerId) continue;
+                if (!serverState.players[id]) continue;
                 serverState.players[id].state = 'waiting';
                 this.spectators.push(id);
             }
