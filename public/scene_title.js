@@ -25,7 +25,7 @@ const cpuLevelOverlay = new OverlayUI({
     visible: false
 });
 
-for (let i = 0; i < 3; i++) {
+for (let i = 0; i < 4; i++) {
     const cpulevelButton = new ButtonUI({
         text: `レベル${i}`,
         x: 0.0,
@@ -320,6 +320,16 @@ export function createTitleScene(savedTitleCharacter = null) {
     const ruleText = new TextUI({
         text: () => {
             return '駒の動きは通常の将棋と同じですが一部特殊ルールがあります。　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　１:歩は自陣側４段目までにしか打てません。その他の駒は通常　　通りどこにでも打てます。　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　２:トライ勝利ルールを採用しています。自玉が敵玉の開始位置（先手なら5一、後手なら5九)に到達したら勝利となります。'
+        },
+        x: 0,
+        y: -0.06,
+        size: 0.025,
+        colors: ['#ffffffff', '#00000000', '#00000000'],
+    });
+
+    const keyText = new TextUI({
+        text: () => {
+            return '　　　　　　　　　　　　操作方法：ドラッグ　駒の移動　　　　　　　　　　　　　　　　　　　　　右ドラッグ　成らず　　　　　　　　　　　　　　　　　　　　　キーボードショートカット　　　　　　　　　　　　　　　　　　　　　　歩　スペース　　　　　　　　　　　　　　　　　　　　　　香 Q 桂 W 角 E　　　　　　　　　　　銀 A 金 S 飛 D'
         },
         x: 0,
         y: -0.06,

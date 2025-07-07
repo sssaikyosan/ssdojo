@@ -282,6 +282,7 @@ export class Board {
     this.map[lastMove.x][lastMove.y] = this.map[lastMove.nx][lastMove.ny];
     if (lastMove.capturePiece) {
       this.map[lastMove.nx][lastMove.ny] = { type: lastMove.capturePiece, teban: -lastMove.teban, lastMovetime: lastMove.captime, lastMoveptime: this.starttime }
+      this.komadaiPieces[lastMove.teban === 1 ? 'sente' : 'gote'][lastMove.capturePiece]--;
     }
   }
 }
