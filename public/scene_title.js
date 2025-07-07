@@ -18,10 +18,10 @@ export const roomIdInput = /** @type {HTMLInputElement} */ (document.getElementB
 export const nameInput = /** @type {HTMLInputElement} */ (document.getElementById("nameInput"));
 
 const cpuLevelOverlay = new OverlayUI({
-    x: 0.73,
-    y: 0.12,
-    height: 0.18,
-    width: 0.14,
+    x: 0.65,
+    y: 0.16,
+    height: 0.19,
+    width: 0.11,
     visible: false
 });
 
@@ -29,9 +29,9 @@ for (let i = 0; i < 4; i++) {
     const cpulevelButton = new ButtonUI({
         text: `レベル${i}`,
         x: 0.0,
-        y: 0.058 - i * 0.055,
-        height: 0.05,
-        width: 0.12,
+        y: 0.067 - i * 0.045,
+        height: 0.04,
+        width: 0.1,
         color: '#3241c9',
         textSize: 0.025,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
