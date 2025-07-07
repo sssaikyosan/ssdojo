@@ -564,7 +564,8 @@ function isDanger(currentBoard, x, y, nx, ny, teban) {
         if (nx > 0) {
             const lpiece = currentBoard.map[nx - 1][ny - 2 * teban];
             if (lpiece && lpiece.type === 'knight') return true;
-        } else if (nx < 8) {
+        }
+        if (nx < 8) {
             const rpiece = currentBoard.map[nx + 1][ny - 2 * teban];
             if (rpiece && rpiece.type === 'knight') return true;
         }
@@ -1001,20 +1002,27 @@ function randomMoveNoBigDanger(currentBoard, servertime) {
     const cpuLegalMoves = getLegalMoves(currentBoard, -1, servertime, false)
     //玉が危険な位置に行く手は消去
     const cpuLegalMovesKingfiltered = cpuLegalMoves.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)) || !isDanger(currentBoard, item.x, item.y, item.nx, item.ny, item.teban));
+    const noBigDanger = cpuLegalMovesKingfiltered.filter(item => {
+        if (isDanger(currentBoard, item.x, item.y, item.nx, item.ny, item.teban)) {
+            if (PIECE_PRICES[item.type] > 800) return false;
+        }
+        return true;
+    });
 
 
     const legalPuts = getAllLegalPuts(currentBoard, -1);
     const noBigDangerPuts = legalPuts.filter(item => {
         if (isDangerPut(currentBoard, item.nx, item.ny, item.teban)) {
-            return false;
+            if (PIECE_PRICES[item.type] > 500) return false;
         }
+        return true;
     });
-    cpuLegalMovesKingfiltered.push(...noBigDangerPuts);
+    noBigDanger.push(...noBigDangerPuts);
 
     //ここまでの条件に適合する手がなければランダムに選択
-    if (cpuLegalMovesKingfiltered.length > 0) {
-        const randomIndex = Math.floor(Math.random() * cpuLegalMovesKingfiltered.length);
-        const randomMove = cpuLegalMovesKingfiltered[randomIndex];
+    if (noBigDanger.length > 0) {
+        const randomIndex = Math.floor(Math.random() * noBigDanger.length);
+        const randomMove = noBigDanger[randomIndex];
         console.log('calculateCpuMove: ランダムに選択', randomMove);
         postMessage({ move: randomMove });
         return true;
@@ -1236,10 +1244,10 @@ function level3cpu() {
         const servertime = startTime + performance.now();
         if (count === 2) {
             const best = findBestMove(3, servertime);
-            if (best.bestMove !== null) {
+            if (best && best.bestMove !== null) {
                 postMessage({ move: best.bestMove });
             }
-            if (best.bestNext !== null) {
+            if (best && best.bestNext !== null) {
                 setTimeout(() => {
                     postMessage({ move: best.bestNext });
                 }, 128);
@@ -1250,7 +1258,7 @@ function level3cpu() {
         count++;
         if (count >= 3) count = 0;
 
-    }, 600);
+    }, 500);
 }
 
 // メインスレッドからのメッセージを受信
