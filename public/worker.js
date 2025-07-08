@@ -987,21 +987,73 @@ function normalAlgolysm(currentBoard, servertime) {
         return true;
     }
 
+    const escapeMovesRemovePawn = escapeMoves.filter(item => {
+        if (currentBoard.map[item.x][item.y] === 'pawn') return false;
+        return true;
+    });
+
     //駒を逃げれる手があれば指す
-    if (escapeMoves.length > 0) {
-        const randomIndex = Math.floor(Math.random() * escapeMoves.length);
-        const randomMove = escapeMoves[randomIndex];
+    if (escapeMovesRemovePawn.length > 0) {
+        const randomIndex = Math.floor(Math.random() * escapeMovesRemovePawn.length);
+        const randomMove = escapeMovesRemovePawn[randomIndex];
         console.log('calculateCpuMove: 駒を逃げれる手があれば指す', randomMove);
         postMessage({ move: randomMove });
         return true;
     }
 }
 
+function getToKing(currentBoard, move) {
+    if (move.x >= 0) {
+        const piece = currentBoard.map[move.x][move.y];
+        if (!piece) return null;
+        let val = 1;
+        if (piece.type === 'king' || piece.type === 'king2') {
+            return val;
+        }
+        if (piece.type === 'rook' || piece.type === 'dragon') {
+            if (move.x === playerKingPos.x || move.y === playerKingPos.y) {
+                val += 16;
+                return val;
+            }
+        }
+        if (piece.type === 'bishop' || piece.type === 'horse') {
+            if (move.x - playerKingPos.x === move.y - playerKingPos.y || move.x - playerKingPos.x === playerKingPos.y - move.y) {
+                val += 16;
+                return val;
+            }
+        }
+
+        if ((playerKingPos.x - move.x) * (playerKingPos.x - move.x) > (playerKingPos.x - move.nx) * (playerKingPos.x - move.nx)) {
+            val += 6
+        }
+        if ((playerKingPos.y - move.y) * (playerKingPos.y - move.y) > (playerKingPos.y - move.ny) * (playerKingPos.y - move.ny)) {
+            val += 6
+        }
+        const distance = (move.nx - playerKingPos.x) * (move.nx - playerKingPos.x) + (move.ny - playerKingPos.y) * (move.ny - playerKingPos.y);
+        if (distance > 2 && distance < 12) {
+            val += 12 - distance;
+        }
+        return val;
+    } else {
+        const distance = (move.nx - playerKingPos.x) * (move.nx - playerKingPos.x) + (move.ny - playerKingPos.y) * (move.ny - playerKingPos.y);
+        if (distance <= 2) {
+            return 1;
+        }
+        if (distance < 16) {
+            return 20 - distance;
+        }
+        return 1;
+    }
+}
 
 function randomMoveNoBigDanger(currentBoard, servertime) {
-    const cpuLegalMoves = getLegalMoves(currentBoard, -1, servertime, false)
+    const cpuLegalMoves = getLegalMoves(currentBoard, -1, servertime, false);
     //玉が危険な位置に行く手は消去
-    const cpuLegalMovesKingfiltered = cpuLegalMoves.filter(item => ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)) || !isDanger(currentBoard, item.x, item.y, item.nx, item.ny, item.teban));
+    const cpuLegalMovesKingfiltered = cpuLegalMoves.filter(item => {
+        if ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)) return true;
+        if (!isDanger(currentBoard, item.x, item.y, item.nx, item.ny, item.teban)) return true;
+        return false;
+    });
     const noBigDanger = cpuLegalMovesKingfiltered.filter(item => {
         if (isDanger(currentBoard, item.x, item.y, item.nx, item.ny, item.teban)) {
             if (PIECE_PRICES[item.type] > 800) return false;
@@ -1019,10 +1071,18 @@ function randomMoveNoBigDanger(currentBoard, servertime) {
     });
     noBigDanger.push(...noBigDangerPuts);
 
+    const toKingMoves = [];
+    for (const move of noBigDanger) {
+        const toKing = getToKing(currentBoard, move);
+        for (let i = 0; i < toKing; i++) {
+            toKingMoves.push(move);
+        }
+    }
+
     //ここまでの条件に適合する手がなければランダムに選択
-    if (noBigDanger.length > 0) {
-        const randomIndex = Math.floor(Math.random() * noBigDanger.length);
-        const randomMove = noBigDanger[randomIndex];
+    if (toKingMoves.length > 0) {
+        const randomIndex = Math.floor(Math.random() * toKingMoves.length);
+        const randomMove = toKingMoves[randomIndex];
         console.log('calculateCpuMove: ランダムに選択', randomMove);
         postMessage({ move: randomMove });
         return true;
@@ -1259,7 +1319,6 @@ function level3cpu() {
         }
         count++;
         if (count >= 3) count = 0;
-
     }, 500);
 }
 
