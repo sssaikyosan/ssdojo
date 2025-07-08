@@ -159,15 +159,22 @@ export function endRoomGame(data) {
     if (gameManager.teban === 0) {
         scene.add(endText);
         if (data.win === 1 && arryCharacterUI.image) {
-            arryCharacterUI.playWinVideo(0);
-            arryCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+            if (arryCharacterUI.playWinVideo(0)) {
+                arryCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                    roomResultOverlay.style.display = "block";
+                });
+            } else {
                 roomResultOverlay.style.display = "block";
-            });
+            }
         } else if (data.win === -1 && enemyCharacterUI.image) {
-            enemyCharacterUI.playWinVideo(0);
-            enemyCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+            if (enemyCharacterUI.playWinVideo(0)) {
+                enemyCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                    roomResultOverlay.style.display = "block";
+                });
+            } else {
                 roomResultOverlay.style.display = "block";
-            });
+            }
+
         } else {
             setTimeout(() => {
                 roomResultOverlay.style.display = "block";
@@ -176,10 +183,14 @@ export function endRoomGame(data) {
     } else if (data.win === gameManager.teban) {
         // 勝利時音声の再生
         if (arryCharacterUI.image) {
-            arryCharacterUI.playWinVideo(0);
-            arryCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+            if (arryCharacterUI.playWinVideo(0)) {
+                arryCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                    roomResultOverlay.style.display = "block";
+                });
+            } else {
                 roomResultOverlay.style.display = "block";
-            });
+            }
+
         } else {
             setTimeout(() => {
                 roomResultOverlay.style.display = "block";
@@ -190,10 +201,13 @@ export function endRoomGame(data) {
     } else if (data.win === -gameManager.teban) {
         // 敵勝利時音声の再生
         if (enemyCharacterUI.image) {
-            enemyCharacterUI.playWinVideo(0);
-            enemyCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+            if (enemyCharacterUI.playWinVideo(0)) {
+                enemyCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                    roomResultOverlay.style.display = "block";
+                });
+            } else {
                 roomResultOverlay.style.display = "block";
-            });
+            }
         } else {
             setTimeout(() => {
                 roomResultOverlay.style.display = "block";

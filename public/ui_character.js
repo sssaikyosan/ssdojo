@@ -280,15 +280,15 @@ export class CharacterInGameUI extends UI {
     // videoElement が存在し、動画が既に再生中、または再生準備ができていない場合は何もしない
     if (this.winVideoElement.length === 0 || this.isRenderingVideo) {
       console.log('動画の再生準備ができていません、または既に再生中です。');
-      return
+      return false;
     }
     if (!this.winVideoElement[idx]) {
       console.log('動画の再生準備ができていません、または既に再生中です。');
-      return
+      return false;
     }
     if (this.winVideoElement[idx].readyState < 4) { // HTMLMediaElement.HAVE_ENOUGH_DATA は 4
       console.log('動画の再生準備ができていません、または既に再生中です。');
-      return;
+      return false;
     }
 
     this.currentVideo = this.winVideoElement[idx];
@@ -301,6 +301,7 @@ export class CharacterInGameUI extends UI {
       this.currentVideo = null;
       this.isRenderingVideo = false; // 再生開始に失敗したらフラグをオフ
     });
+    return true; // 動画の再生が成功
   }
 }
 

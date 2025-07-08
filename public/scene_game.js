@@ -234,15 +234,20 @@ export function endGame(data) {
     if (gameManager.teban === 0) {
         changeRating.textContent = "レート変動 なし(観戦)";
         if (data.winPlayer === 1 && playerCharacterUI.image) {
-            playerCharacterUI.playWinVideo(0);
-            playerCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+            if (playerCharacterUI.playWinVideo(0)) {
+                playerCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                    resultOverlay.style.display = "block";
+                });
+            } else {
                 resultOverlay.style.display = "block";
-            });
+            }
         } else if (data.winPlayer === -1 && opponentCharacterUI.image) {
-            opponentCharacterUI.playWinVideo(0);
-            opponentCharacterUI.winVideoElement[0].addEventListener('ended', () => {
-                resultOverlay.style.display = "block";
-            });
+            if (opponentCharacterUI.playWinVideo(0)) {
+                opponentCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                    resultOverlay.style.display = "block";
+                });
+            }
+            resultOverlay.style.display = "block";
         } else {
             setTimeout(() => {
                 resultOverlay.style.display = "block";
@@ -256,10 +261,14 @@ export function endGame(data) {
         setStatus(newrate, data.winGames);
         // 勝利時音声の再生
         if (playerCharacterUI.image) {
-            playerCharacterUI.playWinVideo(0);
-            playerCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+            if (playerCharacterUI.playWinVideo(0)) {
+                playerCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                    resultOverlay.style.display = "block";
+                });
+            } else {
                 resultOverlay.style.display = "block";
-            });
+            }
+
         } else {
             setTimeout(() => {
                 resultOverlay.style.display = "block";
@@ -273,10 +282,13 @@ export function endGame(data) {
         setStatus(newrate, data.loseGames);
         // 敵勝利時音声の再生
         if (opponentCharacterUI.image) {
-            opponentCharacterUI.playWinVideo(0);
-            opponentCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+            if (opponentCharacterUI.playWinVideo(0)) {
+                opponentCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                    resultOverlay.style.display = "block";
+                });
+            } else {
                 resultOverlay.style.display = "block";
-            });
+            }
         } else {
             setTimeout(() => {
                 resultOverlay.style.display = "block";
