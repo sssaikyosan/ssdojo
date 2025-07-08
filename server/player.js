@@ -78,26 +78,3 @@ export class Player {
         serverState.rooms[roomId].chat(this.name, data.text);
     }
 }
-
-/**
- * データベースから特定のプレイヤーIDの情報を取得する (モック)
- * @param {string} playerId - 取得するプレイヤーのID
- * @returns {Promise<object|null>} プレイヤー情報オブジェクト、または見つからない場合はnull
- */
-export async function getPlayerInfoById(playerId) {
-    console.log(`Attempting to get player info for ID: ${playerId}`);
-    // TODO: ここに実際のデータベースアクセスロジックを実装する
-    // 例: データベースからプレイヤー情報を検索し、オブジェクトとして返す
-
-    // モックデータとして、受け取ったIDを返す
-    if (playerId === "mockPlayer123") {
-        return {
-            id: playerId,
-            name: "モックプレイヤー",
-            level: 10,
-            character: "akira"
-        };
-    } else {
-        return null; // プレイヤーが見つからない場合
-    }
-}

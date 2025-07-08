@@ -11,7 +11,7 @@ const PIECE_PRICES = {
     prom_lance: 567,
     prom_knight: 569,
     prom_silver: 582,
-    horce: 1101,
+    horse: 1101,
     dragon: 1550,
     king: 99999,
     king2: 99999,
