@@ -1096,10 +1096,12 @@ function evaluateBoard(teban) {
     for (const type of UNPROMODED_TYPES) {
         score += PIECE_PRICES[type] * board.komadaiPieces['sente'][type];
     }
+    score += board.komadaiPieces['sente']['king2'] * PIECE_PRICES['king2']
     // 後手の持ち駒
     for (const type of UNPROMODED_TYPES) {
         score -= PIECE_PRICES[type] * board.komadaiPieces['gote'][type];
     }
+    score -= board.komadaiPieces['gote']['king'] * PIECE_PRICES['king']
     return score;
 }
 
