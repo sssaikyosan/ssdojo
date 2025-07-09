@@ -18,6 +18,8 @@ export class BoardUI extends UI {
   lastsend = null;
   touchable = true;
 
+  reserved = [];
+
   constructor(params) {
     super(params);
     this.width = 10000;
@@ -151,6 +153,24 @@ export class BoardUI extends UI {
       }
     }
     return null;
+  }
+
+  moveReserved(data) {
+    for (const move of this.reserved) {
+      if (move.x === data.x && move.y === data.y) return false;
+    }
+    this.reserved.push(data);
+    return true;
+  }
+
+  removeReserved(data) {
+    for (let i = 0; i < this.reserved.length; i++) {
+      if (this.reserved[i].x === data.x && this.reserved[i].y === data.y) {
+        this.reserved.splice(i, 1);
+        return true;
+      }
+    }
+    return false;
   }
 
   onMouseDown(pos) {

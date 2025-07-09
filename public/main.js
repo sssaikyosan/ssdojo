@@ -330,7 +330,8 @@ function setupSocket() {
   // 新しい駒の移動を受信
   socket.on('newMove', (data) => {
     console.log("newMove");
-    if (gameManager) {
+    if (gameManager && gameManager.boardUI) {
+      gameManager.boardUI.removeReserved(data);
       gameManager.receiveMove(data);
     }
   });
@@ -339,7 +340,17 @@ function setupSocket() {
     console.log("nemoveFailed");
     if (gameManager && gameManager.boardUI) {
       gameManager.boardUI.lastsend = null;
+      gameManager.boardUI.removeReserved(data);
     }
+  });
+
+  socket.on('moveReserved', (data) => {
+    console.log("moveReserved");
+    if (gameManager && gameManager.boardUI) {
+      gameManager.boardUI.lastsend = null;
+      gameManager.boardUI.moveReserved(data);
+    }
+
   });
 
   // ゲーム終了を受信
