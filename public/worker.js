@@ -1288,11 +1288,14 @@ function level2cpu() {
     setInterval(() => {
         const servertime = startTime + performance.now();
         normalAlgolysm(board, servertime);
-    }, 500);
+    }, 400);
     setInterval(() => {
-        const servertime = startTime + performance.now();
-        randomMoveNoBigDanger(board, servertime);
-    }, 1500);
+        const rand = 1000 * Math.random();
+        setTimeout(() => {
+            const servertime = startTime + performance.now();
+            randomMoveNoBigDanger(board, servertime);
+        }, rand);
+    }, 1000);
 }
 
 let count = 0;

@@ -1,5 +1,6 @@
 // server/room.js
 import { Board } from './board.js';
+import { MOVETIME } from './const.js';
 import { io, serverState } from './server.js';
 
 export class Room {
@@ -52,7 +53,25 @@ export class Room {
                 this.gameFinished(endGame.player, endGame.text);
             }
         } else {
-            io.to(id).emit("moveFailed", {});
+            if (result.reserve) {
+                const now = performance.now();
+                const piece = this.board.map[data.x][data.y];
+                const sendtime = piece.lastmovetime + MOVETIME - now;
+                setTimeout(() => {
+                    if (result && result.res) {
+                        const reservedtime = performance.now();
+                        this.emitToRoom("newMove", { ...data, reservedtime });
+                        let endGame = this.board.checkGameEnd(data);
+                        if (endGame.player !== 0) {
+                            this.gameFinished(endGame.player, endGame.text);
+                        }
+                    } else {
+                        io.to(id).emit("moveFailed", { ...data, reservedtime });
+                    }
+                }, sendtime);
+                io.to(id).emit("moveReserved", { ...data, reservedtime });
+            }
+            io.to(id).emit("moveFailed", { ...data, servertime });
         }
     }
 

@@ -16,6 +16,7 @@ export class Board {
     gote: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 }
   };
   kifu = [];
+  reserveMoves = [];
 
   serverstarttime = 0;
   starttime = 0;
@@ -206,24 +207,30 @@ export class Board {
   //指定した位置の駒が移動かどうか判定
   getCanMovePiece(x, y, nx, ny, nari, teban, servertime) {
     //盤上の駒を動かす場合
-    if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) return { res: false, capture: null };
+    if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) return { res: false, capture: null, reserve: false };
     const piece = this.map[x][y];
     let capturePiece = null;
 
     //nullチェック
-    if (!piece) return { res: false, capture: null };
+    if (!piece) return { res: false, capture: null, reserve: false };
     if (teban !== piece.teban) return { res: false, capture: null };
+
+    //成りチェック
+    if (nari && !this.canPromote(y, ny, teban, piece.type)) return { res: false, capture: null, reserve: false };
+    //駒の移動が可能かどうかを判定  // エラーチェック: ここでreturn
+    if (!this.canMove(x, y, nx, ny, nari, teban)) return { res: false, capture: null, reserve: false };
+
     //時間チェック
     if (servertime - piece.lastmovetime < MOVETIME) {
-      return { res: false, capture: null };
+      if (servertime - piece.lastmovetime < RESERVE_TIME) {
+        return { res: false, capture: null, reserve: true }
+      } else {
+        return { res: false, capture: null, reserve: false };
+      }
     }
-    //成りチェック
-    if (nari && !this.canPromote(y, ny, teban, piece.type)) return { res: false, capture: null };
-    //駒の移動が可能かどうかを判定  // エラーチェック: ここでreturn
-    if (!this.canMove(x, y, nx, ny, nari, teban)) return { res: false, capture: null };
 
     if (this.map[nx][ny]) capturePiece = this.map[nx][ny].type;
-    return { res: true, capture: capturePiece };
+    return { res: true, capture: capturePiece, reserve: false };
   }
 
   // 駒が相手陣に入ったかどうかを判定
