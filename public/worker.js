@@ -1306,23 +1306,26 @@ function level3cpu() {
         normalAlgolysm(board, servertime);
     }, 100);
     setInterval(() => {
-        const servertime = startTime + performance.now();
-        if (count === 2) {
-            const best = findBestMove(3, servertime);
-            if (best && best.bestMove !== null) {
-                postMessage({ move: best.bestMove });
+        const rand = 200 * Math.random();
+        setTimeout(() => {
+            const servertime = startTime + performance.now();
+            if (count === 2) {
+                const best = findBestMove(3, servertime);
+                if (best && best.bestMove !== null) {
+                    postMessage({ move: best.bestMove });
+                }
+                if (best && best.bestNext !== null) {
+                    setTimeout(() => {
+                        postMessage({ move: best.bestNext });
+                    }, 128);
+                }
+            } else {
+                randomMoveNoBigDanger(board, servertime);
             }
-            if (best && best.bestNext !== null) {
-                setTimeout(() => {
-                    postMessage({ move: best.bestNext });
-                }, 128);
-            }
-        } else {
-            randomMoveNoBigDanger(board, servertime);
-        }
-        count++;
-        if (count >= 3) count = 0;
-    }, 500);
+            count++;
+            if (count >= 3) count = 0;
+        }, rand);
+    }, 400);
 }
 
 // メインスレッドからのメッセージを受信
