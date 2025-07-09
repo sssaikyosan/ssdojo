@@ -1,6 +1,6 @@
 export const SERVER_MOVETYME = 5;
 export const MOVETIME = 5000;
-
+export const RESERVE_TIME = 1000;
 
 export const BOARD_SIZE = 9;
 export const LINEWIDTH = 2;
@@ -27,6 +27,9 @@ export const TIMER_OFFSET_Y = - 0.2;
 export const TIMER_BORDER_WIDTH = 0.04;
 export const TIMER_BGCOLOR = 'rgb(223, 223, 223)';
 export const TIMER_COLOR = 'rgb(31, 63, 221)';
+export const TIMER_RESERVE_COLOR = 'rgb(155, 155, 155)';
+
+export const ARROW_COLOR = 'rgba(31, 63, 221, 0.4)'
 
 export const MOVE_COLOR = '#cf8b1e'
 export const UNPROMODED_TYPES = ['pawn', 'lance', 'knight', 'silver', 'bishop', 'rook'];

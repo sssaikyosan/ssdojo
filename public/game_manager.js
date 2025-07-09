@@ -4,6 +4,7 @@ import { audioManager } from './main.js'; // audio_manager.jsからインポー�
 import { Board } from './board.js';
 import { CPU } from './cpu.js'; // CPUクラスをインポート
 import { endCPUGame } from './scene_game.js';
+import { MOVETIME } from './const.js';
 
 export class GameManager {
     socket;
@@ -91,7 +92,40 @@ export class GameManager {
             }
 
             return true;
-        };
+        } else if (result.reserve) {
+            console.log("moveReserved");
+            const now = performance.now();
+            const piece = this.board.map[move.x][move.y];
+            const servertime = piece.lastmovetime + MOVETIME;
+            setTimeout(() => {
+                const reserveResult = this.board.movePieceLocal({ ...move, servertime });
+                if (reserveResult && reserveResult.res) {
+                    if (this.boardUI.draggingPiece) {
+                        if (move.nx === this.boardUI.draggingPiece.x && move.ny === this.boardUI.draggingPiece.y) {
+                            this.boardUI.draggingPiece = null;
+                            this.boardUI.draggingPiecePos = null;
+                        } else if (move.type && move.teban === this.teban && this.board.komadaiPieces[move.teban === 1 ? 'sente' : 'gote'][move.type] === 0 && this.boardUI.draggingPiece.type === move.type) {
+                            this.boardUI.draggingPiece = null;
+                        }
+                    }
+                    audioManager.playSound("sound");
+                    this.boardUI.removeReserved(move);
+                    const gameEnd = this.board.checkGameEnd(move);
+                    if (gameEnd.player !== 0 && this.cpu !== null) {
+                        this.cpu.endGame();
+                        endCPUGame({ winPlayer: gameEnd.player, text: gameEnd.text });
+                        this.cpu = null;
+                    }
+                    if (this.cpu !== null) {
+                        console.log("GameManager: 盤面が変化しました。CPUに通知します。");
+                        this.cpu.boardChanged({ ...move, servertime }); // 盤面情報をワーカーに送信
+                    }
+                } else {
+                    this.boardUI.removeSameReserved(move);
+                }
+            }, servertime - now);
+            this.boardUI.moveReserved(move);
+        }
         return false;
     }
 

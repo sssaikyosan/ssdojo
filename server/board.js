@@ -1,4 +1,4 @@
-import { BOARD_SIZE, MOVETIME, PIECE_MOVES, UNPROMODED_TYPES } from "./const.js";
+import { BOARD_SIZE, MOVETIME, RESERVE_TIME, PIECE_MOVES, UNPROMODED_TYPES } from "./const.js";
 import { getPromotedType, getUnPromotedType } from "./utils.js";
 
 export class Board {
@@ -76,7 +76,7 @@ export class Board {
 
   //無から駒を配置する関数
   setPiece(x, y, type, teban) {
-    this.map[x][y] = { type: type, teban: teban, lastmovetime: this.serverstarttime, lastmoveptime: this.starttime };
+    this.map[x][y] = { type: type, teban: teban, lastmovetime: this.serverstarttime, lastmoveptime: this.starttime, reserved: false };
   }
 
   //駒を駒台へ移動させる関数
@@ -176,15 +176,15 @@ export class Board {
   putPieceLocal(data) {
     const { x, y, nx, ny, type, nari, teban, roomId, servertime } = data;
     const lmp = performance.now();
-    if (this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type] <= 0) return { res: false, capture: null };
-    if (!this.canPut(nx, ny, type, teban, servertime)) return { res: false, capture: null };
+    if (this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type] <= 0) return { res: false, capture: null, reserve: false };
+    if (!this.canPut(nx, ny, type, teban, servertime)) return { res: false, capture: null, reserve: false };
     this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type]--;
 
-    this.map[nx][ny] = { type: type, teban: teban, lastmovetime: servertime, lastmoveptime: lmp };
+    this.map[nx][ny] = { type: type, teban: teban, lastmovetime: servertime, lastmoveptime: lmp, reserved: false };
     // this.komadaiServerTime[teban === 1 ? 'sente' : 'gote'] = servertime;
     // this.komadaipTime[teban === 1 ? 'sente' : 'gote'] = lmp;
     this.kifu.push({ x: -2 + teban, y: -2 + teban, nx: nx, ny: ny });
-    return { res: true, capture: null };
+    return { res: true, capture: null, reserve: false };
   }
 
   //サーバーから手（移動）を受け取ったときに起動する関数
@@ -197,7 +197,11 @@ export class Board {
     const lmp = performance.now();
 
     const result = this.getCanMovePiece(x, y, nx, ny, nari, teban, servertime);
-    if (!result.res) return { res: false, capture: null };
+    if (result.reserve) {
+      this.map[x][y].reserve = true;
+      return { res: false, capture: null, reserve: true };
+    }
+    if (!result.res) return { res: false, capture: null, reserve: false };
 
     this.movePiece(data, result.capture, lmp);
 
@@ -213,7 +217,7 @@ export class Board {
 
     //nullチェック
     if (!piece) return { res: false, capture: null, reserve: false };
-    if (teban !== piece.teban) return { res: false, capture: null };
+    if (teban !== piece.teban) return { res: false, capture: null, reserve: false };
 
     //成りチェック
     if (nari && !this.canPromote(y, ny, teban, piece.type)) return { res: false, capture: null, reserve: false };
@@ -222,7 +226,8 @@ export class Board {
 
     //時間チェック
     if (servertime - piece.lastmovetime < MOVETIME) {
-      if (servertime - piece.lastmovetime < RESERVE_TIME) {
+      if (piece.lastmovetime + MOVETIME - servertime < RESERVE_TIME && !piece.reserve) {
+        console.log("reserve");
         return { res: false, capture: null, reserve: true }
       } else {
         return { res: false, capture: null, reserve: false };
@@ -260,7 +265,7 @@ export class Board {
       pieceType = getPromotedType(this.map[x][y].type);
     }
 
-    this.map[nx][ny] = { type: pieceType, teban: this.map[x][y].teban, lastmovetime: servertime, lastmoveptime: lmp };
+    this.map[nx][ny] = { type: pieceType, teban: this.map[x][y].teban, lastmovetime: servertime, lastmoveptime: lmp, reserved: false };
     this.map[x][y] = null;
 
     //棋譜更新
@@ -288,7 +293,7 @@ export class Board {
     const lastMove = this.kifu.pop();
     this.map[lastMove.x][lastMove.y] = this.map[lastMove.nx][lastMove.ny];
     if (lastMove.capturePiece) {
-      this.map[lastMove.nx][lastMove.ny] = { type: lastMove.capturePiece, teban: -lastMove.teban, lastMovetime: lastMove.captime, lastMoveptime: this.starttime }
+      this.map[lastMove.nx][lastMove.ny] = { type: lastMove.capturePiece, teban: -lastMove.teban, lastMovetime: lastMove.captime, lastMoveptime: this.starttime, reserved: false }
     }
   }
 }

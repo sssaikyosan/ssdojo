@@ -1,7 +1,7 @@
 import { KomadaiUI } from "./ui_komadai.js";
 import { UI } from "./ui.js";
 import { gameManager, pieceImages } from "./main.js";
-import { CELL_SIZE, BOARD_SIZE, BOARD_COLOR, LINE_COLOR, LINEWIDTH, MOUSE_HIGHLIGHT_COLOR, KOMADAI_OFFSET_RATIO, KOMADAI_HEIGHT, MOVETIME, TIMER_RADIUS, TIMER_LINEWIDTH, TIMER_BORDER_WIDTH, TIMER_OFFSET_X, TIMER_OFFSET_Y, TIMER_BGCOLOR, TIMER_COLOR, MOVE_COLOR, PIECE_MOVES, UNPROMODED_TYPES } from "./const.js";
+import { CELL_SIZE, BOARD_SIZE, BOARD_COLOR, LINE_COLOR, LINEWIDTH, MOUSE_HIGHLIGHT_COLOR, KOMADAI_OFFSET_RATIO, KOMADAI_HEIGHT, MOVETIME, TIMER_RADIUS, TIMER_LINEWIDTH, TIMER_BORDER_WIDTH, TIMER_OFFSET_X, TIMER_OFFSET_Y, TIMER_BGCOLOR, TIMER_COLOR, ARROW_COLOR, MOVE_COLOR, PIECE_MOVES, UNPROMODED_TYPES, TIMER_RESERVE_COLOR, RESERVE_TIME } from "./const.js";
 import { sendPutPiece, sendMovePiece } from "./emit.js";
 
 export class BoardUI extends UI {
@@ -107,8 +107,12 @@ export class BoardUI extends UI {
       ctx.rotate(Math.PI);
     }
 
+
     // 駒を描画
     this.drawPieces(ctx, scale);
+
+    // 矢印を描画
+    this.drawArrows(ctx, scale);
 
     ctx.restore();
 
@@ -161,6 +165,16 @@ export class BoardUI extends UI {
     }
     this.reserved.push(data);
     return true;
+  }
+
+  removeSameReserved(data) {
+    for (let i = 0; i < this.reserved.length; i++) {
+      if (this.reserved[i].x === data.x && this.reserved[i].y === data.y && this.reserved[i].nx === data.nx && this.reserved[i].ny === data.ny) {
+        this.reserved.splice(i, 1);
+        return true;
+      }
+    }
+    return false;
   }
 
   removeReserved(data) {
@@ -321,6 +335,16 @@ export class BoardUI extends UI {
     ctx.lineWidth = lineWidth;
     ctx.stroke();
 
+    ctx.beginPath();
+    ctx.arc(
+      TIMER_OFFSET_X * CELL_SIZE * scale,
+      TIMER_OFFSET_Y * CELL_SIZE * scale,
+      radius, -Math.PI / 2 - -Math.PI * 2 * (MOVETIME - RESERVE_TIME) / MOVETIME, -Math.PI / 2, false
+    );
+    ctx.strokeStyle = TIMER_RESERVE_COLOR;
+    ctx.lineWidth = lineWidth;
+    ctx.stroke();
+
     // タイマーの進捗（青い円弧）
     ctx.beginPath();
     ctx.arc(
@@ -389,5 +413,58 @@ export class BoardUI extends UI {
         }
       }
     }
+  }
+
+  drawArrows(ctx, scale) {
+    const cellSize = CELL_SIZE * scale;
+    const arrowHeadSize = cellSize * 0.4; // 矢印の先端のサイズを大きくしました
+
+    ctx.save();
+    ctx.strokeStyle = ARROW_COLOR; // 矢印の色
+    ctx.lineWidth = cellSize * 0.2; // 矢印の太さ (適当に調整)
+    ctx.lineCap = 'round'; // 線の端を丸くする
+    // 盤面の中心を原点に移動
+    ctx.translate(-cellSize * this.boardSize / 2, -cellSize * this.boardSize / 2);
+
+    for (const move of this.reserved) {
+      const startX = (move.x + 0.5) * cellSize;
+      const startY = (move.y + 0.5) * cellSize;
+      const endX = (move.nx + 0.5) * cellSize;
+      const endY = (move.ny + 0.5) * cellSize;
+
+      // 矢印の方向ベクトル
+      const dx = endX - startX;
+      const dy = endY - startY;
+      const angle = Math.atan2(dy, dx);
+
+      // 矢印の長さを計算
+      const length = Math.sqrt(dx * dx + dy * dy);
+      // 線の終点を三角形の手前に調整
+      const adjustedEndX = endX - (dx / length) * (arrowHeadSize * 0.6); // 0.6は調整値
+      const adjustedEndY = endY - (dy / length) * (arrowHeadSize * 0.6); // 0.6は調整値
+
+      // 矢印の線を描画
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(adjustedEndX, adjustedEndY); // 調整した終点を使用
+      ctx.stroke();
+
+      // 矢印の先端（三角形）を描画
+      ctx.save();
+      ctx.translate(endX, endY); // 三角形は元の終点に描画
+      ctx.rotate(angle);
+
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-arrowHeadSize, -arrowHeadSize * 2 / 3);
+      ctx.lineTo(-arrowHeadSize, arrowHeadSize * 2 / 3);
+      ctx.closePath();
+      ctx.fillStyle = ARROW_COLOR; // 矢印の先端の色
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    ctx.restore();
   }
 }

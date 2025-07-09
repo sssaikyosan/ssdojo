@@ -38,7 +38,7 @@ export class Room {
 
     handleMove(id, data) {
         console.log("handleMove");
-        const servertime = performance.now();
+        let servertime = performance.now();
         let validPlayer = false;
         let result = null;
         if (this.sente.includes(id) && data.teban === 1) validPlayer = true;
@@ -52,25 +52,25 @@ export class Room {
             if (endGame.player !== 0) {
                 this.gameFinished(endGame.player, endGame.text);
             }
-        } else {
-            if (result.reserve) {
-                const now = performance.now();
-                const piece = this.board.map[data.x][data.y];
-                const sendtime = piece.lastmovetime + MOVETIME - now;
-                setTimeout(() => {
-                    if (result && result.res) {
-                        const reservedtime = performance.now();
-                        this.emitToRoom("newMove", { ...data, reservedtime });
-                        let endGame = this.board.checkGameEnd(data);
-                        if (endGame.player !== 0) {
-                            this.gameFinished(endGame.player, endGame.text);
-                        }
-                    } else {
-                        io.to(id).emit("moveFailed", { ...data, reservedtime });
+        } else if (result && result.reserve) {
+            console.log("moveReserved");
+            const now = performance.now();
+            const piece = this.board.map[data.x][data.y];
+            servertime = piece.lastmovetime + MOVETIME;
+            setTimeout(() => {
+                const reserveResult = this.board.movePieceLocal({ ...data, servertime });
+                if (reserveResult && reserveResult.res) {
+                    this.emitToRoom("newMove", { ...data, servertime });
+                    let endGame = this.board.checkGameEnd(data);
+                    if (endGame.player !== 0) {
+                        this.gameFinished(endGame.player, endGame.text);
                     }
-                }, sendtime);
-                io.to(id).emit("moveReserved", { ...data, reservedtime });
-            }
+                } else {
+                    io.to(id).emit("reservedMoveFailed", { ...data, servertime });
+                }
+            }, servertime - now);
+            io.to(id).emit("moveReserved", { ...data, servertime });
+        } else {
             io.to(id).emit("moveFailed", { ...data, servertime });
         }
     }

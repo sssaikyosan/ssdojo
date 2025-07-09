@@ -340,7 +340,6 @@ function setupSocket() {
     console.log("nemoveFailed");
     if (gameManager && gameManager.boardUI) {
       gameManager.boardUI.lastsend = null;
-      gameManager.boardUI.removeReserved(data);
     }
   });
 
@@ -350,7 +349,14 @@ function setupSocket() {
       gameManager.boardUI.lastsend = null;
       gameManager.boardUI.moveReserved(data);
     }
+  });
 
+  socket.on('reservedMoveFailed', (data) => {
+    console.log("reservedMoveFailed");
+    if (gameManager && gameManager.boardUI) {
+      gameManager.boardUI.lastsend = null;
+      gameManager.boardUI.removeSameReserved(data);
+    }
   });
 
   // ゲーム終了を受信
