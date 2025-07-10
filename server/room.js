@@ -271,9 +271,30 @@ export class Room {
         if (this.ownerId === id) {
             console.log(`Updating settings for room ${this.roomId}:`, data);
             // 設定を更新
-            this.maxplayers = data.maxplayers;
-            this.moveTime.sente = data.moveTime.sente;
-            this.moveTime.gote = data.moveTime.gote;
+            if (data.maxplayers < 2) {
+                this.maxplayers = 2;
+            } else if (data.maxplayers > 12) {
+                this.maxplayers = 12;
+            } else {
+                this.maxplayers = data.maxplayers;
+            }
+
+            if (data.moveTime.sente < 0) {
+                this.moveTime.sente = 0;
+            } else if (data.moveTime.sente > 30) {
+                this.moveTime.sente = 30;
+            } else {
+                this.moveTime.sente = data.moveTime.sente;
+            }
+
+            if (data.moveTime.gote < 0) {
+                this.moveTime.gote = 0;
+            } else if (data.moveTime.gote > 30) {
+                this.moveTime.gote = 30;
+            } else {
+                this.moveTime.gote = data.moveTime.gote;
+            }
+
             // 部屋の状態を部屋のメンバーにブロードキャスト（必要に応じて）
             this.cancelReady();
             this.roomUpdate(); // RoomクラスにbroadcastRoomStateメソッドがあると仮定
