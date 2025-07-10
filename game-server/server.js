@@ -10,6 +10,7 @@ import { Room } from './room.js'
 import fs from 'fs'; // fsモジュールをインポート
 import path from 'path'; // pathモジュールをインポート
 import { fileURLToPath } from 'url'; // fileURLToPathをインポート
+import { GameServerState } from './gameserverstate.js'; // GameServerStateをインポート
 
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = path.dirname(__filename);
@@ -90,7 +91,7 @@ io.on('connection', (socket) => {
                 io.to(socket.id).emit("joinRoomFailed", { reason: result });
             }
         } else {
-            console.warn(`Room ${roomId} not found for user ${player_id} (${socket.id}).`);
+            console.warn(`Room ${roomId} not found for user ${player.id} (${socket.id}).`);
             io.to(socket.id).emit("joinRoomFailed", { reason: 'room_not_found' });
         }
     });
@@ -138,6 +139,29 @@ io.on('connection', (socket) => {
         const roomId = gameServerState.players[socket.id]?.roomId;
         if (roomId && gameServerState.rooms[roomId]) {
             gameServerState.rooms[roomId].chat(socket.id, text);
+        }
+    });
+
+    // 部屋設定更新イベント
+    socket.on('updateRoomSettings', (settings) => {
+        const roomId = gameServerState.players[socket.id]?.roomId;
+        if (roomId && gameServerState.rooms[roomId]) {
+            const room = gameServerState.rooms[roomId];
+            // オーナーであるかを確認
+            if (room.ownerId === socket.id) {
+                console.log(`Updating settings for room ${roomId}:`, settings);
+                // 設定を更新
+                room.maxplayers = settings.maxplayers;
+                room.movetime.sente = settings.movetime.sente;
+                room.movetime.gote = settings.movetime.gote;
+                // 部屋の状態を部屋のメンバーにブロードキャスト（必要に応じて）
+                room.broadcastRoomState(); // RoomクラスにbroadcastRoomStateメソッドがあると仮定
+            } else {
+                console.warn(`User ${socket.id} is not the owner of room ${roomId}. Settings update denied.`);
+                // オーナーでない場合はエラーをクライアントに通知することも検討
+            }
+        } else {
+            console.warn(`Settings update received from ${socket.id} but not in a valid room.`);
         }
     });
 

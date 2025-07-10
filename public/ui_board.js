@@ -193,13 +193,13 @@ export class BoardUI extends UI {
       const komadaiPiece = this.getKomadaiPieceAt(pos);
       if (komadaiPiece) {
         this.draggingPiecePos = pos;
-        this.draggingPiece = { x: -1, y: -1, type: komadaiPiece, lastmoveptime: -5000 };
+        this.draggingPiece = { x: -1, y: -1, type: komadaiPiece, teban: this.teban, lastmoveptime: -5000 };
         // this.board.komadaiPieces[this.board.teban === 1 ? 'sente' : 'gote'][komadaiPiece]--;
       }
     } else if (this.board.map[x][y]) {
       if (this.board.map[x][y].teban == this.teban) {
         const piece = this.board.map[x][y];
-        this.draggingPiece = { x: x, y: y, type: piece.type, lastmoveptime: piece.lastmoveptime };
+        this.draggingPiece = { x: x, y: y, type: piece.type, teban: this.teban, lastmoveptime: piece.lastmoveptime };
         this.draggingPiecePos = pos;
       }
     }
@@ -282,8 +282,10 @@ export class BoardUI extends UI {
     }
 
     const timeDiff = performance.now() - piece.lastmoveptime;
-    if (timeDiff < MOVETIME) {
-      this.drawTimer(ctx, scale, timeDiff);
+    let tebanMoveTime = this.board.moveTime.sente;
+    if (piece.teban === -1) tebanMoveTime = this.board.moveTime.gote;
+    if (timeDiff < tebanMoveTime) {
+      this.drawTimer(ctx, scale, timeDiff, tebanMoveTime);
     }
   };
 
@@ -318,11 +320,11 @@ export class BoardUI extends UI {
     ctx.restore();
   }
 
-  drawTimer(ctx, scale, ptimeDiff) {
+  drawTimer(ctx, scale, ptimeDiff, tebanMoveTime) {
     const radius = Math.max(0, CELL_SIZE * TIMER_RADIUS * scale);
     const lineWidth = CELL_SIZE * TIMER_LINEWIDTH * scale;
     const borderWidth = CELL_SIZE * TIMER_BORDER_WIDTH * scale;
-    const progress = ptimeDiff / MOVETIME;
+    const progress = ptimeDiff / tebanMoveTime;
 
     // タイマーの背景（灰色の円）
     ctx.beginPath();
@@ -339,7 +341,7 @@ export class BoardUI extends UI {
     ctx.arc(
       TIMER_OFFSET_X * CELL_SIZE * scale,
       TIMER_OFFSET_Y * CELL_SIZE * scale,
-      radius, -Math.PI / 2 - -Math.PI * 2 * (MOVETIME - RESERVE_TIME) / MOVETIME, -Math.PI / 2, false
+      radius, -Math.PI / 2 - -Math.PI * 2 * (tebanMoveTime - RESERVE_TIME) / tebanMoveTime, -Math.PI / 2, false
     );
     ctx.strokeStyle = TIMER_RESERVE_COLOR;
     ctx.lineWidth = lineWidth;

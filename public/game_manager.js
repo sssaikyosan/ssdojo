@@ -23,7 +23,7 @@ export class GameManager {
         this.boardUI = new BoardUI({ gameManager: this, board: board, x: 0.0, y: 0.0 })
     }
 
-    setRoom(roomId, teban, servertime, cpulevel = null) {
+    setRoom(roomId, teban, servertime, moveTime, cpulevel = null) {
         const now = performance.now();
         this.roomId = roomId;
         this.teban = teban;
@@ -31,7 +31,7 @@ export class GameManager {
         const board = new Board();
         this.board = board;
         this.boardUI = new BoardUI({ gameManager: this, board: board, x: 0.0, y: 0.0 });
-        this.board.init(servertime, now);
+        this.board.init(servertime, now, moveTime);
         this.boardUI.init(teban);
 
         if (cpulevel !== null) {
@@ -96,7 +96,9 @@ export class GameManager {
             console.log("moveReserved");
             const now = performance.now();
             const piece = this.board.map[move.x][move.y];
-            const servertime = piece.lastmovetime + MOVETIME;
+            let tebanMoveTime = this.board.moveTime.sente;
+            if (piece.teban === -1) tebanMoveTime = this.board.moveTime.gote;
+            const servertime = piece.lastmovetime + tebanMoveTime;
             setTimeout(() => {
                 const reserveResult = this.board.movePieceLocal({ ...move, servertime });
                 if (reserveResult && reserveResult.res) {

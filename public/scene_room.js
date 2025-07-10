@@ -12,12 +12,28 @@ const senteOverlay = document.getElementById("senteOverlay");
 const goteOverlay = document.getElementById("goteOverlay");
 const spectatorsOverlay = document.getElementById("spectatorsOverlay");
 export const readyOverlay = document.getElementById("readyOverlay");
+export const startOverlay = document.getElementById("startOverlay");
 export const cancelOverlay = document.getElementById("cancelOverlay");
 export const leaveRoomOverlay = document.getElementById("leaveRoomOverlay");
 const copySuccessMessage = document.getElementById("copySuccessMessage");
 const playingText = document.getElementById("playingText");
 
+// 部屋設定関連の要素を取得
+const roomSettingsDisplay = document.getElementById("roomSettingsDisplay");
+const maxPlayersDisplay = document.getElementById("maxPlayersDisplay");
+const senteMoveTimeDisplay = document.getElementById("senteMoveTimeDisplay");
+const goteMoveTimeDisplay = document.getElementById("goteMoveTimeDisplay");
+const openRoomSettingsButton = document.getElementById("openRoomSettingsButton");
+
+const roomSettingsOverlay = document.getElementById("roomSettingsOverlay");
+const maxPlayersInput = /** @type {HTMLInputElement} */ (document.getElementById("maxPlayersInput"));
+const senteMoveTimeInput = /** @type {HTMLInputElement} */ (document.getElementById("senteMoveTimeInput"));
+const goteMoveTimeInput = /** @type {HTMLInputElement} */ (document.getElementById("goteMoveTimeInput"));
+const saveRoomSettingsButton = document.getElementById("saveRoomSettingsButton");
+
+
 const displayRoomIdButton = document.getElementById("displayRoomIdButton");
+const startRoomGameButton = document.getElementById("startRoomGameButton");
 const readyButton = document.getElementById("readyButton");
 const cancelButton = document.getElementById("cancelButton");
 const moveToSenteButton = document.getElementById("moveToSenteButton");
@@ -25,7 +41,8 @@ const moveToGoteButton = document.getElementById("moveToGoteButton");
 const moveToSpectatorsButton = document.getElementById("moveToSpectatorsButton");
 const leaveRoomButton = document.getElementById("leaveRoomButton");
 
-displayRoomIdButton.addEventListener("click", () => { toggleRoomId(); })
+displayRoomIdButton.addEventListener("click", () => { toggleRoomId(); });
+startRoomGameButton.addEventListener("click", () => { startRoomGame(); });
 readyButton.addEventListener("click", () => { ready(); });
 cancelButton.addEventListener("click", () => { cancelReady(); });
 moveToSenteButton.addEventListener("click", () => { moveSubmit('sente'); });
@@ -34,6 +51,29 @@ moveToSpectatorsButton.addEventListener("click", () => { moveSubmit('spectators'
 leaveRoomButton.addEventListener("click", () => { leaveRoom(); });
 
 copyIdButton.addEventListener("click", handleCopyIdClick);
+
+// オーナー用ルーム設定変更ボタンにイベントリスナーを追加
+openRoomSettingsButton.addEventListener("click", () => {
+    roomSettingsOverlay.style.display = 'flex';
+    // 現在の設定値を入力フィールドにセット
+    maxPlayersInput.value = maxPlayersDisplay.textContent.replace('最大プレイヤー数: ', '');
+    senteMoveTimeInput.value = senteMoveTimeDisplay.textContent.replace('先手クールダウン (秒): ', '');
+    goteMoveTimeInput.value = goteMoveTimeDisplay.textContent.replace('後手クールダウン (秒): ', '');
+});
+
+
+// 設定保存ボタンにイベントリスナーを追加
+saveRoomSettingsButton.addEventListener("click", () => {
+    const settings = {
+        maxplayers: parseInt(maxPlayersInput.value, 10),
+        moveTime: {
+            sente: parseInt(senteMoveTimeInput.value, 10),
+            gote: parseInt(goteMoveTimeInput.value, 10)
+        }
+    };
+    socket.emit("updateRoomSettings", settings);
+    roomSettingsOverlay.style.display = 'none'; // 保存後にオーバーレイを非表示
+});
 
 
 let currentRoomId = null;
@@ -46,8 +86,8 @@ function leaveRoom() {
     socket.emit("leaveRoom");
     setScene(createTitleScene());
     currentRoomId = null;
-    if (displayRoomIdButton.textContent === "部屋IDを非表示") {
-        displayRoomIdButton.textContent = "部屋IDを表示";
+    if (displayRoomIdButton.textContent === "部屋IDを表示") {
+        displayRoomIdButton.textContent = "部屋IDを非表示";
         roomIdStr.textContent = ``
     }
     roomIdOverlay.style.display = 'none';
@@ -56,11 +96,20 @@ function leaveRoom() {
     cancelOverlay.style.display = 'none';
     leaveRoomOverlay.style.display = 'none';
     playingText.style.display = 'none';
+    roomSettingsOverlay.style.display = 'none'; // 部屋設定UIも非表示に
+    roomSettingsDisplay.style.display = 'none'; // 部屋設定表示も非表示に
     // シーンを離れる際にメッセージを非表示にする
     if (copySuccessMessage) {
         copySuccessMessage.style.display = 'none';
         copySuccessMessage.style.opacity = '0';
     }
+}
+
+function startRoomGame() {
+    socket.emit("startRoomGame");
+    startOverlay.style.display = 'none';
+    readyOverlay.style.display = 'none';
+    cancelOverlay.style.display = 'none';
 }
 
 function ready() {
@@ -103,12 +152,14 @@ function cleanOverlay() {
 
 export function roomUpdate(data) {
     cleanOverlay();
+    let ready = true;
 
     for (let i = 0; i < data.sente.length; i++) {
         const pElement = document.createElement('p');
         if (data.readys && data.readys.sente[i]) {
             pElement.textContent = data.sente[i] + '(準備完了)';
         } else {
+            ready = false;
             pElement.textContent = data.sente[i];
         }
         pElement.style.color = '#FFFFFF'; // テキスト色を白に設定
@@ -120,6 +171,7 @@ export function roomUpdate(data) {
         if (data.readys && data.readys.gote[i]) {
             pElement.textContent = data.gote[i] + '(準備完了)';
         } else {
+            ready = false;
             pElement.textContent = data.gote[i];
         }
         pElement.style.color = '#FFFFFF'; // テキスト色を白に設定
@@ -134,6 +186,8 @@ export function roomUpdate(data) {
 
     if (data.state !== 'playing') {
         playingText.style.display = 'none';
+
+        startOverlay.style.display = 'none';
         readyOverlay.style.display = 'block';
         cancelOverlay.style.display = 'none';
         if (data.roomteban === 'sente') {
@@ -150,6 +204,24 @@ export function roomUpdate(data) {
             readyOverlay.style.display = 'none';
             cancelOverlay.style.display = 'none';
         }
+        if (data.isOwner && ready && data.sente.length > 0 && data.gote.length > 0) {
+            startOverlay.style.display = 'block';
+        } else {
+            startOverlay.style.display = 'none';
+        }
+    }
+
+    // 部屋設定表示エリアに現在の設定値を表示
+    maxPlayersDisplay.textContent = `最大プレイヤー数: ${data.maxplayers || 2}`;
+    senteMoveTimeDisplay.textContent = `先手クールダウン (秒): ${data.moveTime.sente}`;
+    goteMoveTimeDisplay.textContent = `後手クールダウン (秒): ${data.moveTime.gote}`;
+
+
+    // オーナーの場合のみ部屋設定変更ボタンを表示
+    if (data.isOwner) { // dataにisOwnerフラグが含まれていると仮定
+        openRoomSettingsButton.style.display = 'block';
+    } else {
+        openRoomSettingsButton.style.display = 'none';
     }
 }
 
@@ -206,6 +278,7 @@ export function createRoomScene(data) {
     leaveRoomOverlay.style.display = 'block';
     copySuccessMessage.style.display = 'none';
     copySuccessMessage.style.opacity = '0';
+    roomSettingsDisplay.style.display = 'flex'; // 部屋設定表示エリアを表示
 
     // シーン破棄時のイベントリスナー削除とメッセージ非表示
     roomScene.destroy = () => {
@@ -213,6 +286,9 @@ export function createRoomScene(data) {
             copySuccessMessage.style.display = 'none';
             copySuccessMessage.style.opacity = '0';
         }
+        // 部屋設定UIと表示を非表示に
+        roomSettingsOverlay.style.display = 'none';
+        roomSettingsDisplay.style.display = 'none';
     };
 
     return roomScene;

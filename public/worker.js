@@ -131,7 +131,7 @@ const PIECE_MOVES = {
 
 const UNPROMODED_TYPES = ['pawn', 'lance', 'knight', 'silver', 'bishop', 'rook'];
 const BOARD_SIZE = 9;
-const MOVETIME = 5000;
+const MOVETIME = 5;
 
 
 function getUnPromotedType(type) {
@@ -394,7 +394,7 @@ class Board {
         if (!piece) return { res: false, capture: null };
         if (teban !== piece.teban) return { res: false, capture: null };
         //時間チェック
-        if (servertime - piece.lastmovetime < MOVETIME) {
+        if (servertime - piece.lastmovetime < MOVETIME * 1000) {
             return { res: false, capture: null };
         }
         //成りチェック
@@ -621,7 +621,7 @@ function getPieceLegalMoves(currentBoard, x, y, teban, servertime, ignoretime) {
     const selectedPiece = currentBoard.map[x][y];
     if (!selectedPiece) return [];
     if (selectedPiece.teban !== teban) return [];
-    if (!ignoretime && (selectedPiece.lastmovetime >= (servertime - MOVETIME))) return [];
+    if (!ignoretime && (selectedPiece.lastmovetime >= (servertime - MOVETIME * 1000))) return [];
 
     for (const move of PIECE_MOVES[selectedPiece.type]) {
         let moveX = x;
@@ -634,7 +634,7 @@ function getPieceLegalMoves(currentBoard, x, y, teban, servertime, ignoretime) {
             if (piece && piece.teban === selectedPiece.teban) break;
 
             if (currentBoard.canPromote(move.y, moveY, teban, selectedPiece.type)) {
-                if (selectedPiece.lastmovetime >= (servertime - MOVETIME)) {
+                if (selectedPiece.lastmovetime >= (servertime - MOVETIME * 1000)) {
                     pieceLegalMoves.push({
                         x: x,
                         y: y,
@@ -659,7 +659,7 @@ function getPieceLegalMoves(currentBoard, x, y, teban, servertime, ignoretime) {
                 }
             } else {
                 if (currentBoard.isTopCell(moveX, moveY, selectedPiece.type, selectedPiece.teban)) break;
-                if (selectedPiece.lastmovetime >= (servertime - MOVETIME)) {
+                if (selectedPiece.lastmovetime >= (servertime - MOVETIME * 1000)) {
                     pieceLegalMoves.push({
                         x: x,
                         y: y,

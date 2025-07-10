@@ -158,7 +158,6 @@ export class ServerState {
         const online = Object.keys(this.players).length;
         const roomCount = Object.keys(this.rooms).length;
         const topinfo = await this.postgureDb.readTopPlayers();
-        console.log(topinfo);
         const topPlayers = [];
 
         for (let i = 0; i < 10; i++) {
@@ -168,7 +167,6 @@ export class ServerState {
             const displayRating = getDisplayRating(topinfo[i].rating, topinfo[i].total_games);
             topPlayers.push({ name: topinfo[i].name, rating: displayRating });
         }
-        console.log("top", topPlayers);
         this.io.emit("serverStatus", { online: online, roomCount: roomCount, topPlayers: topPlayers });
         this.timecount++;
     }
@@ -315,9 +313,9 @@ export class ServerState {
     }
 
 
-    createRoom() {
+    createRoom(ownerId) { // ownerId 引数を追加
         const roomId = generateRandomString();
-        this.rooms[roomId] = new Room(roomId, 'private');
+        this.rooms[roomId] = new Room(roomId, 'private', ownerId); // ownerIdを渡す
         return roomId;
     }
 
@@ -337,11 +335,17 @@ export class ServerState {
         this.rooms[this.players[id].roomId].moveTeban(id, data);
     }
 
+    startRoomGame(id) {
+        if (!this.players[id]) return;
+        if (!this.players[id].roomId) return;
+        this.rooms[this.players[id].roomId].startRoomGame(id);
+    }
+
     readyToPlay(id) {
         if (!this.players[id]) return;
         if (!this.players[id].roomId) return;
         this.players[id].readyToPlay();
-        this.rooms[this.players[id].roomId].readyToPlay();
+        this.rooms[this.players[id].roomId].roomUpdate();
     }
 
     cancelReady(id) {

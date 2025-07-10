@@ -323,7 +323,8 @@ function setupSocket() {
       data.goteCharacter,
       data.roomId,
       data.servertime,
-      data.roomteban
+      data.roomteban,
+      data.moveTime
     ));
   });
 

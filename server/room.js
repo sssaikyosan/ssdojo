@@ -4,7 +4,7 @@ import { MOVETIME } from './const.js';
 import { io, serverState } from './server.js';
 
 export class Room {
-    constructor(roomId, roomType) {
+    constructor(roomId, roomType, ownerId) { // ownerIdをコンストラクタに追加
         this.roomId = roomId;
         this.sente = [];
         this.gote = [];
@@ -12,9 +12,12 @@ export class Room {
         this.board = new Board(); // ゲームの盤面
         this.gameState = 'waiting'; // ゲームの状態 ('waiting', 'playing', 'finished')
         this.roomType = roomType; // 部屋の種類('rating', 'private', kento)
-        this.owner = null;
-        this.maxPlayer = 12; // 最大人数
-        this.moveTime = { sente: MOVETIME, gote: MOVETIME }
+        this.ownerId = ownerId; // オーナーのsocket.idを保持
+        this.maxplayers = 2; // 最大プレイヤー数のデフォルト値
+        this.moveTime = { // 持ち時間のデフォルト値
+            sente: 5,
+            gote: 5
+        };
     }
 
     addPlayer(id, teban) {
@@ -26,7 +29,7 @@ export class Room {
                 this.gote.push(id);
                 break;
             case 'spectators':
-                dhis.spectators.push(id);
+                this.spectators.push(id);
                 break;
             default:
                 break;
@@ -34,7 +37,7 @@ export class Room {
     }
 
     startGame(time) {
-        this.board.init(time, time, this.moveTime);
+        this.board.init(time, time, this.moveTime); // 持ち時間を設定して初期化
         this.gameState = 'playing';
     }
 
@@ -58,7 +61,9 @@ export class Room {
             console.log("moveReserved");
             const now = performance.now();
             const piece = this.board.map[data.x][data.y];
-            servertime = piece.lastmovetime + MOVETIME;
+            let tebanMoveTime = this.board.moveTime.sente;
+            if (piece.teban === -1) tebanMoveTime = this.board.moveTime.gote;
+            servertime = piece.lastmovetime + tebanMoveTime;
             setTimeout(() => {
                 const reserveResult = this.board.movePieceLocal({ ...data, servertime });
                 if (reserveResult && reserveResult.res) {
@@ -80,13 +85,13 @@ export class Room {
     //部屋への通知
     emitToRoom(type, data) {
         for (let i = 0; i < this.sente.length; i++) {
-            io.to(this.sente[i]).emit(type, { ...data, roomteban: 'sente', idx: i });
+            io.to(this.sente[i]).emit(type, { ...data, roomteban: 'sente', idx: i, isOwner: this.sente[i] === this.ownerId });
         }
         for (let i = 0; i < this.gote.length; i++) {
-            io.to(this.gote[i]).emit(type, { ...data, roomteban: 'gote', idx: i });
+            io.to(this.gote[i]).emit(type, { ...data, roomteban: 'gote', idx: i, isOwner: this.gote[i] === this.ownerId });
         }
         for (let i = 0; i < this.spectators.length; i++) {
-            io.to(this.spectators[i]).emit(type, { ...data, roomteban: 'spectators', idx: i });
+            io.to(this.spectators[i]).emit(type, { ...data, roomteban: 'spectators', idx: i, isOwner: this.spectators[i] === this.ownerId });
         }
     }
 
@@ -216,52 +221,67 @@ export class Room {
         }
         currentList.splice(currentIndex, 1);
         targetList.push(playerId);
-        this.cancelReady();
         this.roomUpdate();
     }
 
-    readyToPlay() {
-        this.roomUpdate();
-        for (const playerId of this.sente) {
-            if (serverState.players[playerId].state !== "ready") return;
-        }
-        for (const playerId of this.gote) {
-            if (serverState.players[playerId].state !== "ready") return;
-        }
-        if (this.sente.length > 0 && this.gote.length > 0) {
+    startRoomGame(id) {
+        if (id !== this.ownerId) return false;
+        const names = this.getPlayerNames();
+        const now = performance.now();
 
-            const names = this.getPlayerNames();
-            const now = performance.now();
-
-            this.startGame(now);
-            const data = {
-                senteName: names.sente,
-                senteCharacter: serverState.players[this.sente[0]].characterName,
-                goteName: names.gote,
-                goteCharacter: serverState.players[this.gote[0]].characterName,
-                spectators: names.spectators,
-                roomId: this.roomId,
-                servertime: now,
-                state: this.gameState
-            };
-            this.emitToRoom("startRoomGame", data);
-            for (const id of this.sente) {
-                serverState.players[id].goToPlay(this.roomId);
-            }
-            for (const id of this.gote) {
-                serverState.players[id].goToPlay(this.roomId);
-            }
+        this.startGame(now);
+        const data = {
+            senteName: names.sente,
+            senteCharacter: serverState.players[this.sente[0]].characterName,
+            goteName: names.gote,
+            goteCharacter: serverState.players[this.gote[0]].characterName,
+            spectators: names.spectators,
+            roomId: this.roomId,
+            servertime: now,
+            state: this.gameState,
+            maxplayers: this.maxplayers,
+            moveTime: this.moveTime
+        };
+        this.emitToRoom("startRoomGame", data);
+        for (const id of this.sente) {
+            serverState.players[id].goToPlay(this.roomId);
         }
+        for (const id of this.gote) {
+            serverState.players[id].goToPlay(this.roomId);
+        }
+        return true;
     }
 
     joinRoom(id) {
-        if (this.sente.length + this.gote.length + this.spectators.length >= 12) return '部屋が満員です';
+        // 最大プレイヤー数を超えていないかチェック
+        if (this.sente.length + this.gote.length + this.spectators.length >= this.maxplayers) {
+            return 'roomIsFull';
+        }
         this.spectators.push(id);
         return "roomJoined"
     }
 
-    chat(name, text) {
-        this.emitToRoom("chatMessage", { name: name, text: text });
+    chat(id, text) { // idを追加
+        const playerName = serverState.players[id]?.name || 'Unknown'; // プレイヤー名を取得
+        this.emitToRoom("chatMessage", { name: playerName, text: text });
+    }
+
+    updateSetting(id, data) {
+        // オーナーであるかを確認
+        if (this.ownerId === id) {
+            console.log(`Updating settings for room ${this.roomId}:`, data);
+            // 設定を更新
+            this.maxplayers = data.maxplayers;
+            this.moveTime.sente = data.moveTime.sente;
+            this.moveTime.gote = data.moveTime.gote;
+            // 部屋の状態を部屋のメンバーにブロードキャスト（必要に応じて）
+            this.cancelReady();
+            this.roomUpdate(); // RoomクラスにbroadcastRoomStateメソッドがあると仮定
+        } else {
+            console.warn(`User ${id} is not the owner of room ${this.roomId}. Settings update denied.`);
+            // オーナーでない場合はエラーをクライアントに通知することも検討
+        }
+
     }
 
     roomUpdate() {
@@ -275,12 +295,32 @@ export class Room {
             readys.gote.push(serverState.players[id].state === 'ready');
         }
         console.log("readys", readys);
-        this.emitToRoom("roomUpdate", { roomId: this.roomId, sente: names.sente, gote: names.gote, spectators: names.spectators, state: this.gameState, readys: readys });
+        // 部屋設定情報も含めてブロードキャスト
+        this.emitToRoom("roomUpdate", {
+            roomId: this.roomId,
+            sente: names.sente,
+            gote: names.gote,
+            spectators: names.spectators,
+            state: this.gameState,
+            readys: readys,
+            maxplayers: this.maxplayers, // 設定値をブロードキャスト
+            moveTime: this.moveTime // 設定値をブロードキャスト
+        });
     }
 
-    backToRoom() {
+
+    backToRoom(id) { // idを追加
         const names = this.getPlayerNames();
-        return { roomId: this.roomId, sente: names.sente, gote: names.gote, spectators: names.spectators, state: this.gameState };
+        // 部屋設定情報も含めて返す
+        return {
+            roomId: this.roomId,
+            sente: names.sente,
+            gote: names.gote,
+            spectators: names.spectators,
+            state: this.gameState,
+            maxplayers: this.maxplayers, // 設定値を返す
+            moveTime: this.moveTime // 設定値を返す
+        };
     }
 
     getPlayerNames() {
@@ -318,10 +358,10 @@ export class Room {
         }
     }
 
-    changeMode(id, roomtype) {
-        if (id !== owner) return false;
-        if (roomtype === 'private' || roomtype === 'kento') {
-            this.roomtype = this.roomtype;
+    changeMode(id, roomType) {
+        if (id !== this.ownerId) return false; // ownerをownerIdに修正
+        if (roomType === 'private' || roomType === 'kento') {
+            this.roomType = roomType; // roomtypeをthis.roomTypeに修正
             return true;
         } else {
             return false;

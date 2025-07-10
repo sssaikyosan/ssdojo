@@ -224,11 +224,17 @@ export class DataBase {
         this.rooms[this.players[id].roomId].moveTeban(id, data);
     }
 
+    startRoomGame(id) {
+        if (!this.players[id]) return;
+        if (!this.players[id].roomId) return;
+        this.rooms[this.players[id].roomId].startRoomGame(id);
+    }
+
     readyToPlay(id) {
         if (!this.players[id]) return;
         if (!this.players[id].roomId) return;
         this.players[id].readyToPlay();
-        this.rooms[this.players[id].roomId].readyToPlay();
+        this.rooms[this.players[id].roomId].roomUpdate();
     }
 
     cancelReady(id) {

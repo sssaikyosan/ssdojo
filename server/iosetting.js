@@ -37,14 +37,22 @@ export function ioSetup() {
             if (!data.name || !data.characterName || !data.player_id) return;
             if (data.name.length > 24 || data.characterName.length > 36 || data.player_id.length > 36) return;
             if (serverState.players[socket.id].roomId !== null) return;
-            const roomId = serverState.createRoom();
+            const roomId = serverState.createRoom(socket.id); // オーナーIDを渡すように修正
             const res = serverState.joinRoom(socket.id, roomId, data.name, data.characterName);
             if (res === "roomJoined") {
                 const room = serverState.rooms[roomId];
                 const senteNames = room.sente.map(id => serverState.players[id].name);
                 const goteNames = room.gote.map(id => serverState.players[id].name);
                 const spectatorsNames = room.spectators.map(id => serverState.players[id].name);
-                socket.emit("roomJoined", { roomId: roomId, sente: senteNames, gote: goteNames, spectators: spectatorsNames, state: room.gameState, kifu: room.board.kifu });
+                socket.emit("roomJoined", {
+                    roomId: roomId, sente: senteNames, gote: goteNames, spectators: spectatorsNames, state: room.gameState,
+                    kifu: room.board.kifu,
+                    maxplayers: room.maxplayers,
+                    moveTime: room.moveTime,
+                    roomteban: 'spectators',
+                    idx: 0,
+                    isOwner: true
+                });
             } else {
                 socket.emit("roomJoinFailed", { roomId: roomId, text: res })
             }
@@ -60,7 +68,16 @@ export function ioSetup() {
                 const senteNames = room.sente.map(id => serverState.players[id].name);
                 const goteNames = room.gote.map(id => serverState.players[id].name);
                 const spectatorsNames = room.spectators.map(id => serverState.players[id].name);
-                socket.emit("roomJoined", { roomId: data.roomId, sente: senteNames, gote: goteNames, spectators: spectatorsNames, state: room.gameState, kifu: room.board.kifu });
+                const idx = room.spectators.length - 1;
+                socket.emit("roomJoined", {
+                    roomId: data.roomId, sente: senteNames, gote: goteNames, spectators: spectatorsNames, state: room.gameState,
+                    kifu: room.board.kifu,
+                    maxplayers: room.maxplayers,
+                    moveTime: room.moveTime,
+                    roomteban: 'spectators',
+                    idx: idx,
+                    isOwner: room.ownerId === socket.id
+                });
             } else {
                 socket.emit("roomJoinFailed", { roomId: data.roomId, text: res })
             }
@@ -72,6 +89,11 @@ export function ioSetup() {
 
         socket.on("moveTeban", (data) => {
             serverState.moveTeban(socket.id, data);
+        });
+
+        socket.on("startRoomGame", () => {
+            console.log("startRoomGame");
+            serverState.startRoomGame(socket.id);
         });
 
         socket.on("ready", () => {
@@ -98,6 +120,17 @@ export function ioSetup() {
             const data = serverState.backToRoom(socket.id);
             socket.emit("backToRoom", data);
         });
+
+        // 部屋設定更新イベント
+        socket.on('updateRoomSettings', (data) => {
+            const roomId = serverState.players[socket.id]?.roomId;
+            if (roomId && serverState.rooms[roomId]) {
+                serverState.rooms[roomId].updateSetting(socket.id, data);
+            } else {
+                console.warn(`Settings update received from ${socket.id} but not in a valid room.`);
+            }
+        });
+
 
         // 切断時の処理
         socket.on("disconnect", () => {

@@ -37,7 +37,7 @@ export class Board {
     // this.komadaipTime = { sente: time, gote: time };
     this.starttime = time;
     this.time = time;
-    this.moveTime = { sente: moveTime.sente, gote: moveTime.gote };
+    this.moveTime = { sente: moveTime.sente * 1000, gote: moveTime.gote * 1000 };
     this.matched = true;
     this.komadaiPieces = {
       sente: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 },
@@ -85,7 +85,11 @@ export class Board {
 
   //無から駒を配置する関数
   setPiece(x, y, type, teban) {
-    this.map[x][y] = { type: type, teban: teban, lastmovetime: this.serverstarttime, lastmoveptime: this.starttime, reserved: false };
+    let tebanMoveTime = this.moveTime.sente;
+    if (teban === -1) tebanMoveTime = this.moveTime.gote;
+    const pieceStartTime = this.serverstarttime + 5000 - tebanMoveTime;
+    const pieceStartpTime = this.starttime + 5000 - tebanMoveTime;
+    this.map[x][y] = { type: type, teban: teban, lastmovetime: pieceStartTime, lastmoveptime: pieceStartpTime, reserved: false };
   }
 
   //指定したマスへの移動が合法手か判定

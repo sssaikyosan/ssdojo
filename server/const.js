@@ -1,5 +1,5 @@
 export const SERVER_MOVETYME = 5;
-export const MOVETIME = 5000;
+export const MOVETIME = 5;
 export const RESERVE_TIME = 1000;
 
 export const BOARD_SIZE = 9;

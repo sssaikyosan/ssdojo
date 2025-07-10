@@ -21,16 +21,16 @@ export class Board {
   serverstarttime = 0;
   starttime = 0;
   time = 0;
-  moveTime = { sente: MOVETIME, gote: MOVETIME }
+  moveTime = { sente: 5, gote: 5 }
 
   // 盤面の初期化
-  init(servertime, time, moveTime = { sente: MOVETIME, gote: MOVETIME }) {
+  init(servertime, time, moveTime = { sente: 5, gote: 5 }) {
     this.serverstarttime = servertime;
     // this.komadaiServerTime = { sente: servertime, gote: servertime };
     // this.komadaipTime = { sente: time, gote: time };
     this.starttime = time;
     this.time = time;
-    this.moveTime = { sente: moveTime.sente, gote: moveTime.gote }
+    this.moveTime = { sente: moveTime.sente * 1000, gote: moveTime.gote * 1000 }
     this.map = [[null, null, null, null, null, null, null, null, null],
     [null, null, null, null, null, null, null, null, null],
     [null, null, null, null, null, null, null, null, null],
@@ -78,7 +78,11 @@ export class Board {
 
   //無から駒を配置する関数
   setPiece(x, y, type, teban) {
-    this.map[x][y] = { type: type, teban: teban, lastmovetime: this.serverstarttime, lastmoveptime: this.starttime, reserved: false };
+    let tebanMoveTime = this.moveTime.sente;
+    if (teban === -1) tebanMoveTime = this.moveTime.gote;
+    const pieceStartTime = this.serverstarttime + 5000 - tebanMoveTime;
+    const pieceStartpTime = this.starttime + 5000 - tebanMoveTime;
+    this.map[x][y] = { type: type, teban: teban, lastmovetime: pieceStartTime, lastmoveptime: pieceStartpTime, reserved: false };
   }
 
   //駒を駒台へ移動させる関数
