@@ -86,8 +86,8 @@ function leaveRoom() {
     socket.emit("leaveRoom");
     setScene(createTitleScene());
     currentRoomId = null;
-    if (displayRoomIdButton.textContent === "部屋IDを表示") {
-        displayRoomIdButton.textContent = "部屋IDを非表示";
+    if (displayRoomIdButton.textContent === "部屋IDを非表示") {
+        displayRoomIdButton.textContent = "部屋IDを表示";
         roomIdStr.textContent = ``
     }
     roomIdOverlay.style.display = 'none';
