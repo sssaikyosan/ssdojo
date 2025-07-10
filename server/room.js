@@ -13,7 +13,7 @@ export class Room {
         this.gameState = 'waiting'; // ゲームの状態 ('waiting', 'playing', 'finished')
         this.roomType = roomType; // 部屋の種類('rating', 'private', kento)
         this.ownerId = ownerId; // オーナーのsocket.idを保持
-        this.maxplayers = 2; // 最大プレイヤー数のデフォルト値
+        this.maxplayers = 12; // 最大プレイヤー数のデフォルト値
         this.moveTime = { // 持ち時間のデフォルト値
             sente: 5,
             gote: 5
