@@ -10,7 +10,7 @@ const roomIdStr = document.getElementById("roomIdStr");
 export const tebanOverlay = document.getElementById("tebanOverlay");
 const senteOverlay = document.getElementById("senteOverlay");
 const goteOverlay = document.getElementById("goteOverlay");
-const spectatorsOverlay = document.getElementById("spectatorsOverlay");
+export const spectatorsOverlay = document.getElementById("spectatorsOverlay");
 export const readyOverlay = document.getElementById("readyOverlay");
 export const startOverlay = document.getElementById("startOverlay");
 export const cancelOverlay = document.getElementById("cancelOverlay");
@@ -92,6 +92,7 @@ function leaveRoom() {
     }
     roomIdOverlay.style.display = 'none';
     tebanOverlay.style.display = 'none';
+    spectatorsOverlay.style.display = 'none';
     readyOverlay.style.display = 'none';
     cancelOverlay.style.display = 'none';
     leaveRoomOverlay.style.display = 'none';
@@ -204,6 +205,11 @@ export function roomUpdate(data) {
             readyOverlay.style.display = 'none';
             cancelOverlay.style.display = 'none';
         }
+        if (data.isOwner) {
+            openRoomSettingsButton.style.display = 'block';
+        } else {
+            openRoomSettingsButton.style.display = 'none';
+        }
         if (data.isOwner && ready && data.sente.length > 0 && data.gote.length > 0) {
             startOverlay.style.display = 'block';
         } else {
@@ -212,17 +218,9 @@ export function roomUpdate(data) {
     }
 
     // 部屋設定表示エリアに現在の設定値を表示
-    maxPlayersDisplay.textContent = `最大プレイヤー数: ${data.maxplayers || 2}`;
+    maxPlayersDisplay.textContent = `最大プレイヤー数: ${data.maxplayers}`;
     senteMoveTimeDisplay.textContent = `先手クールダウン (秒): ${data.moveTime.sente}`;
     goteMoveTimeDisplay.textContent = `後手クールダウン (秒): ${data.moveTime.gote}`;
-
-
-    // オーナーの場合のみ部屋設定変更ボタンを表示
-    if (data.isOwner) { // dataにisOwnerフラグが含まれていると仮定
-        openRoomSettingsButton.style.display = 'block';
-    } else {
-        openRoomSettingsButton.style.display = 'none';
-    }
 }
 
 // コピーボタンのイベントハンドラ
@@ -272,7 +270,8 @@ export function createRoomScene(data) {
 
     discordButton.style.display = "block";
     roomIdOverlay.style.display = 'flex';
-    tebanOverlay.style.display = 'flex';
+    tebanOverlay.style.display = 'block';
+    spectatorsOverlay.style.display = 'block';
     readyOverlay.style.display = 'none';
     cancelOverlay.style.display = 'none';
     leaveRoomOverlay.style.display = 'block';

@@ -4,7 +4,7 @@ import { TextUI } from "./ui_text.js";
 import { audioManager, battle_img, gameManager, scene, selectedCharacterName, setScene, socket } from "./main.js";
 import { Scene } from "./scene.js";
 import { countDownText, endText, loseText, timeText, winText, opponentCharacter, setOpponentCharacter } from "./scene_game.js";
-import { roomIdOverlay, tebanOverlay, readyOverlay, cancelOverlay, leaveRoomOverlay, createRoomScene, roomUpdate } from "./scene_room.js";
+import { roomIdOverlay, tebanOverlay, readyOverlay, cancelOverlay, leaveRoomOverlay, createRoomScene, roomUpdate, spectatorsOverlay } from "./scene_room.js";
 
 const roomResultOverlay = document.getElementById("roomResultOverlay");
 const toRoomButton = document.getElementById("toRoomButton");
@@ -128,6 +128,7 @@ export function createRoomPlayScene(senteName, senteCharacter, goteName, goteCha
     roomResultOverlay.style.display = "none";
     roomIdOverlay.style.display = 'none';
     tebanOverlay.style.display = 'none';
+    spectatorsOverlay.style.display = 'none';
     readyOverlay.style.display = 'none';
     cancelOverlay.style.display = 'none';
     leaveRoomOverlay.style.display = 'none';

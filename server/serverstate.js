@@ -123,6 +123,7 @@ export class ServerState {
 
     //部屋の削除
     deleteRoom(roomId) {
+        if (!this.rooms[roomId]) return false;
         if (this.rooms[roomId].sente && this.players[this.rooms[roomId].sente]) {
             this.players[this.rooms[roomId].sente].state = "";
             this.players[this.rooms[roomId].sente].roomId = null;
@@ -357,7 +358,7 @@ export class ServerState {
     backToRoom(id) {
         if (!this.players[id]) return;
         if (!this.players[id].roomId) return;
-        return this.rooms[this.players[id].roomId].backToRoom();
+        return this.rooms[this.players[id].roomId].backToRoom(id);
     }
 
     // アプリケーション終了時にデータベース接続プールを終了する

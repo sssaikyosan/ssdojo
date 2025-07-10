@@ -93,7 +93,7 @@
       color: white;
       border: none;
       border-radius: 5px;
-      width: 240px;
+      width: 290px;
       cursor: pointer;
       white-space: nowrap;
       flex-shrink: 0;
@@ -236,7 +236,7 @@
       top: 250px;
       /* tebanOverlayの下に配置 */
       left: 50%;
-      transform: translate(-600px, 0px);
+      transform: translate(-450px, 0px);
       display: flex;
       /* 初期状態では表示 */
       flex-direction: column;
@@ -257,8 +257,7 @@
       margin-top: 10px;
       padding: 10px 20px;
       font-size: 20px;
-      background-color: #c06109;
-      /* 準備完了ボタンと同じ色 */
+      background-color: #3241c9;
       color: white;
       border: none;
       border-radius: 5px;
@@ -273,7 +272,7 @@
       position: absolute;
       top: 450px;
       left: 50%;
-      transform: translate(-600px, 0px);
+      transform: translate(-450px, 0px);
       display: none;
       /* 初期状態では非表示 */
       flex-direction: column;
@@ -301,8 +300,7 @@
       margin-top: 10px;
       padding: 10px 20px;
       font-size: 20px;
-      background-color: #c06109;
-      /* 準備完了ボタンと同じ色 */
+      background-color: #3241c9;
       color: white;
       border: none;
       border-radius: 5px;
@@ -357,18 +355,18 @@
       <button id="startRoomGameButton" class="roomButton" style="background-color: #d842bf;">ゲーム開始</button>
     </div>
 
+    <div id="spectatorsOverlay" class="overlay"
+      style="display: none; position: absolute; top:250px; left:50%; width: 300px; transform: translate(200px, 0px);">
+      <button id="moveToSpectatorsButton" class="roomButton">観戦</button>
+    </div>
+
     <div id="tebanOverlay" class="overlay"
-      style="display: none; position: absolute; top:200px; left:50%;  background-color: #00000000; left: 50%; transform: translate(-50%, 0%);">
-      <div id="senteOverlay" class="overlay"
-        style="display: block; position: absolute; width: 250px; transform: translate(-300px, 0px);">
+      style="display: none; position: absolute; top:200px; left:50%;  background-color: #00000000;  transform: translate(-50%, 0%);">
+
+      <div id="senteOverlay" class="overlay" style="display: block; width: 300px;">
         <button id="moveToSenteButton" class="roomButton">先手に移動</button>
       </div>
-      <div id="spectatorsOverlay" class="overlay"
-        style="display: block; position: absolute; width: 250px; transform: translate(300px, 0px);">
-        <button id="moveToSpectatorsButton" class="roomButton">観戦</button>
-      </div>
-      <div id="goteOverlay" class="overlay"
-        style="display: block; position: absolute; width: 250px; transform: translate(0px, 0px);">
+      <div id="goteOverlay" class="overlay" style="display: block; width: 300px;">
         <button id="moveToGoteButton" class="roomButton">後手に移動</button>
       </div>
     </div>
