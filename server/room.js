@@ -166,6 +166,18 @@ export class Room {
             currentList.splice(currentIndex, 1);
         }
 
+        if (playerId === this.ownerId) {
+            for (const id of this.spectators) {
+                if (id) this.ownerId = id;
+            }
+            for (const id of this.gote) {
+                if (id) this.ownerId = id;
+            }
+            for (const id of this.sente) {
+                if (id) this.ownerId = id;
+            }
+        }
+
         if (this.gameState === "waiting") {
             this.roomUpdate();
         }
