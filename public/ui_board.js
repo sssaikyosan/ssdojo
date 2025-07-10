@@ -1,7 +1,7 @@
 import { KomadaiUI } from "./ui_komadai.js";
 import { UI } from "./ui.js";
 import { gameManager, pieceImages } from "./main.js";
-import { CELL_SIZE, BOARD_SIZE, BOARD_COLOR, LINE_COLOR, LINEWIDTH, MOUSE_HIGHLIGHT_COLOR, KOMADAI_OFFSET_RATIO, KOMADAI_HEIGHT, MOVETIME, TIMER_RADIUS, TIMER_LINEWIDTH, TIMER_BORDER_WIDTH, TIMER_OFFSET_X, TIMER_OFFSET_Y, TIMER_BGCOLOR, TIMER_COLOR, ARROW_COLOR, MOVE_COLOR, PIECE_MOVES, UNPROMODED_TYPES, TIMER_RESERVE_COLOR, RESERVE_TIME } from "./const.js";
+import { CELL_SIZE, BOARD_SIZE, BOARD_COLOR, LINE_COLOR, LINEWIDTH, MOUSE_HIGHLIGHT_COLOR, KOMADAI_OFFSET_RATIO, KOMADAI_HEIGHT, MOVETIME, TIMER_RADIUS, TIMER_LINEWIDTH, TIMER_BORDER_WIDTH, TIMER_OFFSET_X, TIMER_OFFSET_Y, TIMER_BGCOLOR, TIMER_COLOR, ARROW_COLOR, MOVE_COLOR, PIECE_MOVES, UNPROMODED_TYPES, TIMER_RESERVE_COLOR } from "./const.js";
 import { sendPutPiece, sendMovePiece } from "./emit.js";
 
 export class BoardUI extends UI {
@@ -341,7 +341,7 @@ export class BoardUI extends UI {
     ctx.arc(
       TIMER_OFFSET_X * CELL_SIZE * scale,
       TIMER_OFFSET_Y * CELL_SIZE * scale,
-      radius, -Math.PI / 2 - -Math.PI * 2 * (tebanMoveTime - RESERVE_TIME) / tebanMoveTime, -Math.PI / 2, false
+      radius, -Math.PI / 2 - -Math.PI * 2 * (tebanMoveTime - tebanMoveTime / 5) / tebanMoveTime, -Math.PI / 2, false
     );
     ctx.strokeStyle = TIMER_RESERVE_COLOR;
     ctx.lineWidth = lineWidth;

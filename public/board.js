@@ -1,5 +1,5 @@
 import { gameManager } from "./main.js";
-import { BOARD_SIZE, MOVETIME, PIECE_MOVES, RESERVE_TIME, UNPROMODED_TYPES } from "./const.js";
+import { BOARD_SIZE, MOVETIME, PIECE_MOVES, UNPROMODED_TYPES } from "./const.js";
 import { getPromotedType, getUnPromotedType } from "./utils.js";
 
 export class Board {
@@ -245,7 +245,7 @@ export class Board {
     let tebanMoveTime = this.moveTime.sente;
     if (teban === -1) tebanMoveTime = this.moveTime.gote;
     if (servertime - piece.lastmovetime < tebanMoveTime) {
-      if (piece.lastmovetime + tebanMoveTime - servertime < RESERVE_TIME && !piece.reserve) {
+      if ((piece.lastmovetime + tebanMoveTime - servertime) < (tebanMoveTime / 5) && !piece.reserve) {
         console.log("reserve");
         return { res: false, capture: null, reserve: true }
       } else {

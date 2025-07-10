@@ -1180,12 +1180,12 @@ function minimax(boardcopy, servertime, depth, isMaximizingPlayer, newMove = nul
         let maxMove = null;
         for (const move of legalMoves) {
             boardcopy.justMove({ ...move, servertime: servertime }); // 手を指す
-            const eval = minimax(boardcopy, servertime, depth - 1, false, move); // 相手のターンへ
+            const evalpoint = minimax(boardcopy, servertime, depth - 1, false, move); // 相手のターンへ
             boardcopy.undoMove(); // 手を戻す
-            if (eval.val > maxEval) {
+            if (evalpoint.val > maxEval) {
                 maxMove = { x: move.x, y: move.y, nx: move.nx, ny: move.ny, nari: move.nari, type: move.type, teban: move.teban };
             }
-            maxEval = Math.max(maxEval, eval.val);
+            maxEval = Math.max(maxEval, evalpoint.val);
         }
         return { val: maxEval, move: maxMove };
     } else { // 後手 (最小化) のターン
@@ -1193,10 +1193,10 @@ function minimax(boardcopy, servertime, depth, isMaximizingPlayer, newMove = nul
         let minMove = null;
         for (const move of legalMoves) {
             boardcopy.justMove({ ...move, servertime: servertime }); // 手を指す
-            const eval = minimax(boardcopy, servertime, depth - 1, true, move); // 相手のターンへ
+            const evalpoint = minimax(boardcopy, servertime, depth - 1, true, move); // 相手のターンへ
             boardcopy.undoMove(); // 手を戻す
-            minEval = Math.min(minEval, eval.val);
-            if (eval.val < minEval) {
+            minEval = Math.min(minEval, evalpoint.val);
+            if (evalpoint.val < minEval) {
                 minMove = { x: move.x, y: move.y, nx: move.nx, ny: move.ny, nari: move.nari, type: move.type, teban: move.teban };
             }
         }

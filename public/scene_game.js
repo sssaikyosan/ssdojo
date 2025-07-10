@@ -1,3 +1,4 @@
+import { MOVETIME } from "./const.js";
 import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus } from "./main.js";
 import { Scene } from "./scene.js";
 import { createTitleScene } from "./scene_title.js";
@@ -95,7 +96,7 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
 
     audioManager.playBGM('battle'); // 対戦BGMを再生
 
-    gameManager.setRoom(roomId, teban, servertime, { sente: 5, gote: 5 }, cpulevel);
+    gameManager.setRoom(roomId, teban, servertime, { sente: MOVETIME, gote: MOVETIME }, cpulevel);
     opponentCharacter = opponentCharacterName;
 
     let senteCharacter = null;
