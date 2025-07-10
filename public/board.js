@@ -23,6 +23,7 @@ export class Board {
   serverstarttime = 0;
   starttime = 0;
   time = 0;
+  moveTime = { sente: MOVETIME, gote: MOVETIME };
   matched = false;
   started = false;
   finished = false;
@@ -30,12 +31,13 @@ export class Board {
   currentTesuu = 0;
 
   // 盤面の初期化
-  init(servertime, time) {
+  init(servertime, time, moveTime = { sente: MOVETIME, gote: MOVETIME }) {
     this.serverstarttime = servertime;
     // this.komadaiServerTime = { sente: servertime, gote: servertime };
     // this.komadaipTime = { sente: time, gote: time };
     this.starttime = time;
     this.time = time;
+    this.moveTime = { sente: moveTime.sente, gote: moveTime.gote };
     this.matched = true;
     this.komadaiPieces = {
       sente: { 'pawn': 0, 'lance': 0, 'knight': 0, 'silver': 0, 'gold': 0, 'bishop': 0, 'rook': 0, 'king': 0, 'king2': 0 },
@@ -236,8 +238,10 @@ export class Board {
     if (!this.canMove(x, y, nx, ny, nari, teban)) return { res: false, capture: null, reserve: false };
 
     //時間チェック
-    if (servertime - piece.lastmovetime < MOVETIME) {
-      if (piece.lastmovetime + MOVETIME - servertime < RESERVE_TIME && !piece.reserve) {
+    let tebanMoveTime = this.moveTime.sente;
+    if (teban === -1) tebanMoveTime = this.moveTime.gote;
+    if (servertime - piece.lastmovetime < tebanMoveTime) {
+      if (piece.lastmovetime + tebanMoveTime - servertime < RESERVE_TIME && !piece.reserve) {
         console.log("reserve");
         return { res: false, capture: null, reserve: true }
       } else {

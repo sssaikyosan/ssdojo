@@ -13,6 +13,8 @@ export class Room {
         this.gameState = 'waiting'; // ゲームの状態 ('waiting', 'playing', 'finished')
         this.roomType = roomType; // 部屋の種類('rating', 'private', kento)
         this.owner = null;
+        this.maxPlayer = 12; // 最大人数
+        this.moveTime = { sente: MOVETIME, gote: MOVETIME }
     }
 
     addPlayer(id, teban) {
@@ -32,7 +34,7 @@ export class Room {
     }
 
     startGame(time) {
-        this.board.init(time, time);
+        this.board.init(time, time, this.moveTime);
         this.gameState = 'playing';
     }
 
