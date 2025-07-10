@@ -23,7 +23,7 @@ export class Board {
   serverstarttime = 0;
   starttime = 0;
   time = 0;
-  moveTime = { sente: MOVETIME, gote: MOVETIME };
+  moveTime = { sente: MOVETIME * 1000, gote: MOVETIME * 1000 };
   matched = false;
   started = false;
   finished = false;

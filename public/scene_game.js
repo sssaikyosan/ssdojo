@@ -95,7 +95,7 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
 
     audioManager.playBGM('battle'); // 対戦BGMを再生
 
-    gameManager.setRoom(roomId, teban, servertime, cpulevel);
+    gameManager.setRoom(roomId, teban, servertime, { sente: 5, gote: 5 }, cpulevel);
     opponentCharacter = opponentCharacterName;
 
     let senteCharacter = null;
