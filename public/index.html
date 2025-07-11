@@ -233,17 +233,17 @@
     /* 部屋設定表示エリアのスタイル */
     #roomSettingsDisplay {
       position: absolute;
-      top: 250px;
+      top: 10px;
       /* tebanOverlayの下に配置 */
       left: 50%;
-      transform: translate(-450px, 0px);
+      transform: translate(-500px, 0px);
       display: none;
       /* 初期状態では表示 */
       flex-direction: column;
       align-items: flex-start;
       gap: 5px;
       padding: 15px;
-      background-color: #222222;
+      background-color: #222244;
       border-radius: 10px;
       color: white;
     }
@@ -270,16 +270,16 @@
     /* 部屋設定オーバーレイのスタイル */
     #roomSettingsOverlay {
       position: absolute;
-      top: 450px;
+      top: 40%;
       left: 50%;
-      transform: translate(-450px, 0px);
+      transform: translate(-50%, 0%);
       display: none;
       /* 初期状態では非表示 */
       flex-direction: column;
       align-items: flex-start;
       gap: 10px;
       padding: 15px;
-      background-color: #222222;
+      background-color: #222244;
       border-radius: 10px;
       color: white;
     }
@@ -325,7 +325,7 @@
 
   <div id="roomui">
     <div id="roomIdOverlay" class="overlay"
-      style="position: absolute; top:50px; left:50%; display: none; transform: translate(-50%, 0%);">
+      style="position: absolute; top:50px; left:40%; display: none; transform: translate(0%, 0%);">
       <button id="displayRoomIdButton" class="roomButton"
         style="padding: 0px; height:60px; margin: 0px;background-color: #207985; font-size:32px">部屋IDを表示</button>
       <p id="roomIdStr" style="padding: 0px; margin: 0px; color: #ffffff; font-size:48px"></p>
@@ -355,16 +355,16 @@
       <button id="startRoomGameButton" class="roomButton" style="background-color: #d842bf;">ゲーム開始</button>
     </div>
 
-    <div id="spectatorsOverlay" class="overlay"
-      style="display: none; position: absolute; top:250px; left:50%; width: 300px; transform: translate(200px, 0px);">
-      <button id="moveToSpectatorsButton" class="roomButton">観戦</button>
-    </div>
+
 
     <div id="tebanOverlay" class="overlay"
       style="display: none; position: absolute; top:200px; left:50%;  background-color: #00000000;  transform: translate(-50%, 0%);">
 
       <div id="senteOverlay" class="overlay" style="display: block; width: 300px;">
         <button id="moveToSenteButton" class="roomButton">先手に移動</button>
+      </div>
+      <div id="spectatorsOverlay" class="overlay" style="display: block; width: 300px;">
+        <button id="moveToSpectatorsButton" class="roomButton">観戦</button>
       </div>
       <div id="goteOverlay" class="overlay" style="display: block; width: 300px;">
         <button id="moveToGoteButton" class="roomButton">後手に移動</button>
@@ -395,7 +395,7 @@
     </div>
 
     <div id="leaveRoomOverlay" class="overlay"
-      style="position: absolute; top:175px; left:50%; display: none; transform: translate(-450px, 5px);">
+      style="position: absolute; bottom:20px; left:50%; display: none; transform: translate(-50%, 0%);">
       <button id="leaveRoomButton" class="roomButton" style="width:120px;">退室</button>
     </div>
   </div>

@@ -270,7 +270,7 @@ export function createRoomScene(data) {
 
     discordButton.style.display = "block";
     roomIdOverlay.style.display = 'flex';
-    tebanOverlay.style.display = 'block';
+    tebanOverlay.style.display = 'flex';
     spectatorsOverlay.style.display = 'block';
     readyOverlay.style.display = 'none';
     cancelOverlay.style.display = 'none';
