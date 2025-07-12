@@ -1047,16 +1047,23 @@ function getToKing(currentBoard, move) {
                 return val;
             }
         }
+        const dirX = playerKingPos.x - move.x;
+        const dirNX = playerKingPos.x - move.nx;
+        const dirY = playerKingPos.y - 1 - move.y;
+        const dirNY = playerKingPos.y - 1 - move.ny;
+        const distance = dirNX * dirNX + dirNY * dirNY;
+        if (dirX * dirX > dirNX * dirNX) {
+            val += 6;
+            if (distance < 10) {
+                val += 10 - distance;
+            }
+        }
 
-        if ((playerKingPos.x - move.x) * (playerKingPos.x - move.x) > (playerKingPos.x - move.nx) * (playerKingPos.x - move.nx)) {
-            val += 6
-        }
-        if ((playerKingPos.y - move.y) * (playerKingPos.y - move.y) > (playerKingPos.y - move.ny) * (playerKingPos.y - move.ny)) {
-            val += 6
-        }
-        const distance = (move.nx - playerKingPos.x) * (move.nx - playerKingPos.x) + (move.ny - playerKingPos.y) * (move.ny - playerKingPos.y);
-        if (distance > 2 && distance < 12) {
-            val += 12 - distance;
+        if (dirY * dirY > dirNY * dirNY) {
+            val += 6;
+            if (distance < 12) {
+                val += 12 - distance;
+            }
         }
         return val;
     } else {
@@ -1341,29 +1348,29 @@ function level2cpu() {
 let count = 0;
 
 function level3cpu() {
-    // setInterval(() => {
-    //     const servertime = startTime + performance.now();
-    //     normalAlgolysm(board, servertime);
-    // }, 100);
     setInterval(() => {
-        const rand = 100 * Math.random();
+        const servertime = startTime + performance.now();
+        normalAlgolysm(board, servertime);
+    }, 100);
+    setInterval(() => {
+        const rand = 200 * Math.random();
         setTimeout(() => {
             const servertime = startTime + performance.now();
             // if (count === 2) {
-            const best = findBestMove(0, servertime);
-            if (best && best.bestMove !== null) {
-                postMessage({ move: best.bestMove });
-            }
-            // if (best && best.bestNext !== null) {
-            //     setTimeout(() => {
-            //         postMessage({ move: { ...best.bestNext, second: true } });
-            //     }, 128);
-            // }
+            //     const best = findBestMove(0, servertime);
+            //     if (best && best.bestMove !== null) {
+            //         postMessage({ move: best.bestMove });
+            //     }
+            //     if (best && best.bestNext !== null) {
+            //         setTimeout(() => {
+            //             postMessage({ move: { ...best.bestNext, second: true } });
+            //         }, 128);
+            //     }
             // } else {
-            //     randomMoveNoBigDanger(board, servertime);
+            randomMoveNoBigDanger(board, servertime);
             // }
-            count++;
-            if (count >= 3) count = 0;
+            // count++;
+            // if (count >= 3) count = 0;
         }, rand);
     }, 400);
 }
