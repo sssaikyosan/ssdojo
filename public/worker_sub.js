@@ -378,32 +378,9 @@ class Board {
         }
 
         const result = { res: true, capture: cap };
-        this.justMovePiece(data, result.capture, lmp);
+        this.movePiece(data, result.capture, lmp);
 
         return result;
-    }
-
-    justMovePiece(data, capturePiece, lmp) {
-        const { x, y, nx, ny, type, nari, teban, roomId, servertime } = data;
-        let captime = -1;
-        if (capturePiece) {
-            captime = this.map[nx][ny].lastmovetime;
-            const unPromotedType = getUnPromotedType(capturePiece);
-            this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][unPromotedType]++
-        }
-
-        let pieceType = this.map[x][y].type;
-        if (nari) {
-            pieceType = getPromotedType(this.map[x][y].type);
-        }
-        const oldtime = this.map[x][y].lastmovetime;
-
-        this.map[nx][ny] = { type: pieceType, teban: this.map[x][y].teban, lastmovetime: this.map[x][y].lastmovetime, lastmoveptime: this.map[x][y].lastmoveptime };
-        this.map[x][y] = null;
-
-        //棋譜更新
-        this.kifu.push({ x: x, y: y, nx: nx, ny: ny, nari: nari, teban: teban, capturePiece: capturePiece, time: servertime, captime: captime, oldtime: oldtime });
-        return true;
     }
 
     //指定した位置の駒が移動かどうか判定
@@ -511,14 +488,14 @@ class Board {
             type: lastMovePiece.type,
             teban: lastMovePiece.teban,
             lastmovetime: lastMove.oldtime,
-            lastmoveptime: this.starttime
+            lastMoveptime: this.starttime
         }
         if (lastMove.nari) {
             piece.type = getUnPromotedType(lastMovePiece.type);
         }
         this.map[lastMove.x][lastMove.y] = piece;
         if (lastMove.capturePiece) {
-            this.map[lastMove.nx][lastMove.ny] = { type: lastMove.capturePiece, teban: -lastMove.teban, lastmovetime: lastMove.captime, lastmoveptime: this.starttime }
+            this.map[lastMove.nx][lastMove.ny] = { type: lastMove.capturePiece, teban: -lastMove.teban, lastmovetime: lastMove.captime, lastMoveptime: this.starttime }
             this.komadaiPieces[lastMove.teban === 1 ? 'sente' : 'gote'][getUnPromotedType(lastMove.capturePiece)]--;
         }
         return true;
@@ -596,7 +573,7 @@ function isDanger(currentBoard, x, y, nx, ny, teban) {
     return false;
 }
 
-function isDangerPos(currentBoard, nx, ny, teban) {
+function isDangerPut(currentBoard, nx, ny, teban) {
     for (let i = -1; i < 2; i++) {
         for (let j = -1; j < 2; j++) {
             if (i === 0 && j === 0) continue;
@@ -656,7 +633,7 @@ function getPieceLegalMoves(currentBoard, x, y, teban, servertime, ignoretime) {
             const piece = currentBoard.map[moveX][moveY];
             if (piece && piece.teban === selectedPiece.teban) break;
 
-            if (currentBoard.canPromote(y, moveY, teban, selectedPiece.type)) {
+            if (currentBoard.canPromote(move.y, moveY, teban, selectedPiece.type)) {
                 if (selectedPiece.lastmovetime >= (servertime - MOVETIME * 1000)) {
                     pieceLegalMoves.push({
                         x: x,
@@ -745,22 +722,20 @@ function getAllLegalPuts(currentBoard, teban) {
 
 function copyBoard() {
     let boardcopy = new Board();
+    console.log(board);
     boardcopy.serverstarttime = board.serverstarttime;
     boardcopy.starttime = board.starttime;
     for (let i = 0; i < BOARD_SIZE; i++) {
         for (let j = 0; j < BOARD_SIZE; j++) {
             if (!board.map[i][j]) continue;
-            boardcopy.map[i][j] = {
-                type: board.map[i][j].type,
-                teban: board.map[i][j].teban, lastmovetime: board.map[i][j].lastmovetime,
-                lastmoveptime: -99999
-            };
+            boardcopy.map[i][j] = { type: board.map[i][j].type, teban: board.map[i][j].teban, lastmovetime: board.serverstarttime, lastmoveptime: board.starttime };
         }
     }
     for (const type of UNPROMODED_TYPES) {
         boardcopy.komadaiPieces['sente'][type] = board.komadaiPieces['sente'][type];
         boardcopy.komadaiPieces['gote'][type] = board.komadaiPieces['gote'][type];
     }
+    console.log(boardcopy);
     return boardcopy;
 }
 
@@ -1089,7 +1064,7 @@ function randomMoveNoBigDanger(currentBoard, servertime) {
 
     const legalPuts = getAllLegalPuts(currentBoard, -1);
     const noBigDangerPuts = legalPuts.filter(item => {
-        if (isDangerPos(currentBoard, item.nx, item.ny, item.teban)) {
+        if (isDangerPut(currentBoard, item.nx, item.ny, item.teban)) {
             if (PIECE_PRICES[item.type] > 500) return false;
         }
         return true;
@@ -1190,38 +1165,140 @@ function evaluateBoard(teban) {
     return score;
 }
 
-
-function minimax(boardcopy, servertime, depth, isMaximizingPlayer, newMove = null) {
-    // 深さが0になったか、ゲームが終了したら盤面を評価
-    if (depth >= 3) {
-        let val = evaluateBoard(boardcopy);
-        if (newMove && isDangerPos(boardcopy, newMove.nx, newMove.ny, newMove.teban)) {
-            const piece = boardcopy.map[newMove.nx][newMove.ny]
-            if (piece) {
-                val -= 2 * PIECE_PRICES[piece.type] * newMove.teban;
-            } else {
-                console.log("no moved piece");
+function getNextMoveNoRecrsive(boardcopy, nextx, nexty, teban) {
+    const nextMoves = [];
+    for (let i = -1; i < 2; i++) {
+        for (let j = -1; j < 2; j++) {
+            const x = nextx + i;
+            const y = nexty + j;
+            if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) continue;
+            const piece = boardcopy.map[x][y];
+            if (!piece) continue;
+            if (PIECE_MOVES[piece.type].recursive) continue;
+            for (const move of PIECE_MOVES[piece.type]) {
+                if (move.x === -i && move.y === -j) {
+                    const nari = boardcopy.canPromote(y, nexty, teban, piece.type);
+                    nextMoves.push({
+                        x: x,
+                        y: y,
+                        nx: nextx,
+                        ny: nexty,
+                        nari: nari,
+                        type: null,
+                        teban: teban,
+                        ignoretime: true
+                    });
+                }
             }
-
         }
-        return { val: val, newMove };
     }
+    for (let i = 0; i < 2; i++) {
+        const x = nextx + 2 * i - 1;
+        const y = nexty + 2 * teban;
+        if (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE) {
+            const knightPiece = boardcopy.map[x][y];
+            if (knightPiece && knightPiece.type == "knight") {
+                const nari = boardcopy.canPromote(y, nexty, teban, 'knight');
+                nextMoves.push({
+                    x: x,
+                    y: y,
+                    nx: nextx,
+                    ny: nexty,
+                    nari: nari,
+                    type: null,
+                    teban: teban,
+                    ignoretime: true
+                });
+            }
+        }
+    }
+    return nextMoves;
+}
 
-    const legalMoves = [];
-    if (depth === 1) {
-        legalMoves.push(...getLegalMoves(boardcopy, isMaximizingPlayer ? 1 : -1, servertime, false));
+function getNextLegalMoves(boardcopy, teban, recursivePos, oldLegalMoves, newMove, servertime, result) {
+    const newLegalMoves = oldLegalMoves.filter(move => {
+        if (result.capture) {
+            if (move.x === newMove.nx && move.y === newMove.ny) return false;
+        }
+        if (move.x >= 0) {
+            const piece = boardcopy.map[move.x][move.y];
+            if (piece && PIECE_MOVES[piece.type].recursive) return false;
+            if (piece && move.nx === newMove.nx && move.ny === newMove.ny) {
+                if (piece.teban === teban) {
+                    return false;
+                }
+            }
+        } else {
+            if (move.nx === newMove.nx && move.ny === newMove.ny) {
+                return false;
+            }
+        }
+        return true;
+    });
+
+    if (teban === boardcopy.map[newMove.nx][newMove.ny].teban) {
+        newLegalMoves.push(...getNextMoveNoRecrsive(boardcopy, newMove.x, newMove.y, teban));
     } else {
-        legalMoves.push(...getLegalMoves(boardcopy, isMaximizingPlayer ? 1 : -1, servertime, true));
+        if (result.capture) {
+            newLegalMoves.push(...getNextMoveNoRecrsive(boardcopy, newMove.nx, newMove.ny, teban));
+        }
     }
 
-    legalMoves.push(...getAllLegalPuts(boardcopy, isMaximizingPlayer ? 1 : -1))
+
+    for (const pos of recursivePos) {
+        newLegalMoves.push(...getPieceLegalMoves(boardcopy, pos.x, pos.y, teban, servertime, true));
+    }
+    if (newMove.x >= 0) {
+        newLegalMoves.push(...getPosLegalPuts(boardcopy, newMove.x, newMove.y, teban));
+    }
+
+
+    return newLegalMoves;
+}
+
+
+function minimax(boardcopy, servertime, depth, isMaximizingPlayer, playerOldLegalMoves, cpuOldLegalMoves, recursivePos, val = 0, newMove = null) {
+    let nextRecursivePos = [];
+    let nextval = val;
+    // 深さが0になったか、ゲームが終了したら盤面を評価
+    if (depth <= 0 && isMaximizingPlayer) {
+        return { val: nextval, newMove };
+    }
 
     if (isMaximizingPlayer) { // 先手 (最大化) のターン
         let maxEval = -Infinity;
         let maxMove = null;
-        for (const move of legalMoves) {
+        for (const move of playerOldLegalMoves) {
+            let nextDepth = depth;
             const result = boardcopy.justMove({ ...move, servertime: servertime }); // 手を指す
-            const evalpoint = minimax(boardcopy, servertime, depth + 1, false, move); // 相手のターンへ
+            const piece = boardcopy.map[move.nx][move.ny];
+            let rec = false;
+            nextRecursivePos = recursivePos.filter(item => {
+                if (item.x === move.x && item.y === move.y) {
+                    return false;
+                }
+                if (item.x === move.nx && item.y === move.ny) {
+                    return false;
+                }
+                return true;
+            });
+            for (const dir of PIECE_MOVES[piece.type]) {
+                if (dir.recursive) {
+                    rec = true;
+                    break;
+                }
+            }
+            if (rec) {
+                nextRecursivePos.push({ x: move.nx, y: move.ny });
+            }
+            const playerNextLegalMoves = getNextLegalMoves(boardcopy, 1, nextRecursivePos, playerOldLegalMoves, move, servertime, result);
+            const cpuNextLegalMoves = getNextLegalMoves(boardcopy, -1, nextRecursivePos, playerOldLegalMoves, move, servertime, result);
+            if (result.capture) {
+                nextval += PIECE_PRICES[result.capture];
+            } else {
+                nextDepth--;
+            }
+            const evalpoint = minimax(boardcopy, servertime, nextDepth, false, playerNextLegalMoves, cpuNextLegalMoves, nextRecursivePos, nextval, move); // 相手のターンへ
             boardcopy.undoMove(); // 手を戻す
             if (evalpoint.val > maxEval) {
                 maxMove = { x: move.x, y: move.y, nx: move.nx, ny: move.ny, nari: move.nari, type: move.type, teban: move.teban };
@@ -1232,9 +1309,40 @@ function minimax(boardcopy, servertime, depth, isMaximizingPlayer, newMove = nul
     } else { // 後手 (最小化) のターン
         let minEval = Infinity;
         let minMove = null;
-        for (const move of legalMoves) {
+        for (const move of cpuOldLegalMoves) {
+            let nextDepth = depth;
             const result = boardcopy.justMove({ ...move, servertime: servertime }); // 手を指す
-            const evalpoint = minimax(boardcopy, servertime, depth + 1, true, move); // 相手のターンへ
+            if (result.res === false) {
+                console.log("moveFalse", move, result);
+            }
+            const piece = boardcopy.map[move.nx][move.ny];
+            let rec = false;
+            nextRecursivePos = recursivePos.filter(item => {
+                if (item.x === move.x && item.y === move.y) {
+                    return false;
+                }
+                if (item.x === move.nx && item.y === move.ny) {
+                    return false;
+                }
+                return true;
+            });
+            for (const dir of PIECE_MOVES[piece.type]) {
+                if (dir.recursive) {
+                    rec = true;
+                    break;
+                }
+            }
+            if (rec) {
+                nextRecursivePos.push({ x: move.nx, y: move.ny });
+            }
+            const playerNextLegalMoves = getNextLegalMoves(boardcopy, 1, nextRecursivePos, playerOldLegalMoves, move, servertime, result);
+            const cpuNextLegalMoves = getNextLegalMoves(boardcopy, -1, nextRecursivePos, playerOldLegalMoves, move, servertime, result);
+            if (result.capture) {
+                nextval -= PIECE_PRICES[result.capture];
+            } else {
+                nextDepth--;
+            }
+            const evalpoint = minimax(boardcopy, servertime, nextDepth, true, playerNextLegalMoves, cpuNextLegalMoves, nextRecursivePos, nextval, move); // 相手のターンへ
             boardcopy.undoMove(); // 手を戻す
             minEval = Math.min(minEval, evalpoint.val);
             if (evalpoint.val < minEval) {
@@ -1244,25 +1352,51 @@ function minimax(boardcopy, servertime, depth, isMaximizingPlayer, newMove = nul
         return { val: minEval, move: minMove };
     }
 }
-
+function getrecursivePos(boardcopy) {
+    const recursivePos = [];
+    for (let i = 0; i < BOARD_SIZE; i++) {
+        for (let j = 0; j < BOARD_SIZE; j++) {
+            const piece = boardcopy.map[i][j];
+            if (piece !== null) {
+                for (const move of PIECE_MOVES[piece.type]) {
+                    if (move.recursive) {
+                        recursivePos.push({ x: i, y: j });
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return recursivePos;
+}
 function findBestMove(depth, servertime) {
+    let nextval = 0;
     let bestMove = null;
     let bestNext = null;
     const isMaximizingPlayer = false;
     let bestValue = isMaximizingPlayer ? -Infinity : Infinity;
 
     const boardcopy = copyBoard();
+
     const legalMoves = getLegalMoves(boardcopy, isMaximizingPlayer ? 1 : -1, servertime, false);
     legalMoves.push(...getAllLegalPuts(boardcopy, isMaximizingPlayer ? 1 : -1));
     if (legalMoves.length === 0) return null;
 
+
+
     let moveValues = [];
 
     for (const move of legalMoves) {
+        const recursivePos = getrecursivePos(boardcopy);
         const result = boardcopy.movePieceLocal({ ...move, servertime: servertime });
 
+        const playerNextLegalMoves = getLegalMoves(boardcopy, 1, servertime, false);
+        const cpuNextLegalMoves = getLegalMoves(boardcopy, -1, servertime, false);
+        playerNextLegalMoves.push(...getAllLegalPuts(boardcopy, 1));
+        cpuNextLegalMoves.push(...getAllLegalPuts(boardcopy, -1));
+
         // isMaximizingPlayerを反転させて次の手番の評価を求める
-        const boardValue = minimax(boardcopy, servertime, depth + 1, isMaximizingPlayer);
+        const boardValue = minimax(boardcopy, servertime, depth - 1, isMaximizingPlayer, playerNextLegalMoves, cpuNextLegalMoves, recursivePos, nextval);
         moveValues.push({ move: move, val: boardValue.val, next: boardValue.move });
         boardcopy.undoMove();
     }
@@ -1341,27 +1475,27 @@ function level2cpu() {
 let count = 0;
 
 function level3cpu() {
-    // setInterval(() => {
-    //     const servertime = startTime + performance.now();
-    //     normalAlgolysm(board, servertime);
-    // }, 100);
     setInterval(() => {
-        const rand = 100 * Math.random();
+        const servertime = startTime + performance.now();
+        normalAlgolysm(board, servertime);
+    }, 100);
+    setInterval(() => {
+        const rand = 200 * Math.random();
         setTimeout(() => {
             const servertime = startTime + performance.now();
-            // if (count === 2) {
-            const best = findBestMove(0, servertime);
-            if (best && best.bestMove !== null) {
-                postMessage({ move: best.bestMove });
+            if (count === 2) {
+                const best = findBestMove(3, servertime);
+                if (best && best.bestMove !== null) {
+                    postMessage({ move: best.bestMove });
+                }
+                if (best && best.bestNext !== null) {
+                    setTimeout(() => {
+                        postMessage({ move: best.bestNext });
+                    }, 128);
+                }
+            } else {
+                randomMoveNoBigDanger(board, servertime);
             }
-            // if (best && best.bestNext !== null) {
-            //     setTimeout(() => {
-            //         postMessage({ move: { ...best.bestNext, second: true } });
-            //     }, 128);
-            // }
-            // } else {
-            //     randomMoveNoBigDanger(board, servertime);
-            // }
             count++;
             if (count >= 3) count = 0;
         }, rand);
