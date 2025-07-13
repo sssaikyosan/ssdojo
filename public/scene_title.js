@@ -151,7 +151,7 @@ function clearTitleHTML() {
 }
 
 //タイトルシーン
-export function createTitleScene(savedTitleCharacter = null) {
+export function createTitleScene(savedTitleCharacter = null, loadNameInput = true) {
     clearTitleHTML();
 
     let titleScene = new Scene();
@@ -400,12 +400,14 @@ export function createTitleScene(savedTitleCharacter = null) {
     titleScene.add(onlineText);
     titleScene.add(cpuLevelOverlay);
 
+    if (loadNameInput) {
+        const savedName = localStorage.getItem("playerName");
 
-    const savedName = localStorage.getItem("playerName");
-
-    if (savedName) {
-        nameInput.value = savedName;
+        if (savedName) {
+            nameInput.value = savedName;
+        }
     }
+
     discordButton.style.display = "block";
     roomIdInput.style.display = "flex";
     nameInput.style.display = "flex";
@@ -485,7 +487,7 @@ export function createCharacterSelectScene(titleCharacter) {
         textSize: 0.03,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
         onClick: () => {
-            setScene(createTitleScene(titleCharacter));
+            setScene(createTitleScene(titleCharacter, false));
         }
     });
 
