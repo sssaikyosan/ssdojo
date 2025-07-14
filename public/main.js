@@ -363,10 +363,16 @@ function setupSocket() {
   // ゲーム終了を受信
   socket.on('endGame', (data) => {
     console.log('endGame');
+    if (gameManager && gameManager.boardUI) {
+      gameManager.boardUI.lastsend = null;
+    }
     endGame(data);
   });
 
   socket.on('endRoomGame', (data) => {
+    if (gameManager && gameManager.boardUI) {
+      gameManager.boardUI.lastsend = null;
+    }
     endRoomGame(data);
   });
 
