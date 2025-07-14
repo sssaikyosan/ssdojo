@@ -327,16 +327,6 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         colors: ['#ffffffff', '#00000000', '#00000000'],
     });
 
-    const keyText = new TextUI({
-        text: () => {
-            return '　　　　　　　　　　　　操作方法：ドラッグ　駒の移動　　　　　　　　　　　　　　　　　　　　　右ドラッグ　成らず　　　　　　　　　　　　　　　　　　　　　キーボードショートカット　　　　　　　　　　　　　　　　　　　　　　歩　スペース　　　　　　　　　　　　　　　　　　　　　　香 Q 桂 W 角 E　　　　　　　　　　　銀 A 金 S 飛 D'
-        },
-        x: 0,
-        y: -0.06,
-        size: 0.025,
-        colors: ['#ffffffff', '#00000000', '#00000000'],
-    });
-
     const closeRuleButton = new ButtonUI({
         text: '閉じる',
         x: 0,
@@ -355,6 +345,15 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     ruleOverlay.add(ruleText);
     ruleOverlay.add(closeRuleButton);
 
+
+    const ctrlOverlay = new OverlayUI({
+        x: 0,
+        y: 0,
+        height: 0.4,
+        width: 0.8,
+        visible: false
+    });
+
     const ruleButton = new ButtonUI({
         text: 'ルール',
         x: 0.78,
@@ -370,6 +369,62 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     });
     titleScene.add(ruleOverlay);
     titleScene.add(ruleButton);
+
+    const ctrlTitle = new TextUI({
+        text: () => {
+            return '操作方法'
+        },
+        x: 0,
+        y: -0.14,
+        size: 0.06,
+        colors: ['#ffffffff', '#000000ff', '#00000000'],
+    });
+
+    const ctrlText = new TextUI({
+        text: () => {
+            return '　　　　マウスドラッグ　駒の移動　　　　　　　　　　　　　　　　　　　　右ドラッグ　成らず　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　ショートカットキー：　スペース-歩　　　　　　　　　　　　　　　　　　　　　　　Q-香　W-桂　E-角　　　　　　　　　　　A-銀　S-金　D-飛'
+        },
+        x: 0,
+        y: -0.06,
+        size: 0.025,
+        colors: ['#ffffffff', '#00000000', '#00000000'],
+    });
+
+    const closeCtrlButton = new ButtonUI({
+        text: '閉じる',
+        x: 0,
+        y: 0.16,
+        width: 0.15,
+        height: 0.05,
+        color: '#3241c9',
+        textSize: 0.032,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            ctrlOverlay.visible = false;
+        }
+    });
+
+    ctrlOverlay.add(ctrlTitle);
+    ctrlOverlay.add(ctrlText);
+    ctrlOverlay.add(closeCtrlButton);
+
+
+
+    const ctrlButton = new ButtonUI({
+        text: '操作方法',
+        x: 0.64,
+        y: 0.02,
+        height: 0.05,
+        width: 0.12,
+        color: '#3241c9',
+        textSize: 0.025,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            ctrlOverlay.visible = true;
+        }
+    });
+    titleScene.add(ctrlOverlay);
+    titleScene.add(ctrlButton);
 
 
     const charaSelectButton = new ButtonUI({
