@@ -365,6 +365,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         textColors: ['#ffffffff', '#00000000', '#00000000'],
         onClick: () => {
             ruleOverlay.visible = true;
+            ctrlOverlay.visible = false;
         }
     });
     titleScene.add(ruleOverlay);
@@ -421,6 +422,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         textColors: ['#ffffffff', '#00000000', '#00000000'],
         onClick: () => {
             ctrlOverlay.visible = true;
+            ruleOverlay.visible = false;
         }
     });
     titleScene.add(ctrlOverlay);
