@@ -157,7 +157,16 @@ export class ServerState {
             }
         }
         const online = Object.keys(this.players).length;
-        const roomCount = Object.keys(this.rooms).length;
+        let ratingRoomCount = 0;
+        let privateRoomCount = 0;
+        for (const key of Object.keys(this.rooms)) {
+            const roomType = this.rooms[key].roomType;
+            if (roomType === 'rating') {
+                ratingRoomCount++;
+            } else if (roomType === 'private') {
+                privateRoomCount++;
+            }
+        }
         const topinfo = await this.postgureDb.readTopPlayers();
         const topPlayers = [];
 
@@ -168,7 +177,7 @@ export class ServerState {
             const displayRating = getDisplayRating(topinfo[i].rating, topinfo[i].total_games);
             topPlayers.push({ name: topinfo[i].name, rating: displayRating });
         }
-        this.io.emit("serverStatus", { online: online, roomCount: roomCount, topPlayers: topPlayers });
+        this.io.emit("serverStatus", { online: online, ratingRoomCount: ratingRoomCount, privateRoomCount: privateRoomCount, topPlayers: topPlayers });
         this.timecount++;
     }
 

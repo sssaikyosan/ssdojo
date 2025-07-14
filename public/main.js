@@ -21,7 +21,7 @@ export let socket = null;
 export let scene = null; // scene変数はmain.jsで管理
 export let playerName = "";
 export let player_id = null;
-export let serverStatus = { online: 0, roomCount: 0, topPlayers: [] };
+export let serverStatus = { online: 0, ratingRoomCount: 0, privateRoomCount: 0, topPlayers: [] };
 
 export let playerRatingElement = null;
 export let gamesPlayedElement = null;

@@ -119,7 +119,7 @@ statusOverlay.add(ratingText);
 
 
 const onlineText = new TextUI({
-    text: () => `部屋数: ${serverStatus.roomCount}, オンライン: ${serverStatus.online}人`,
+    text: () => `総部屋数: ${serverStatus.ratingRoomCount + serverStatus.privateRoomCount}, レート対戦部屋: ${serverStatus.ratingRoomCount}, オンライン: ${serverStatus.online}人`,
     x: 0,
     y: 0.48,
     size: 0.025,
