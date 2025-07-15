@@ -13,9 +13,24 @@ import { ServerState } from './serverstate.js'
 
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = path.dirname(__filename);
-export const RATING_FILE = path.join(__dirname, '../Data/ratings.json');
 
 const app = express();
+app.use(express.json());
+
+app.post('/game-finished', (req, res) => {
+  console.log('Received game-finished request:', req.body);
+  // TODO: ゲームサーバーから受け取ったゲーム結果を処理するロジックを実装
+  const { roomId, winPlayerId, losePlayerId, text } = req.body;
+  if (!roomId || !winPlayerId || !losePlayerId) {
+    return res.status(400).send('Missing game result information');
+  }
+
+  console.log(`Game in room ${roomId} finished. Winner: ${winPlayerId}, Loser: ${losePlayerId}`);
+  // serverState.handleGameResult(roomId, winPlayerId, losePlayerId, text); // 実際のゲーム結果処理ロジックを呼び出す
+
+  res.status(200).send('Game finished request received');
+});
+
 
 
 // SSL証明書の読み込みオプション

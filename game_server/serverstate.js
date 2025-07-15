@@ -3,7 +3,6 @@ import uuid from 'uuid-random';
 import fs from 'fs';
 import { getDisplayRating, calRating, generateRandomString } from './utils.js';
 import { Room } from './room.js';
-import http from 'http';
 
 import { Postgure } from './postgure.js'; // Postgure クラスをインポート
 
@@ -82,7 +81,6 @@ export class ServerState {
     async matchMake(player1, player2) {
         const roomId = uuid();  // ルームIDを生成
 
-        // ルームを作成 (マッチングサーバー側での管理用)
         this.rooms[roomId] = new Room(roomId, 'rating');
         this.rooms[roomId].addPlayer(player1, 'sente');
         this.rooms[roomId].addPlayer(player2, 'gote');
@@ -90,113 +88,37 @@ export class ServerState {
         const player1Info = await this.postgureDb.readPlayerInfo(this.players[player1].player_id);
         const player2Info = await this.postgureDb.readPlayerInfo(this.players[player2].player_id);
 
-        // プレイヤー情報の取得に成功した場合のみ処理を続行
-        if (!player1Info || !player2Info) {
-            console.error(`プレイヤー情報が見つかりませんでした。Player1 ID: ${this.players[player1].player_id}, Player2 ID: ${this.players[player2].player_id}`);
-            // ルーム作成に失敗したとみなし、作成したルームを削除するなどの後処理が必要であればここに追加
-            this.deleteRoom(roomId); // 作成したルームを削除
-            return false;
-        }
+        if (!player1Info) return false;
+        if (!player2Info) return false;
 
         const player1rating = getDisplayRating(player1Info.rating, player1Info.total_games);
         const player2rating = getDisplayRating(player2Info.rating, player2Info.total_games);
 
         const time = performance.now();
+        this.rooms[roomId].startGame(time);
 
-        // ゲームサーバーへゲーム開始リクエストを送信
-        const gameServerUrl = process.env.GAME_SERVER_URL || 'http://localhost:5001'; // ゲームサーバーのアドレスとポート
-        const postData = JSON.stringify({
+        this.players[player1].goToPlay(roomId);
+        this.io.to(this.players[player1].socket.id).emit("matchFound", {
             roomId: roomId,
-            player1: {
-                id: this.players[player1].player_id,
-                name: this.players[player1].name,
-                characterName: this.players[player1].characterName,
-                socketId: player1 // Socket.IO IDも渡す
-            },
-            player2: {
-                id: this.players[player2].player_id,
-                name: this.players[player2].name,
-                characterName: this.players[player2].characterName,
-                socketId: player2 // Socket.IO IDも渡す
-            }
+            teban: 1,
+            servertime: time,
+            name: this.players[player2].name,
+            characterName: this.players[player2].characterName,
+            rating: player1rating, // レーティング情報は ratingProcess の結果を利用するか、ここで取得
+            opponentRating: player2rating // レーティング情報は ratingProcess の結果を利用するか、ここで取得
         });
 
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(postData)
-            }
-        };
-
-        // ゲームサーバーへのリクエスト送信と応答処理
-        const req = http.request(gameServerUrl + '/createroom', options, (res) => {
-            console.log(`Game server response status: ${res.statusCode}`);
-            let responseData = '';
-            res.on('data', (chunk) => {
-                responseData += chunk;
-            });
-            res.on('end', () => {
-                if (res.statusCode === 200) {
-                    // ゲームサーバーでのルーム作成が成功した場合
-                    console.log('Game server room creation successful.');
-                    // matchFound イベントをクライアントに送信
-                    this.players[player1].goToPlay(roomId);
-                    this.io.to(this.players[player1].socket.id).emit("matchFound", {
-                        roomId: roomId,
-                        teban: 1,
-                        servertime: time,
-                        name: this.players[player2].name,
-                        characterName: this.players[player2].characterName,
-                        rating: player1rating,
-                        opponentRating: player2rating,
-                        gameServerAddress: gameServerUrl // ゲームサーバーのアドレスを追加
-                    });
-
-                    this.players[player2].goToPlay(roomId);
-                    this.io.to(this.players[player2].socket.id).emit("matchFound", {
-                        roomId: roomId,
-                        teban: -1,
-                        servertime: time,
-                        name: this.players[player1].name,
-                        characterName: this.players[player1].characterName,
-                        rating: player2rating,
-                        opponentRating: player1rating,
-                        gameServerAddress: gameServerUrl // ゲームサーバーのアドレスを追加
-                    });
-                    this.rooms[roomId].startGame(time); // ゲーム開始時刻を設定
-                } else {
-                    // ゲームサーバーでのルーム作成が失敗した場合
-                    console.error(`Game server room creation failed with status: ${res.statusCode}`);
-                    console.error(`Response data: ${responseData}`);
-                    // エラーハンドリング（例: マッチングを解除してプレイヤーを待機状態に戻す）
-                    this.deleteRoom(roomId); // 作成したルームを削除
-                    // プレイヤーの状態を更新するなど
-                    if (this.players[player1]) this.players[player1].state = "matching";
-                    if (this.players[player2]) this.players[player2].state = "matching";
-                    // クライアントにエラーを通知することも検討
-                }
-            });
+        this.players[player2].goToPlay(roomId);
+        this.io.to(this.players[player2].socket.id).emit("matchFound", {
+            roomId: roomId,
+            teban: -1,
+            servertime: time,
+            name: this.players[player1].name,
+            characterName: this.players[player1].characterName,
+            rating: player2rating, // レーティング情報は ratingProcess の結果を利用するか、ここで取得
+            opponentRating: player1rating // レーティング情報は ratingProcess の結果を利用するか、ここで取得
         });
-
-        req.on('error', (e) => {
-            console.error(`Problem with game server request: ${e.message}`);
-            // エラーハンドリング（例: マッチングを解除してプレイヤーを待機状態に戻す）
-            this.deleteRoom(roomId); // 作成したルームを削除
-            // プレイヤーの状態を更新するなど
-            if (this.players[player1]) this.players[player1].state = "matching";
-            if (this.players[player2]) this.players[player2].state = "matching";
-            // クライアントにエラーを通知することも検討
-        });
-
-        req.end(postData);
-
-        // ゲームサーバーからの応答を待つため、ここでは matchFound イベントを送信しない
-        // this.io.to(this.players[player1].socket.id).emit("matchFound", { ... });
-        // this.players[player2].goToPlay(roomId);
-        // this.io.to(this.players[player2].socket.id).emit("matchFound", { ... });
-
-        return true; // リクエスト送信自体は成功
+        return true;
     }
 
     //部屋の削除
