@@ -1,4 +1,5 @@
-import { serverState } from "./server.js";
+import { serverState } from "./game_server.js";
+import { getDisplayRating } from "./utils.js";
 
 export class Player {
     player_id = null;
@@ -7,12 +8,18 @@ export class Player {
     roomId = null;
     socket = null;
     state = "";
-    constructor(socket) {
+    rating = 500;
+
+    constructor(socket, player_id) {
         this.socket = socket;
+        this.player_id = player_id;
     }
 
-    setUserId(player_id) {
-        this.player_id = player_id;
+    setInfo(playerInfo, name, characterName) {
+        this.player_id = playerInfo.player_id;
+        this.name = name;
+        this.characterName = characterName;
+        this.rating = getDisplayRating(playerInfo.rating, playerInfo.total_games);
     }
 
     requestMatch(data) {
@@ -52,10 +59,8 @@ export class Player {
         serverState.rooms[this.roomId].roomUpdate();
     }
 
-    joinRoom(roomId, name, characterName) {
+    joinRoom(roomId) {
         if (this.roomId) return 'すでに入っている部屋があります';
-        this.name = name;
-        this.characterName = characterName;
         const res = serverState.rooms[roomId].joinRoom(this.socket.id);
         if (res === "roomJoined") {
             this.roomId = roomId;

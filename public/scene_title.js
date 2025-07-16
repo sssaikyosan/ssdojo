@@ -118,14 +118,14 @@ statusOverlay.add(playCountText);
 statusOverlay.add(ratingText);
 
 
-const onlineText = new TextUI({
-    text: () => `総部屋数: ${serverStatus.ratingRoomCount + serverStatus.privateRoomCount}, レート部屋: ${serverStatus.ratingRoomCount}, オンライン: ${serverStatus.online}人`,
-    x: 0,
-    y: 0.48,
-    size: 0.025,
-    colors: ["#ffffff", "#00000000", "#00000000"],
-    position: 'center'
-});
+// const onlineText = new TextUI({
+//     text: () => `総部屋数: ${serverStatus.ratingRoomCount + serverStatus.privateRoomCount}, レート部屋: ${serverStatus.ratingRoomCount}, オンライン: ${serverStatus.online}人`,
+//     x: 0,
+//     y: 0.48,
+//     size: 0.025,
+//     colors: ["#ffffff", "#00000000", "#00000000"],
+//     position: 'center'
+// });
 
 const matchingText = new TextUI({
     text: () => {
@@ -454,7 +454,6 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     titleScene.add(rankingOverlay);
     titleScene.add(charaSelectButton);
     titleScene.add(statusOverlay);
-    titleScene.add(onlineText);
     titleScene.add(cpuLevelOverlay);
 
     if (loadNameInput) {
@@ -673,7 +672,7 @@ function cpuLevelSubmit(level) {
     if (playerName == "") setPlayerName("名無しの棋士");
     clearTitleHTML();
     const now = performance.now();
-    setScene(createPlayScene(playerName, `CPUレベル${level}`, null, 1, null, now, 0, 0, level));
+    setScene(createPlayScene(playerName, 500, selectedCharacterName, `CPUレベル${level}`, 500, null, null, now, 'sente', level));
 }
 
 export function updateRanking() {

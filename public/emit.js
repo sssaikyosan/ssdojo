@@ -1,9 +1,10 @@
 import { gameManager } from "./main.js";
+import { socket } from "./main.js";
 
 export function sendPutPiece(nx, ny, type) {
 
     if (gameManager.cpu === null) {
-        gameManager.socket.emit("movePiece", {
+        socket.emit("movePiece", {
             x: -1,
             y: -1,
             nx: nx,
@@ -33,7 +34,7 @@ export function sendMovePiece(x, y, nx, ny, nari) {
     console.log("sendmovepiece", x, y, nx, ny, nari);
     if (!gameManager.board.canMove(x, y, nx, ny, nari, gameManager.teban)) return false;
     if (gameManager.cpu === null) {
-        gameManager.socket.emit("movePiece", {
+        socket.emit("movePiece", {
             x: x,
             y: y,
             nx: nx,
@@ -61,5 +62,5 @@ export function sendMovePiece(x, y, nx, ny, nari) {
 
 export function sendUndoMove(roomId) {
     const data = { roomId: roomId };
-    gameManager.socket.emit("undoMove", data);
+    socket.emit("undoMove", data);
 }

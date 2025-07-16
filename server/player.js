@@ -7,11 +7,8 @@ export class Player {
     roomId = null;
     socket = null;
     state = "";
-    constructor(socket) {
+    constructor(socket, player_id) {
         this.socket = socket;
-    }
-
-    setUserId(player_id) {
         this.player_id = player_id;
     }
 

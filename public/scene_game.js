@@ -1,5 +1,5 @@
 import { MOVETIME } from "./const.js";
-import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus } from "./main.js";
+import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus, setupSocket, connectToServer } from "./main.js";
 import { Scene } from "./scene.js";
 import { createTitleScene } from "./scene_title.js";
 import { BackgroundImageUI } from "./ui_background.js";
@@ -16,9 +16,6 @@ export let opponentCharacter = null;
 export function setOpponentCharacter(character) {
     opponentCharacter = character;
 }
-
-let playerCharacterUI;
-let opponentCharacterUI;
 
 export const endText = new TextUI({
     text: () => {
@@ -86,8 +83,11 @@ export function handleToTitleClick() {
     backToTitle();
 }
 
+let arryCharacterUI;
+let enemyCharacterUI;
+
 //ゲームシーン
-export function createPlayScene(playerName, opponentName, opponentCharacterName, teban, roomId, servertime, rating, opponentRating, cpulevel = null) {
+export function createPlayScene(senteName, senteRating, senteCharacter, goteName, goteRating, goteCharacter, roomId, servertime, roomteban, cpulevel = null) {
     let playScene = new Scene();
 
     // 背景画像UIを追加 (他のUIより前に描画されるように最初に追加)
@@ -95,16 +95,69 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
     playScene.add(backgroundImageUI);
 
     audioManager.playBGM('battle'); // 対戦BGMを再生
+    let teban = 0;
+    if (roomteban === 'sente' || cpulevel !== null) teban = 1;
+    if (roomteban === 'gote') teban = -1;
 
     gameManager.setRoom(roomId, teban, servertime, { sente: MOVETIME, gote: MOVETIME }, cpulevel);
-    opponentCharacter = opponentCharacterName;
 
-    let senteCharacter = null;
-    let goteCharacter = null;
+    let arryNames = null;
+    let enemyNames = null;
+    let arryRating = 500;
+    let enemyRating = 500;
+    let arryCharacter = null;
+    let enemyCharacter = null;
+    let senteCharacterUI = null;
+    let goteCharacterUI = null;
+
+    if (teban >= 0) {
+        arryNames = senteName;
+        arryRating = senteRating;
+        enemyNames = goteName;
+        enemyRating = goteRating;
+        arryCharacter = senteCharacter;
+        enemyCharacter = goteCharacter;
+        setOpponentCharacter(goteCharacter);
+    } else {
+        arryNames = goteName;
+        arryRating = goteRating;
+        enemyNames = senteName;
+        enemyRating = senteRating;
+        arryCharacter = goteCharacter;
+        enemyCharacter = senteCharacter;
+        setOpponentCharacter(senteCharacter);
+    }
+
+    arryCharacterUI = new CharacterInGameUI({
+        image: arryCharacter, // main.jsから選択されたキャラクター名を取得
+        x: -0.6, // プレイヤー名の近くに配置
+        y: 0.2, // 適切なY座標に調整
+        width: 0.48, // サイズ調整
+        height: 0.48
+    });
+
+    enemyCharacterUI = new CharacterInGameUI({
+        image: enemyCharacter, // 相手プレイヤー名からキャラクター名を生成（仮）
+        x: 0.6, // 相手プレイヤー名の近くに配置
+        y: -0.2, // 適切なY座標に調整
+        width: 0.48, // サイズ調整
+        height: 0.48
+    });
+
+    if (teban >= 0) {
+        senteCharacterUI = arryCharacterUI;
+        goteCharacterUI = enemyCharacterUI
+    } else {
+        senteCharacterUI = enemyCharacterUI;
+        goteCharacterUI = arryCharacterUI;
+    }
+
+    playScene.add(arryCharacterUI);
+    playScene.add(enemyCharacterUI);
 
     let playerNameUI = new TextUI({
         text: () => {
-            return `${playerName}`;
+            return `${arryNames}`;
         },
         x: -0.43,
         y: 0.4,
@@ -117,7 +170,7 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
 
     let opponentNameUI = new TextUI({
         text: () => {
-            return `${opponentName}`;
+            return `${enemyNames}`;
         },
         x: 0.43,
         y: -0.4,
@@ -132,7 +185,7 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
     let opponentRatingUI = null;
 
     if (!cpulevel) {
-        const roundRating = Math.round(rating);
+        const roundRating = Math.round(arryRating);
         playerRatingUI = new TextUI({
             text: () => {
                 // main.jsで計算された表示用レーティングを使用
@@ -149,7 +202,7 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
 
 
 
-        const opponentRoundRating = Math.round(opponentRating);
+        const opponentRoundRating = Math.round(enemyRating);
         opponentRatingUI = new TextUI({
             text: () => {
                 // main.jsで計算された表示用レーティングを使用
@@ -165,47 +218,17 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
         });
     }
 
-    // プレイヤーのキャラクター画像UIを追加
-    playerCharacterUI = new CharacterInGameUI({
-        image: selectedCharacterName, // main.jsから選択されたキャラクター名を取得
-        x: -0.6, // プレイヤー名の近くに配置
-        y: 0.2, // 適切なY座標に調整
-        width: 0.48, // サイズ調整
-        height: 0.48
-    });
-    // 相手プレイヤーのキャラクター画像UIを追加
-    opponentCharacterUI = new CharacterInGameUI({
-        image: opponentCharacterName, // 相手プレイヤー名からキャラクター名を生成（仮）
-        x: 0.6, // 相手プレイヤー名の近くに配置
-        y: -0.2, // 適切なY座標に調整
-        width: 0.48, // サイズ調整
-        height: 0.48
-    });
-
-
-    if (teban === 1) {
-        senteCharacter = playerCharacterUI;
-        goteCharacter = opponentCharacterUI;
-    } else if (teban === -1) {
-        senteCharacter = opponentCharacterUI;
-        goteCharacter = playerCharacterUI;
-    }
-
-
-
     // 先手の開始ビデオ再生終了後に後手の開始ビデオを再生
-    senteCharacter.startVideoElement[0].addEventListener('ended', () => {
+    senteCharacterUI.startVideoElement[0].addEventListener('ended', () => {
         console.log('先手ビデオ再生終了、後手ビデオ再生開始');
-        goteCharacter.playStartVideo(0);
+        goteCharacterUI.playStartVideo(0);
     });
 
-    senteCharacter.startVideoElement[0].addEventListener('canplaythrough', () => {
-        senteCharacter.playStartVideo(0);
+    senteCharacterUI.startVideoElement[0].addEventListener('canplaythrough', () => {
+        senteCharacterUI.playStartVideo(0);
         console.log('動画の再生準備ができました:');
     });
 
-    playScene.add(playerCharacterUI); // プレイヤーのキャラクター画像UIをシーンに追加
-    playScene.add(opponentCharacterUI); // 相手プレイヤーのキャラクター画像UIをシーンに追加
     playScene.add(gameManager.boardUI);
     // playScene.add(playerOverlayUI);
     playScene.add(playerNameUI);
@@ -227,24 +250,24 @@ export function createPlayScene(playerName, opponentName, opponentCharacterName,
 
 export function backToTitle() {
     resultOverlay.style.display = "none";
+    connectToServer();
     setScene(createTitleScene());
-    audioManager.playBGM('title');
 }
 
 export function endGame(data) {
     if (gameManager.teban === 0) {
         changeRating.textContent = "レート変動 なし(観戦)";
-        if (data.winPlayer === 1 && playerCharacterUI.image) {
-            if (playerCharacterUI.playWinVideo(0)) {
-                playerCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+        if (data.winPlayer === 1 && arryCharacterUI.image) {
+            if (arryCharacterUI.playWinVideo(0)) {
+                arryCharacterUI.winVideoElement[0].addEventListener('ended', () => {
                     resultOverlay.style.display = "block";
                 });
             } else {
                 resultOverlay.style.display = "block";
             }
-        } else if (data.winPlayer === -1 && opponentCharacterUI.image) {
-            if (opponentCharacterUI.playWinVideo(0)) {
-                opponentCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+        } else if (data.winPlayer === -1 && enemyCharacterUI.image) {
+            if (enemyCharacterUI.playWinVideo(0)) {
+                enemyCharacterUI.winVideoElement[0].addEventListener('ended', () => {
                     resultOverlay.style.display = "block";
                 });
             }
@@ -261,9 +284,9 @@ export function endGame(data) {
         scene.add(winText);
         setStatus(newrate, data.winGames);
         // 勝利時音声の再生
-        if (playerCharacterUI.image) {
-            if (playerCharacterUI.playWinVideo(0)) {
-                playerCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+        if (arryCharacterUI.image) {
+            if (arryCharacterUI.playWinVideo(0)) {
+                arryCharacterUI.winVideoElement[0].addEventListener('ended', () => {
                     resultOverlay.style.display = "block";
                 });
             } else {
@@ -282,9 +305,9 @@ export function endGame(data) {
         scene.add(loseText);
         setStatus(newrate, data.loseGames);
         // 敵勝利時音声の再生
-        if (opponentCharacterUI.image) {
-            if (opponentCharacterUI.playWinVideo(0)) {
-                opponentCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+        if (enemyCharacterUI.image) {
+            if (enemyCharacterUI.playWinVideo(0)) {
+                enemyCharacterUI.winVideoElement[0].addEventListener('ended', () => {
                     resultOverlay.style.display = "block";
                 });
             } else {
@@ -309,9 +332,9 @@ export function endCPUGame(data) {
     if (data.winPlayer === gameManager.teban) {
         scene.add(winText);
         // 勝利時音声の再生
-        if (playerCharacterUI.image) {
-            playerCharacterUI.playWinVideo(0);
-            playerCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+        if (arryCharacterUI.image) {
+            arryCharacterUI.playWinVideo(0);
+            arryCharacterUI.winVideoElement[0].addEventListener('ended', () => {
                 resultOverlay.style.display = "block";
             });
         } else {
@@ -322,9 +345,9 @@ export function endCPUGame(data) {
     } else {
         scene.add(loseText);
         // 敵勝利時音声の再生
-        if (opponentCharacterUI.image) {
-            opponentCharacterUI.playWinVideo(0);
-            opponentCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+        if (enemyCharacterUI.image) {
+            enemyCharacterUI.playWinVideo(0);
+            enemyCharacterUI.winVideoElement[0].addEventListener('ended', () => {
                 resultOverlay.style.display = "block";
             });
         } else {

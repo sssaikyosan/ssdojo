@@ -7,7 +7,6 @@ import { endCPUGame } from './scene_game.js';
 import { MOVETIME } from './const.js';
 
 export class GameManager {
-    socket;
     roomId;
     teban = null;
     cpu = null; // CPUインスタンスを保持するプロパティ
@@ -16,8 +15,7 @@ export class GameManager {
     boardUI;
     state = 'waiting';
 
-    constructor(socket) {
-        this.socket = socket;
+    constructor() {
         const board = new Board();
         this.board = board;
         this.boardUI = new BoardUI({ gameManager: this, board: board, x: 0.0, y: 0.0 })

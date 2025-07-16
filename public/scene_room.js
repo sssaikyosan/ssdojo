@@ -1,6 +1,6 @@
 // ルームUIを定義するファイル
 import { Scene } from "./scene.js";
-import { battle_img, setScene, socket } from "./main.js"; // setScene関数をインポート
+import { battle_img, connectToServer, setScene, socket } from "./main.js"; // setScene関数をインポート
 import { createTitleScene, discordButton } from "./scene_title.js"; // タイトルシーンに戻るために必要
 import { BackgroundImageUI } from "./ui_background.js";
 
@@ -84,7 +84,9 @@ function moveSubmit(teban) {
 
 function leaveRoom() {
     socket.emit("leaveRoom");
+    connectToServer();
     setScene(createTitleScene());
+
     currentRoomId = null;
     if (displayRoomIdButton.textContent === "部屋IDを非表示") {
         displayRoomIdButton.textContent = "部屋IDを表示";
@@ -94,6 +96,7 @@ function leaveRoom() {
     tebanOverlay.style.display = 'none';
     spectatorsOverlay.style.display = 'none';
     readyOverlay.style.display = 'none';
+    startOverlay.style.display = 'none';
     cancelOverlay.style.display = 'none';
     leaveRoomOverlay.style.display = 'none';
     playingText.style.display = 'none';

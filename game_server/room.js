@@ -1,11 +1,11 @@
 // server/room.js
 import { Board } from './board.js';
 import { MOVETIME } from './const.js';
-import { io, serverState } from './server.js';
+import { io, serverState } from './game_server.js';
 import http from 'http';
 
 export class Room {
-    constructor(roomId, roomType, ownerId) { // ownerIdをコンストラクタに追加
+    constructor(roomId, roomType, ownerId = null) { // ownerIdをコンストラクタに追加
         this.roomId = roomId;
         this.sente = [];
         this.gote = [];
@@ -13,7 +13,7 @@ export class Room {
         this.board = new Board(); // ゲームの盤面
         this.gameState = 'waiting'; // ゲームの状態 ('waiting', 'playing', 'finished')
         this.roomType = roomType; // 部屋の種類('rating', 'private', kento)
-        this.ownerId = ownerId; // オーナーのsocket.idを保持
+        this.ownerId = ownerId; // オーナーのplayer_idを保持
         this.maxplayers = 12; // 最大プレイヤー数のデフォルト値
         this.moveTime = { // 持ち時間のデフォルト値
             sente: 5,
@@ -24,16 +24,57 @@ export class Room {
     addPlayer(id, teban) {
         switch (teban) {
             case 'sente':
+                if (this.roomType === 'rating' && this.sente.length >= 1) return false;
                 this.sente.push(id);
                 break;
             case 'gote':
+                if (this.roomType === 'rating' && this.gote.length >= 1) return false;
                 this.gote.push(id);
                 break;
             case 'spectators':
+                if (this.roomType === 'rating') return false;
                 this.spectators.push(id);
                 break;
             default:
                 break;
+        }
+        if (this.roomType === 'rating' && this.sente.length === 1 && this.gote.length === 1) {
+            const names = this.getPlayerNames();
+            const now = performance.now();
+            this.startGame(now);
+            const data = {
+                senteName: names.sente[0],
+                senteRating: serverState.players[this.sente[0]].rating,
+                senteCharacter: serverState.players[this.sente[0]].characterName,
+                goteName: names.gote[0],
+                goteRating: serverState.players[this.gote[0]].rating,
+                goteCharacter: serverState.players[this.gote[0]].characterName,
+                roomId: this.roomId,
+                servertime: now,
+                moveTime: this.moveTime,
+            };
+            console.log(data);
+            this.emitToRoom("startRatingGame", data);
+            for (const id of this.sente) {
+                serverState.players[id].goToPlay(this.roomId);
+            }
+            for (const id of this.gote) {
+                serverState.players[id].goToPlay(this.roomId);
+            }
+        } else if (this.roomType === 'private') {
+            const names = this.getPlayerNames();
+            const readys = this.getReadys();
+
+            this.emitToRoom("roomUpdate", {
+                roomId: this.roomId,
+                sente: names.sente,
+                gote: names.gote,
+                spectators: names.spectators,
+                state: this.gameState,
+                readys: readys,
+                maxplayers: this.maxplayers, // 設定値をブロードキャスト
+                moveTime: this.moveTime // 設定値をブロードキャスト
+            });
         }
     }
 
@@ -86,13 +127,16 @@ export class Room {
     //部屋への通知
     emitToRoom(type, data) {
         for (let i = 0; i < this.sente.length; i++) {
-            io.to(this.sente[i]).emit(type, { ...data, roomteban: 'sente', idx: i, isOwner: this.sente[i] === this.ownerId });
+            if (!serverState.players[this.sente[i]]) continue;
+            io.to(this.sente[i]).emit(type, { ...data, roomteban: 'sente', idx: i, isOwner: serverState.players[this.sente[i]].player_id === this.ownerId });
         }
         for (let i = 0; i < this.gote.length; i++) {
-            io.to(this.gote[i]).emit(type, { ...data, roomteban: 'gote', idx: i, isOwner: this.gote[i] === this.ownerId });
+            if (!serverState.players[this.gote[i]]) continue;
+            io.to(this.gote[i]).emit(type, { ...data, roomteban: 'gote', idx: i, isOwner: serverState.players[this.gote[i]].player_id === this.ownerId });
         }
         for (let i = 0; i < this.spectators.length; i++) {
-            io.to(this.spectators[i]).emit(type, { ...data, roomteban: 'spectators', idx: i, isOwner: this.spectators[i] === this.ownerId });
+            if (!serverState.players[this.spectators[i]]) continue;
+            io.to(this.spectators[i]).emit(type, { ...data, roomteban: 'spectators', idx: i, isOwner: serverState.players[this.spectators[i]].player_id === this.ownerId });
         }
     }
 
@@ -101,7 +145,7 @@ export class Room {
         if (this.roomType === 'rating') {
             if (this.sente.length !== 1 || this.gote.length !== 1) {
                 console.log('プレイ人数に不正');
-                return
+                return;
             }
             const data = await serverState.ratingProcess(win, this.sente[0], this.gote[0], text);
             this.emitToRoom("endGame", data);
@@ -112,36 +156,6 @@ export class Room {
             if (serverState.players[this.gote[0]]) {
                 serverState.players[this.gote[0]].state = 'waiting';
             }
-
-            // マッチングサーバーへゲーム終了通知を送信
-            const matchingServerUrl = process.env.MATCHING_SERVER_URL || 'http://localhost:5000'; // マッチングサーバーのアドレスとポート
-            const gameResultData = JSON.stringify({
-                roomId: this.roomId,
-                winPlayerId: win === 1 ? serverState.players[this.sente[0]].player_id : serverState.players[this.gote[0]].player_id,
-                losePlayerId: win === 1 ? serverState.players[this.gote[0]].player_id : serverState.players[this.sente[0]].player_id,
-                text: text
-            });
-
-            const options = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Content-Length': Buffer.byteLength(gameResultData)
-                }
-            };
-
-            const req = http.request(matchingServerUrl + '/game-finished', options, (res) => {
-                console.log(`Matching server response status for game finished: ${res.statusCode}`);
-                // TODO: マッチングサーバーからの応答を処理する必要があればここに記述
-            });
-
-            req.on('error', (e) => {
-                console.error(`Problem with matching server game finished request: ${e.message}`);
-                // TODO: エラーハンドリング
-            });
-
-            req.write(gameResultData);
-            req.end();
 
             serverState.deleteRoom(this.roomId);
         } else {
@@ -275,7 +289,7 @@ export class Room {
     }
 
     startRoomGame(id) {
-        if (id !== this.ownerId) return false;
+        if (serverState.players[id].player_id !== this.ownerId) return false;
         const names = this.getPlayerNames();
         const now = performance.now();
 
@@ -318,7 +332,7 @@ export class Room {
 
     updateSetting(id, data) {
         // オーナーであるかを確認
-        if (this.ownerId === id) {
+        if (this.ownerId === serverState.players[id].player_id) {
             console.log(`Updating settings for room ${this.roomId}:`, data);
             // 設定を更新
             if (data.maxplayers < 2) {
@@ -359,21 +373,21 @@ export class Room {
         let stayOwner = false;
         this.sente = this.sente.filter(item => {
             if (serverState.players[item]) {
-                if (this.ownerId === item) stayOwner = true;
+                if (this.ownerId === serverState.players[item].player_id) stayOwner = true;
                 return true;
             }
             return false;
         });
         this.gote = this.gote.filter(item => {
             if (serverState.players[item]) {
-                if (this.ownerId === item) stayOwner = true;
+                if (this.ownerId === serverState.players[item].player_id) stayOwner = true;
                 return true;
             }
             return false;
         });
         this.spectators = this.spectators.filter(item => {
             if (serverState.players[item]) {
-                if (this.ownerId === item) stayOwner = true;
+                if (this.ownerId === serverState.players[item].player_id) stayOwner = true;
                 return true;
             }
             return false;
@@ -401,13 +415,16 @@ export class Room {
 
     changeOwner() {
         for (const id of this.spectators) {
-            if (id) this.ownerId = id;
+            if (!serverState.players[id]) continue;
+            if (id) this.ownerId = serverState.players[id].player_id;
         }
         for (const id of this.gote) {
-            if (id) this.ownerId = id;
+            if (!serverState.players[id]) continue;
+            if (id) this.ownerId = serverState.players[id].player_id;
         }
         for (const id of this.sente) {
-            if (id) this.ownerId = id;
+            if (!serverState.players[id]) continue;
+            if (id) this.ownerId = serverState.players[id].player_id;
         }
     }
 
@@ -499,7 +516,7 @@ export class Room {
     }
 
     changeMode(id, roomType) {
-        if (id !== this.ownerId) return false; // ownerをownerIdに修正
+        if (serverState.players[id].player_id !== this.ownerId) return false; // ownerをownerIdに修正
         if (roomType === 'private' || roomType === 'kento') {
             this.roomType = roomType; // roomtypeをthis.roomTypeに修正
             return true;

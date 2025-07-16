@@ -17,11 +17,11 @@ export let canvas = null;
 /** @type {CanvasRenderingContext2D} */
 export let ctx = null;
 export let emitter = null;
-export let socket = null;
+export let socket = null; // Socket.IO 接続オブジェクト
 export let scene = null; // scene変数はmain.jsで管理
 export let playerName = "";
-export let player_id = null;
-export let serverStatus = { online: 0, ratingRoomCount: 0, privateRoomCount: 0, topPlayers: [] };
+export let player_id = null; // 永続的なプレイヤーID
+export let serverStatus = { topPlayers: [] };
 
 export let playerRatingElement = null;
 export let gamesPlayedElement = null;
@@ -95,6 +95,17 @@ export function setStatus(rating, total_games) {
   }
 }
 
+export const matchingServerUrl = window.location.hostname === 'localhost' ?
+  'https://localhost:5000' :
+  'https://ssdojo.net:5000';
+
+export function connectToServer() {
+  //@ts-ignore
+  socket = io(matchingServerUrl, { withCredentials: true });
+  setupSocket(); // マッチングサーバー用のイベントハンドラを設定
+}
+
+let isFirstLogin = true;
 
 // 初期化関数
 function init() {
@@ -123,14 +134,10 @@ function init() {
   // キャラクターの読み込みまたは選択
   loadOrSelectCharacter();
 
-  // Socket.IOの初期化
-  const socketUrl = window.location.hostname === 'localhost' ?
-    'http://localhost:5000' :
-    'https://ssdojo.net:5000';
+  // Socket.IOの初期化 (最初はマッチングサーバーに接続)
 
-  //@ts-ignore
-  socket = io(socketUrl, { withCredentials: true });
-  setupSocket();
+  connectToServer();
+
 
   // イベントリスナーの追加
   addEventListeners();
@@ -138,7 +145,7 @@ function init() {
 
 
 
-  gameManager = new GameManager(socket);
+  gameManager = new GameManager();
 
 }
 
@@ -177,12 +184,15 @@ function addEventListeners() {
   });
 
   canvas.addEventListener('mousedown', (event) => {
+    if (!scene) return;
     scene.touchCheck(event, 'mousedown');
   })
   canvas.addEventListener('mousemove', (event) => {
+    if (!scene) return;
     scene.touchCheck(event, 'mousemove');
   })
   canvas.addEventListener('mouseup', (event) => {
+    if (!scene) return;
     if (event.button == 2) {
       scene.touchCheck(event, 'mouseup-right');
     } else {
@@ -270,48 +280,179 @@ function addEventListeners() {
   }
 }
 
-function setupSocket() {
-  // ユーザーIDをサーバーに送信
-  socket.emit('sendUserId', { player_id: player_id });
+function reconnect() {
 
-  // 待機人数の更新
+}
+
+// Socket.IO イベントハンドラ設定関数
+export function setupSocket() {
+  // 既存のイベントハンドラを全て削除
+  if (socket) {
+    socket.removeAllListeners();
+  }
+
+  // ユーザーIDをサーバーに送信 (接続先に応じて適切なIDを送信する必要があるかもしれない)
+  socket.on('connect', () => {
+    console.log('Socket connected:', socket.id);
+    socket.emit('sendUserId', { player_id: player_id });
+  });
+
+  socket.on('disconnect', (reason) => {
+    console.log('Socket disconnected:', reason);
+    // 切断理由に応じた処理（例: エラーメッセージ表示、タイトル画面に戻るなど）
+    if (reason === 'io client disconnect') {
+      console.log('Client initiated disconnect.');
+    } else {
+      console.error('Server initiated or network error disconnect.');
+    }
+  });
+
+
+  // 待機人数の更新 (マッチングサーバーからのイベント)
   socket.on('serverStatus', (data) => {
     serverStatus = data;
     updateRanking();
     // ランキング表示を更新
   });
 
+  // 簡単ログイン成功 (マッチングサーバーからのイベント)
   socket.on('easyLogin', (data) => {
     player_id = data.player_id;
     localStorage.setItem('shogiUserId', player_id);
     setStatus(data.rating, data.total_games);
     setScene(createTitleScene());
-    resizeHTML();
-    roop();
+    if (isFirstLogin) {
+      resizeHTML();
+      roop();
+      isFirstLogin = false;
+    }
   });
 
-  // レーティングを受信
+  // レーティングを受信 (マッチングサーバーからのイベント)
   socket.on('receiveRating', (data) => {
     setStatus(data.rating, data.total_games);
   });
 
-  // マッチングが成立したときの処理
+  // マッチングが成立したときの処理 (マッチングサーバーからのイベント)
   socket.on('matchFound', (data) => {
-    setScene(createPlayScene(
-      playerName,
-      data.name,
-      data.characterName,
-      data.teban,
-      data.roomId,
-      data.servertime,
-      data.rating,
-      data.opponentRating
-    ));
+    console.log('Match found:', data);
+    // マッチングサーバーとの接続を切断
+    if (socket && socket.connected) {
+      console.log('Disconnecting from matching server...');
+      socket.disconnect();
+    }
+
+    // ゲームサーバーのアドレスを取得
+    const gameServerAddress = data.gameServerAddress;
+
+    console.log(`Connecting to game server at ${gameServerAddress}...`);
+    // ゲームサーバーに新しく接続
+    //@ts-ignore
+    socket = io(gameServerAddress, { withCredentials: true });
+
+    // ゲームサーバー用のイベントハンドラを設定
+    setupGameSocketHandlers(data); // ゲームサーバー接続後のハンドラを設定する新しい関数を呼び出す
   });
 
+  // マッチングキャンセル (マッチングサーバーからのイベント)
   socket.on("cancelMatch", () => {
     console.log("cancelMatch");
     setScene(createTitleScene());
+  });
+
+  socket.on("roomCreated", (data) => {
+    console.log("roomCreated");
+    if (socket && socket.connected) {
+      console.log('Disconnecting from matching server...');
+      socket.disconnect();
+    }
+
+    // ゲームサーバーのアドレスを取得
+    const gameServerAddress = data.gameServerAddress;
+
+    console.log(`Connecting to game server at ${gameServerAddress}...`);
+    // ゲームサーバーに新しく接続
+    //@ts-ignore
+    socket = io(gameServerAddress, { withCredentials: true });
+
+    // ゲームサーバー用のイベントハンドラを設定
+    setupGameSocketHandlers(data); // ゲームサーバー接続後のハンドラを設定する新しい関数を呼び出す
+  });
+
+  socket.on("roomFound", (data) => {
+    console.log("roomFound");
+    if (socket && socket.connected) {
+      console.log('Disconnecting from matching server...');
+      socket.disconnect();
+    }
+
+    // ゲームサーバーのアドレスを取得
+    const gameServerAddress = data.gameServerAddress;
+
+    console.log(`Connecting to game server at ${gameServerAddress}...`);
+    // ゲームサーバーに新しく接続
+    //@ts-ignore
+    socket = io(gameServerAddress, { withCredentials: true });
+
+    // ゲームサーバー用のイベントハンドラを設定
+    setupGameSocketHandlers(data, true); // ゲームサーバー接続後のハンドラを設定する新しい関数を呼び出す
+  });
+
+  socket.on("roomJoinFailed", (data) => {
+    setScene(createTitleScene());
+    roomJoinFailed(scene);
+  });
+}
+
+// ゲームサーバー接続後の Socket.IO イベントハンドラ設定関数
+function setupGameSocketHandlers(roomFoundData, privateroom = false) {
+  // 既存のイベントハンドラを全て削除 (マッチングサーバー用のハンドラをクリア)
+  if (socket) {
+    socket.removeAllListeners();
+  }
+
+  socket.on('connect', () => {
+    console.log('Connected to game server:', socket.id);
+    // ゲームサーバーに接続したら、ゲーム参加に必要な情報を送信
+    // 例: プレイヤーの永続ID, ルームID
+    if (privateroom) {
+      socket.emit('joinRoom', {
+        player_id: player_id, // 永続的なプレイヤーID
+        roomId: roomFoundData.roomId,
+        name: playerName,
+        characterName: selectedCharacterName
+      });
+    } else {
+      socket.emit('joinRatingRoom', {
+        player_id: player_id, // 永続的なプレイヤーID
+        roomId: roomFoundData.roomId,
+        name: playerName,
+        characterName: selectedCharacterName
+      });
+    }
+
+    console.log(roomFoundData.roomId);
+  });
+
+  socket.on('disconnect', (reason) => {
+    console.log('Disconnected from game server:', reason);
+    setScene(createTitleScene());
+  });
+
+  // ゲームサーバーからのイベントハンドラを設定
+  // 例:
+  socket.on('startRatingGame', (data) => {
+    setScene(createPlayScene(
+      data.senteName,
+      data.senteRating,
+      data.senteCharacter,
+      data.goteName,
+      data.goteRating,
+      data.goteCharacter,
+      data.roomId,
+      data.servertime,
+      data.roomteban, // 自分の手番
+    ));
   });
 
   socket.on('startRoomGame', (data) => {
@@ -328,9 +469,10 @@ function setupSocket() {
     ));
   });
 
-  // 新しい駒の移動を受信
+  // 既存のゲーム関連イベントハンドラをここに移動または再定義
+  // 例:
   socket.on('newMove', (data) => {
-    console.log("newMove");
+    console.log("newMove (game server)");
     if (gameManager && gameManager.boardUI) {
       gameManager.boardUI.removeReserved(data);
       gameManager.receiveMove(data);
@@ -338,14 +480,14 @@ function setupSocket() {
   });
 
   socket.on('moveFailed', (data) => {
-    console.log("nemoveFailed");
+    console.log("moveFailed (game server)");
     if (gameManager && gameManager.boardUI) {
       gameManager.boardUI.lastsend = null;
     }
   });
 
   socket.on('moveReserved', (data) => {
-    console.log("moveReserved");
+    console.log("moveReserved (game server)");
     if (gameManager && gameManager.boardUI) {
       gameManager.boardUI.lastsend = null;
       gameManager.boardUI.moveReserved(data);
@@ -353,16 +495,15 @@ function setupSocket() {
   });
 
   socket.on('reservedMoveFailed', (data) => {
-    console.log("reservedMoveFailed");
+    console.log("reservedMoveFailed (game server)");
     if (gameManager && gameManager.boardUI) {
       gameManager.boardUI.lastsend = null;
       gameManager.boardUI.removeSameReserved(data);
     }
   });
 
-  // ゲーム終了を受信
   socket.on('endGame', (data) => {
-    console.log('endGame');
+    console.log('endGame (game server)');
     if (gameManager && gameManager.boardUI) {
       gameManager.boardUI.lastsend = null;
     }
@@ -376,6 +517,16 @@ function setupSocket() {
     endRoomGame(data);
   });
 
+  socket.on("backToRoom", (data) => {
+    backToRoom(data);
+  });
+
+  socket.on("roomUpdate", (data) => {
+    console.log("roomUpdate");
+    console.log(data);
+    roomUpdate(data);
+  });
+
   socket.on("roomJoined", (data) => {
     console.log("roomJoined");
     setScene(createRoomScene(data));
@@ -385,16 +536,8 @@ function setupSocket() {
     setScene(createTitleScene());
     roomJoinFailed(scene);
   });
-
-  socket.on("roomUpdate", (data) => {
-    console.log("roomUpdate");
-    roomUpdate(data);
-  });
-
-  socket.on("backToRoom", (data) => {
-    backToRoom(data);
-  });
 }
+
 
 // 画像の読み込み
 const pieceTypes = ['pawn', 'lance', 'knight', 'silver', 'gold', 'king', 'king2', 'rook', 'bishop',

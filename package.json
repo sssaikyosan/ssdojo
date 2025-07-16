@@ -4,8 +4,10 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
+    "startgame": "node game_server/game_server.js",
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
+    "devgame": "nodemon game_server/game_server.js",
     "test": "jest",
     "lint": "eslint .",
     "format": "prettier --write .",

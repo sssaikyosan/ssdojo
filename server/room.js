@@ -4,7 +4,8 @@ import { MOVETIME } from './const.js';
 import { io, serverState } from './server.js';
 
 export class Room {
-    constructor(roomId, roomType, ownerId) { // ownerIdをコンストラクタに追加
+    constructor(gameServerUrl, roomId, roomType, ownerId = null) {
+        this.gameServerUrl = gameServerUrl;
         this.roomId = roomId;
         this.sente = [];
         this.gote = [];
@@ -18,6 +19,7 @@ export class Room {
             sente: 5,
             gote: 5
         };
+        this.createTime = new Date(); // 部屋の作成日時
     }
 
     addPlayer(id, teban) {

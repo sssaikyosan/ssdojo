@@ -2,7 +2,6 @@ import 'dotenv/config';
 
 import express from 'express';
 import https from 'https';
-import http from 'http';
 import { Server } from 'socket.io';
 import fs from 'fs';
 import path from 'path';
@@ -17,16 +16,15 @@ export const __dirname = path.dirname(__filename);
 const app = express();
 app.use(express.json());
 
-app.post('/game-finished', (req, res) => {
-  console.log('Received game-finished request:', req.body);
+app.post('/roomdeleted', (req, res) => {
+  console.log('Received roomdeleted request:', req.body);
   // TODO: ゲームサーバーから受け取ったゲーム結果を処理するロジックを実装
-  const { roomId, winPlayerId, losePlayerId, text } = req.body;
-  if (!roomId || !winPlayerId || !losePlayerId) {
+  const { roomId } = req.body;
+  if (!roomId) {
     return res.status(400).send('Missing game result information');
   }
 
-  console.log(`Game in room ${roomId} finished. Winner: ${winPlayerId}, Loser: ${losePlayerId}`);
-  // serverState.handleGameResult(roomId, winPlayerId, losePlayerId, text); // 実際のゲーム結果処理ロジックを呼び出す
+  delete serverState.rooms[roomId];
 
   res.status(200).send('Game finished request received');
 });
@@ -41,7 +39,11 @@ if (process.env.NODE_ENV === 'development') {
   app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
   });
-  server = http.createServer(app);
+  const options = {
+    key: fs.readFileSync('./localhost+1-key.pem'),
+    cert: fs.readFileSync('./localhost+1.pem')
+  };
+  server = https.createServer(options, app);
 } else {
   const options = {
     key: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/privkey.pem'),
@@ -52,14 +54,16 @@ if (process.env.NODE_ENV === 'development') {
 
 const socketOptions = {
   cors: {
-    origin: ['https://ssdojo.net', 'http://localhost:5000'], // 許可するオリジンを具体的に指定
+    origin: ['https://ssdojo.net', 'https://localhost:5000'], // 許可するオリジンを具体的に指定
     credentials: true
   }
 };
 
 
 export const io = new Server(server, socketOptions);
-export const serverState = new ServerState(io);
+export const serverState = new ServerState(io, JSON.parse(process.env.GAME_SERVERS));
+
+console.log("game_server", serverState.game_servers);
 
 // HTTPSサーバーを起動
 const PORT = 5000;
@@ -69,8 +73,7 @@ server.listen(PORT, () => {
 
 ioSetup();
 
-// 1秒ごとにマッチメイキングを実行
 setInterval(() => {
-  serverState.matchMakingProcess();
+  serverState.matchMakingProcess(); // マッチングプロセスを定期的に実行
   serverState.sendServerStatus();
-}, 2000); // 2秒ごとに実行
+}, 2000);
