@@ -450,7 +450,8 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
       data.roomId,
       data.servertime,
       data.roomteban,
-      data.moveTime
+      data.moveTime,
+      data.pawnLimit4thRank
     ));
   });
 

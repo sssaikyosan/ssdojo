@@ -21,7 +21,7 @@ export class GameManager {
         this.boardUI = new BoardUI({ gameManager: this, board: board, x: 0.0, y: 0.0 })
     }
 
-    setRoom(roomId, teban, servertime, moveTime, cpulevel = null) {
+    setRoom(roomId, teban, servertime, moveTime, pawnLimit4thRank, cpulevel = null) {
         const now = performance.now();
         this.roomId = roomId;
         this.teban = teban;
@@ -29,7 +29,7 @@ export class GameManager {
         const board = new Board();
         this.board = board;
         this.boardUI = new BoardUI({ gameManager: this, board: board, x: 0.0, y: 0.0 });
-        this.board.init(servertime, now, moveTime);
+        this.board.init(servertime, now, moveTime, pawnLimit4thRank);
         this.boardUI.init(teban);
 
         if (cpulevel !== null) {

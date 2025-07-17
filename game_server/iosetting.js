@@ -37,6 +37,7 @@ export function ioSetup() {
                     const goteNames = room.gote.map(id => serverState.players[id].name);
                     const spectatorsNames = room.spectators.map(id => serverState.players[id].name);
                     const idx = room.spectators.length - 1;
+                    const isOwner = serverState.players[socket.id].player_id === room.ownerId;
                     socket.emit("roomJoined", {
                         roomId: roomId, sente: senteNames, gote: goteNames, spectators: spectatorsNames, state: room.gameState,
                         kifu: room.board.kifu,
@@ -44,7 +45,7 @@ export function ioSetup() {
                         moveTime: room.moveTime,
                         roomteban: 'spectators',
                         idx: idx,
-                        isOwner: true
+                        isOwner: isOwner
                     });
                 } else {
                     socket.emit("roomJoinFailed", { roomId: roomId, text: res });

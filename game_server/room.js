@@ -19,6 +19,7 @@ export class Room {
             sente: 5,
             gote: 5
         };
+        this.pawnLimit4thRank = false;
     }
 
     addPlayer(id, teban) {
@@ -73,13 +74,14 @@ export class Room {
                 state: this.gameState,
                 readys: readys,
                 maxplayers: this.maxplayers, // 設定値をブロードキャスト
-                moveTime: this.moveTime // 設定値をブロードキャスト
+                moveTime: this.moveTime,
+                pawnLimit4thRank: this.pawnLimit4thRank
             });
         }
     }
 
     startGame(time) {
-        this.board.init(time, time, this.moveTime); // 持ち時間を設定して初期化
+        this.board.init(time, time, this.moveTime, this.pawnLimit4thRank); // 持ち時間を設定して初期化
         this.gameState = 'playing';
     }
 
@@ -300,7 +302,8 @@ export class Room {
             servertime: now,
             state: this.gameState,
             maxplayers: this.maxplayers,
-            moveTime: this.moveTime
+            moveTime: this.moveTime,
+            pawnLimit4thRank: this.pawnLimit4thRank
         };
         this.emitToRoom("startRoomGame", data);
         for (const id of this.sente) {
@@ -354,6 +357,8 @@ export class Room {
                 this.moveTime.gote = data.moveTime.gote;
             }
 
+            this.pawnLimit4thRank = data.pawnLimit4thRank;
+
             // 部屋の状態を部屋のメンバーにブロードキャスト（必要に応じて）
             this.cancelReady();
             this.roomUpdate(); // RoomクラスにbroadcastRoomStateメソッドがあると仮定
@@ -403,7 +408,8 @@ export class Room {
             state: this.gameState,
             readys: readys,
             maxplayers: this.maxplayers, // 設定値をブロードキャスト
-            moveTime: this.moveTime // 設定値をブロードキャスト
+            moveTime: this.moveTime,
+            pawnLimit4thRank: this.pawnLimit4thRank
         });
     }
 

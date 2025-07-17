@@ -99,7 +99,7 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
     if (roomteban === 'sente' || cpulevel !== null) teban = 1;
     if (roomteban === 'gote') teban = -1;
 
-    gameManager.setRoom(roomId, teban, servertime, { sente: MOVETIME, gote: MOVETIME }, cpulevel);
+    gameManager.setRoom(roomId, teban, servertime, { sente: MOVETIME, gote: MOVETIME }, false, cpulevel);
 
     let arryNames = null;
     let enemyNames = null;

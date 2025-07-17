@@ -23,12 +23,13 @@ const roomSettingsDisplay = document.getElementById("roomSettingsDisplay");
 const maxPlayersDisplay = document.getElementById("maxPlayersDisplay");
 const senteMoveTimeDisplay = document.getElementById("senteMoveTimeDisplay");
 const goteMoveTimeDisplay = document.getElementById("goteMoveTimeDisplay");
+const pawnLimit4thRankDisplay = document.getElementById("pawnLimit4thRankDisplay")
 const openRoomSettingsButton = document.getElementById("openRoomSettingsButton");
-
 const roomSettingsOverlay = document.getElementById("roomSettingsOverlay");
 const maxPlayersInput = /** @type {HTMLInputElement} */ (document.getElementById("maxPlayersInput"));
 const senteMoveTimeInput = /** @type {HTMLInputElement} */ (document.getElementById("senteMoveTimeInput"));
 const goteMoveTimeInput = /** @type {HTMLInputElement} */ (document.getElementById("goteMoveTimeInput"));
+const pawnLimit4thRankInput = /** @type {HTMLInputElement} */ (document.getElementById("pawnLimit4thRankInput"));
 const saveRoomSettingsButton = document.getElementById("saveRoomSettingsButton");
 
 
@@ -58,7 +59,16 @@ openRoomSettingsButton.addEventListener("click", () => {
     // 現在の設定値を入力フィールドにセット
     maxPlayersInput.value = maxPlayersDisplay.textContent.replace('最大プレイヤー数: ', '');
     senteMoveTimeInput.value = senteMoveTimeDisplay.textContent.replace('先手クールダウン (秒): ', '');
+
     goteMoveTimeInput.value = goteMoveTimeDisplay.textContent.replace('後手クールダウン (秒): ', '');
+
+    const pawnLimit4thRank = pawnLimit4thRankDisplay.textContent.replace('歩打ち４段目制限: ', '');
+    if (pawnLimit4thRank === 'あり') {
+        pawnLimit4thRankInput.checked = true;
+    } else {
+        pawnLimit4thRankInput.checked = false;
+    }
+
 });
 
 
@@ -69,7 +79,8 @@ saveRoomSettingsButton.addEventListener("click", () => {
         moveTime: {
             sente: parseInt(senteMoveTimeInput.value, 10),
             gote: parseInt(goteMoveTimeInput.value, 10)
-        }
+        },
+        pawnLimit4thRank: pawnLimit4thRankInput.checked
     };
     socket.emit("updateRoomSettings", settings);
     roomSettingsOverlay.style.display = 'none'; // 保存後にオーバーレイを非表示
@@ -224,6 +235,11 @@ export function roomUpdate(data) {
     maxPlayersDisplay.textContent = `最大プレイヤー数: ${data.maxplayers}`;
     senteMoveTimeDisplay.textContent = `先手クールダウン (秒): ${data.moveTime.sente}`;
     goteMoveTimeDisplay.textContent = `後手クールダウン (秒): ${data.moveTime.gote}`;
+    if (data.pawnLimit4thRank) {
+        pawnLimit4thRankDisplay.textContent = '歩打ち４段目制限: あり';
+    } else {
+        pawnLimit4thRankDisplay.textContent = '歩打ち４段目制限: なし';
+    }
 }
 
 // コピーボタンのイベントハンドラ

@@ -14,7 +14,7 @@ toRoomButton.addEventListener("click", handleToRoomClick);
 let arryCharacterUI;
 let enemyCharacterUI;
 
-export function createRoomPlayScene(senteName, senteCharacter, goteName, goteCharacter, roomId, servertime, roomteban, moveTime, board = null) {
+export function createRoomPlayScene(senteName, senteCharacter, goteName, goteCharacter, roomId, servertime, roomteban, moveTime, pawnLimit4thRank, board = null) {
     let playScene = new Scene();
 
     // 背景画像UIを追加 (他のUIより前に描画されるように最初に追加)
@@ -27,7 +27,7 @@ export function createRoomPlayScene(senteName, senteCharacter, goteName, goteCha
     if (roomteban === 'gote') teban = -1;
 
     if (board === null) {
-        gameManager.setRoom(roomId, teban, servertime, moveTime);
+        gameManager.setRoom(roomId, teban, servertime, moveTime, pawnLimit4thRank);
     } else {
         gameManager.setRoomBoard(roomId, board);
     }
