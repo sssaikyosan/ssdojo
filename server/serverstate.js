@@ -90,7 +90,7 @@ export class ServerState {
 
         const time = performance.now();
 
-        const gameServerAddress = this.game_servers[next_game_server_idx];
+        const gameServerAddress = this.game_servers[this.next_game_server_idx];
         this.next_game_server_idx++;
         if (this.next_game_server_idx >= this.game_servers.length) {
             this.next_game_server_idx = 0;
@@ -337,7 +337,7 @@ export class ServerState {
     createRoom(socket) { // ownerId 引数を追加
         const roomId = generateRandomString();
 
-        const gameServerAddress = this.game_servers[next_game_server_idx]; // ゲームサーバーのアドレスとポート
+        const gameServerAddress = this.game_servers[this.next_game_server_idx]; // ゲームサーバーのアドレスとポート
         this.next_game_server_idx++;
         if (this.next_game_server_idx >= this.game_servers.length) {
             this.next_game_server_idx = 0;

@@ -66,6 +66,9 @@ export class ServerState {
         }
         delete this.rooms[roomId];
 
+        console.log("playersCount", Object.keys(this.players).length);
+        console.log("roomCount", Object.keys(this.rooms).length);
+
         const serverAddress = process.env.SERVER_URL || 'https://localhost:5000'; // ゲームサーバーのアドレスとポート
         const postData = JSON.stringify({
             roomId: roomId
