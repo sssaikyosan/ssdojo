@@ -464,6 +464,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         }
     }
 
+    roomIdInput.value = '';
     discordButton.style.display = "block";
     roomIdInput.style.display = "flex";
     nameInput.style.display = "flex";
