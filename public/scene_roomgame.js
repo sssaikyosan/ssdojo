@@ -116,13 +116,11 @@ export function createRoomPlayScene(senteName, senteCharacter, goteName, goteCha
     }
 
     senteCharacterUI.startVideoElement[0].addEventListener('ended', () => {
-        console.log('先手ビデオ再生終了、後手ビデオ再生開始');
         goteCharacterUI.playStartVideo(0);
     });
 
     senteCharacterUI.startVideoElement[0].addEventListener('canplaythrough', () => {
         senteCharacterUI.playStartVideo(0);
-        console.log('動画の再生準備ができました:');
     });
 
     roomResultOverlay.style.display = "none";

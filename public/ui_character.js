@@ -50,11 +50,7 @@ export class CharacterImageUI extends UI {
         this.videoElement.push(document.createElement('video'));
         this.videoElement[i].src = `${CHARACTER_FOLDER}/${this.image}/click${i + 1}.webm`;
         this.videoElement[i].loop = false; // ループはしない
-        this.videoElement[i].addEventListener('canplaythrough', () => {
-          console.log('動画の再生準備ができました:');
-        });
         this.videoElement[i].addEventListener('ended', () => {
-          console.log('動画再生が終了しました:');
           this.currentVideo = null;
           this.isRenderingVideo = false; // 動画描画フラグをオフ
         });
@@ -182,11 +178,8 @@ export class CharacterInGameUI extends UI {
         this.startVideoElement.push(document.createElement('video'));
         this.startVideoElement[i].src = `${CHARACTER_FOLDER}/${this.image}/start${i + 1}.webm`;
         this.startVideoElement[i].loop = false; // ループはしない
-        this.startVideoElement[i].addEventListener('canplaythrough', () => {
-          console.log('動画の再生準備ができました:');
-        });
+
         this.startVideoElement[i].addEventListener('ended', () => {
-          console.log('動画再生が終了しました:');
           this.currentVideo = null;
           this.isRenderingVideo = false; // 動画描画フラグをオフ
         });
@@ -203,11 +196,7 @@ export class CharacterInGameUI extends UI {
         this.winVideoElement.push(document.createElement('video'));
         this.winVideoElement[i].src = `${CHARACTER_FOLDER}/${this.image}/win${i + 1}.webm`;
         this.winVideoElement[i].loop = false; // ループはしない
-        this.winVideoElement[i].addEventListener('canplaythrough', () => {
-          console.log('動画の再生準備ができました:');
-        });
         this.winVideoElement[i].addEventListener('ended', () => {
-          console.log('動画再生が終了しました:');
           this.currentVideo = null;
           this.isRenderingVideo = false; // 動画描画フラグをオフ
         });

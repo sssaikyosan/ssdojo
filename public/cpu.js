@@ -35,7 +35,6 @@ export class CPU {
     }
 
     endGame() {
-        console.log("CPU: ゲーム終了。ワーカーを停止します。");
         if (this.worker) {
             this.worker.terminate(); // Workerを停止
             this.worker = null; // 参照をクリア

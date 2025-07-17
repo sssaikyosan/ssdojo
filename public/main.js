@@ -64,12 +64,10 @@ function loadOrSelectCharacter() {
   const storedCharacter = localStorage.getItem('selectedCharacter');
   if (storedCharacter && characterFiles.some(file => file === storedCharacter)) {
     selectedCharacterName = storedCharacter;
-    console.log(`Loaded character from storage: ${selectedCharacterName}`);
   } else {
     // ストレージにない場合、または無効な場合は0を設定
     selectedCharacterName = characterFiles[0];
     localStorage.setItem('selectedCharacter', selectedCharacterName);
-    console.log(`Randomly selected character: ${selectedCharacterName}`);
   }
 }
 
@@ -292,7 +290,6 @@ export function setupSocket() {
 
   // ユーザーIDをサーバーに送信 (接続先に応じて適切なIDを送信する必要があるかもしれない)
   socket.on('connect', () => {
-    console.log('Socket connected:', socket.id);
     socket.emit('sendUserId', { player_id: player_id });
   });
 
@@ -334,17 +331,14 @@ export function setupSocket() {
 
   // マッチングが成立したときの処理 (マッチングサーバーからのイベント)
   socket.on('matchFound', (data) => {
-    console.log('Match found:', data);
     // マッチングサーバーとの接続を切断
     if (socket && socket.connected) {
-      console.log('Disconnecting from matching server...');
       socket.disconnect();
     }
 
     // ゲームサーバーのアドレスを取得
     const gameServerAddress = data.gameServerAddress;
 
-    console.log(`Connecting to game server at ${gameServerAddress}...`);
     // ゲームサーバーに新しく接続
     //@ts-ignore
     socket = io(gameServerAddress, { withCredentials: true });
@@ -355,21 +349,17 @@ export function setupSocket() {
 
   // マッチングキャンセル (マッチングサーバーからのイベント)
   socket.on("cancelMatch", () => {
-    console.log("cancelMatch");
     setScene(createTitleScene());
   });
 
   socket.on("roomCreated", (data) => {
-    console.log("roomCreated");
     if (socket && socket.connected) {
-      console.log('Disconnecting from matching server...');
       socket.disconnect();
     }
 
     // ゲームサーバーのアドレスを取得
     const gameServerAddress = data.gameServerAddress;
 
-    console.log(`Connecting to game server at ${gameServerAddress}...`);
     // ゲームサーバーに新しく接続
     //@ts-ignore
     socket = io(gameServerAddress, { withCredentials: true });
@@ -379,16 +369,13 @@ export function setupSocket() {
   });
 
   socket.on("roomFound", (data) => {
-    console.log("roomFound");
     if (socket && socket.connected) {
-      console.log('Disconnecting from matching server...');
       socket.disconnect();
     }
 
     // ゲームサーバーのアドレスを取得
     const gameServerAddress = data.gameServerAddress;
 
-    console.log(`Connecting to game server at ${gameServerAddress}...`);
     // ゲームサーバーに新しく接続
     //@ts-ignore
     socket = io(gameServerAddress, { withCredentials: true });
@@ -411,7 +398,6 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
   }
 
   socket.on('connect', () => {
-    console.log('Connected to game server:', socket.id);
     // ゲームサーバーに接続したら、ゲーム参加に必要な情報を送信
     // 例: プレイヤーの永続ID, ルームID
     if (privateroom) {
@@ -422,7 +408,6 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
         characterName: selectedCharacterName
       });
     } else {
-      console.log('emit joinRatingRoom...');
       socket.emit('joinRatingRoom', {
         player_id: player_id, // 永続的なプレイヤーID
         roomId: roomFoundData.roomId,
@@ -431,11 +416,9 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
       });
     }
 
-    console.log(roomFoundData.roomId);
   });
 
   socket.on('disconnect', (reason) => {
-    console.log('Disconnected from game server:', reason);
     setScene(createTitleScene());
   });
 
@@ -456,7 +439,6 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
   });
 
   socket.on('startRoomGame', (data) => {
-    console.log(data);
     setScene(createRoomPlayScene(
       data.senteName,
       data.senteCharacter,
@@ -472,7 +454,6 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
   // 既存のゲーム関連イベントハンドラをここに移動または再定義
   // 例:
   socket.on('newMove', (data) => {
-    console.log("newMove (game server)");
     if (gameManager && gameManager.boardUI) {
       gameManager.boardUI.removeReserved(data);
       gameManager.receiveMove(data);
@@ -480,14 +461,12 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
   });
 
   socket.on('moveFailed', (data) => {
-    console.log("moveFailed (game server)");
     if (gameManager && gameManager.boardUI) {
       gameManager.boardUI.lastsend = null;
     }
   });
 
   socket.on('moveReserved', (data) => {
-    console.log("moveReserved (game server)");
     if (gameManager && gameManager.boardUI) {
       gameManager.boardUI.lastsend = null;
       gameManager.boardUI.moveReserved(data);
@@ -495,7 +474,6 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
   });
 
   socket.on('reservedMoveFailed', (data) => {
-    console.log("reservedMoveFailed (game server)");
     if (gameManager && gameManager.boardUI) {
       gameManager.boardUI.lastsend = null;
       gameManager.boardUI.removeSameReserved(data);
@@ -503,7 +481,6 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
   });
 
   socket.on('endGame', (data) => {
-    console.log('endGame (game server)');
     if (gameManager && gameManager.boardUI) {
       gameManager.boardUI.lastsend = null;
     }
@@ -522,13 +499,10 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
   });
 
   socket.on("roomUpdate", (data) => {
-    console.log("roomUpdate");
-    console.log(data);
     roomUpdate(data);
   });
 
   socket.on("roomJoined", (data) => {
-    console.log("roomJoined");
     setScene(createRoomScene(data));
   });
 

@@ -218,7 +218,6 @@ export class BoardUI extends UI {
   }
 
   onMouseUp(pos) {
-    console.log("mouseUp");
     if (!this.draggingPiece) return;
     const { x, y } = this.getBoardPosition(pos);
     if (this.draggingPiece.x === -1) {

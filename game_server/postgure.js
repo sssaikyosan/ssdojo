@@ -45,9 +45,9 @@ export class Postgure {
             `;
             const values = [data.player_id, data.total_games, data.rating, data.lastLogin, data.name];
             await client.query(sql, values);
-            console.log(`Saved data for player ${data.player_id}`);
+            console.log(`Saved data for player`);
         } catch (err) {
-            console.error(`Error saving data for player ${data.player_id}:`, err);
+            console.error(`Error saving data for player`, err);
             throw err;
         } finally {
             client.release();
@@ -71,14 +71,13 @@ export class Postgure {
 
             if (result.rows.length > 0) {
                 const row = result.rows[0];
-                console.log(`Read data for player ${playerId}`);
                 return row;
             } else {
-                console.log(`No data found for player ${playerId}`);
+                console.log(`No data found for player`);
                 return null; // プレイヤーが見つからない場合
             }
         } catch (err) {
-            console.error(`Error reading data for player ${playerId}:`, err);
+            console.error(`Error reading data for player`, err);
             throw err;
         } finally {
             client.release();
@@ -125,7 +124,7 @@ export class Postgure {
                 `; // rankはSERIALなので指定しない
                 const values = [player.rank, player.player_id, player.total_games, player.rating, player.lastLogin, player.name];
                 await client.query(sql, values);
-                console.log(`Inserted top player data for ${player.name} (${player.player_id})`);
+                console.log(`Inserted top player data for ${player.name}`);
             }
 
             await client.query('COMMIT'); // トランザクションコミット

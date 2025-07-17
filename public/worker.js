@@ -831,7 +831,6 @@ function normalAlgolysm(currentBoard, servertime) {
             };
             //放置すると取られる駒で逃げる手を検索
             if (!isDanger(currentBoard, targetmove.x, targetmove.y, targetmove.nx, targetmove.ny, -1)) {
-                console.log(targetmove.x, targetmove.y, targetmove.nx, targetmove.ny, targetmove.teban);
                 escapeMoves.push({
                     x: targetmove.x,
                     y: targetmove.y,
@@ -862,7 +861,6 @@ function normalAlgolysm(currentBoard, servertime) {
             };
             //放置すると取られる駒で逃げる手を検索
             if (!isDanger(currentBoard, targetmove.x, targetmove.y, targetmove.nx, targetmove.ny, -1)) {
-                console.log(targetmove.x, targetmove.y, targetmove.nx, targetmove.ny, targetmove.teban);
                 escapeMovesIgnoreTime.push({
                     x: targetmove.x,
                     y: targetmove.y,
@@ -880,7 +878,6 @@ function normalAlgolysm(currentBoard, servertime) {
     const kingCollisionMoves = collisionMoves.filter(item => {
         if ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)) return false;
         if (!isDanger(currentBoard, item.x, item.y, item.nx, item.ny, -1)) {
-            console.log(item.x, item.y, item.nx, item.ny, item.teban);
             return true;
         }
         return false;
@@ -889,7 +886,6 @@ function normalAlgolysm(currentBoard, servertime) {
     if (kingCollisionMoves.length > 0) {
         const randomIndex = Math.floor(Math.random() * kingCollisionMoves.length);
         const randomMove = kingCollisionMoves[randomIndex];
-        console.log('calculateCpuMove: 取られそうな玉で逆にとる手があれば指す', randomMove);
         postMessage({ move: randomMove });
         return true;
     }
@@ -897,7 +893,6 @@ function normalAlgolysm(currentBoard, servertime) {
     const kingCollisionMovesIgnoreTime = collisionMovesIgnoreTime.filter(item => {
         if ((item.x !== cpuKingPos.x) || (item.y !== cpuKingPos.y)) return false;
         if (!isDanger(currentBoard, item.x, item.y, item.nx, item.ny, -1)) {
-            console.log(item.x, item.y, item.nx, item.ny, item.teban);
             return true;
         }
         return false;
@@ -906,7 +901,6 @@ function normalAlgolysm(currentBoard, servertime) {
     if (kingCollisionMovesIgnoreTime.length > 0) {
         const randomIndex = Math.floor(Math.random() * kingCollisionMovesIgnoreTime.length);
         const randomMove = kingCollisionMovesIgnoreTime[randomIndex];
-        console.log('calculateCpuMove: 取られそうな玉で逆にとる手があれば指すignoretime', randomMove);
         postMessage({ move: randomMove });
         return true;
     }
@@ -921,7 +915,6 @@ function normalAlgolysm(currentBoard, servertime) {
     if (kingEscapeMoves.length > 0) {
         const randomIndex = Math.floor(Math.random() * kingEscapeMoves.length);
         const randomMove = kingEscapeMoves[randomIndex];
-        console.log('calculateCpuMove: 玉が逃げる手があれば指す', randomMove);
         postMessage({ move: randomMove });
         return true;
     }
@@ -943,7 +936,6 @@ function normalAlgolysm(currentBoard, servertime) {
     if (collisionMovesKingfiltered.length > 0) {
         const randomIndex = Math.floor(Math.random() * collisionMovesKingfiltered.length);
         const randomMove = collisionMovesKingfiltered[randomIndex];
-        console.log('calculateCpuMove: 取られそうな駒で逆にとる手があれば指す', randomMove);
         postMessage({ move: randomMove });
         return true;
     }
@@ -958,7 +950,6 @@ function normalAlgolysm(currentBoard, servertime) {
     if (kingEscapeMovesIgnoreTime.length > 0) {
         const randomIndex = Math.floor(Math.random() * kingEscapeMovesIgnoreTime.length);
         const randomMove = kingEscapeMovesIgnoreTime[randomIndex];
-        console.log('calculateCpuMove: 玉が逃げる手があれば指すignoretime', randomMove);
         postMessage({ move: randomMove });
         return true;
     }
@@ -984,7 +975,6 @@ function normalAlgolysm(currentBoard, servertime) {
     if (safetyCapMoves.length > 0) {
         const randomIndex = Math.floor(Math.random() * safetyCapMoves.length);
         const randomMove = safetyCapMoves[randomIndex];
-        console.log('calculateCpuMove: 安全に駒をとれる手があれば指す', randomMove);
         postMessage({ move: randomMove });
         return true;
     }
@@ -1007,7 +997,6 @@ function normalAlgolysm(currentBoard, servertime) {
     if (collisionMovesIgnoreTimeKingfiltered.length > 0) {
         const randomIndex = Math.floor(Math.random() * collisionMovesIgnoreTimeKingfiltered.length);
         const randomMove = collisionMovesIgnoreTimeKingfiltered[randomIndex];
-        console.log('calculateCpuMove: 取られそうな駒で逆にとる手があれば指すignoretime', randomMove);
         postMessage({ move: randomMove });
         return true;
     }
@@ -1021,7 +1010,6 @@ function normalAlgolysm(currentBoard, servertime) {
     if (escapeMovesRemovePawn.length > 0) {
         const randomIndex = Math.floor(Math.random() * escapeMovesRemovePawn.length);
         const randomMove = escapeMovesRemovePawn[randomIndex];
-        console.log('calculateCpuMove: 駒を逃げれる手があれば指す', randomMove);
         postMessage({ move: randomMove });
         return true;
     }
@@ -1115,7 +1103,6 @@ function randomMoveNoBigDanger(currentBoard, servertime) {
     if (toKingMoves.length > 0) {
         const randomIndex = Math.floor(Math.random() * toKingMoves.length);
         const randomMove = toKingMoves[randomIndex];
-        console.log('calculateCpuMove: ランダムに選択', randomMove);
         postMessage({ move: randomMove });
         return true;
     }
@@ -1150,10 +1137,8 @@ function randomMove(currentBoard, servertime) {
     if (cpuLegalMoves.length > 0) {
         const randomIndex = Math.floor(Math.random() * cpuLegalMoves.length);
         const randomMove = cpuLegalMoves[randomIndex];
-        console.log('calculateCpuMove: ランダムに選択された合法手', randomMove);
         postMessage({ move: randomMove });
     } else {
-        console.log('calculateCpuMove: 合法手がありません');
         return null;
     }
 }
@@ -1206,10 +1191,7 @@ function minimax(boardcopy, servertime, depth, isMaximizingPlayer, newMove = nul
             const piece = boardcopy.map[newMove.nx][newMove.ny]
             if (piece) {
                 val -= 2 * PIECE_PRICES[piece.type] * newMove.teban;
-            } else {
-                console.log("no moved piece");
             }
-
         }
         return { val: val, newMove };
     }
@@ -1288,8 +1270,6 @@ function findBestMove(depth, servertime) {
         bestNext = moveValues[0].next;
 
     }
-
-    console.log(`AIが評価した最善手の評価値: ${bestValue}`);
     return { bestMove: bestMove, bestNext: bestNext };
 }
 function shuffleArray(array) {
@@ -1377,7 +1357,6 @@ function level3cpu() {
 
 // メインスレッドからのメッセージを受信
 onmessage = function (e) {
-    console.log('Worker: メインスレッドからメッセージを受信しました', e.data);
     if (e.data[0] === "gameStart") {
         const data = e.data[1];
         board = new Board();

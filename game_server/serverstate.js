@@ -20,7 +20,6 @@ export class ServerState {
 
     // プレイヤーのレーティングデータをデータベースに保存（挿入または更新）(Postgure クラスに処理を委譲)
     async savePlayerInfo(data) { // メソッド名を変更
-        console.log(`Saving player info for UserID: ${data.player_id} via Postgure...`);
         await this.postgureDb.savePlayerInfo(data);
     }
 
@@ -29,7 +28,6 @@ export class ServerState {
         if (!playerInfo) {
             const player_id = uuid();
             const initialPlayerInfo = { player_id: player_id, rating: 1500, total_games: 0, lastLogin: new Date(), name: '' };
-            console.log(`Create player info for UserID: ${player_id} via Postgure...`);
             await this.postgureDb.savePlayerInfo(initialPlayerInfo);
             return initialPlayerInfo;
         }
@@ -267,7 +265,6 @@ export class ServerState {
     startRoomGame(id) {
         if (!this.players[id]) return;
         if (!this.players[id].roomId) return;
-        console.log('startRoomGame roomFound');
         this.rooms[this.players[id].roomId].startRoomGame(id);
     }
 

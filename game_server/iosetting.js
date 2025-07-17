@@ -6,7 +6,6 @@ export function ioSetup() {
 
         // ユーザーIDを受信
         socket.on('joinRatingRoom', async (data) => {
-            console.log("joinRatingRoom");
             if (data.player_id.length > 36) return;
             if (!serverState.canJoinRoom[data.player_id]) return;
             const playerInfo = await serverState.getPlayerInfo(data.player_id);
@@ -24,7 +23,6 @@ export function ioSetup() {
         });
 
         socket.on('joinRoom', async (data) => {
-            console.log("JoinRom");
             if (data.player_id.length > 36) return;
 
             const playerInfo = await serverState.getPlayerInfo(data.player_id);
@@ -63,7 +61,6 @@ export function ioSetup() {
         });
 
         socket.on("startRoomGame", () => {
-            console.log("startRoomGame");
             serverState.startRoomGame(socket.id);
         });
 
@@ -81,7 +78,6 @@ export function ioSetup() {
 
         // 駒の移動を転送
         socket.on("movePiece", (data) => {
-            console.log("movePiece", data);
             if (!serverState.rooms[data.roomId]) {
                 return;
             }

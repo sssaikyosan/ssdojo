@@ -230,7 +230,6 @@ export function roomUpdate(data) {
 async function handleCopyIdClick() {
     try {
         await navigator.clipboard.writeText(currentRoomId);
-        console.log('部屋IDをクリップボードにコピーしました:', currentRoomId);
         // コピー成功メッセージを表示
         if (copySuccessMessage) {
             copySuccessMessage.style.display = 'block';
@@ -255,7 +254,6 @@ async function handleCopyIdClick() {
 
 
 export function createRoomScene(data) {
-    console.log("createRoomScene");
     let roomScene = new Scene();
     const backgroundImageUI = new BackgroundImageUI({ image: battle_img });
 

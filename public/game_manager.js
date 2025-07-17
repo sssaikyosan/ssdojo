@@ -33,7 +33,6 @@ export class GameManager {
         this.boardUI.init(teban);
 
         if (cpulevel !== null) {
-            console.log("GameManager: CPU対戦を開始します。");
             this.cpu = new CPU(this, cpulevel); // GameManager自身をCPUに渡す
             this.cpu.gameStart(servertime, now);
         }
@@ -60,7 +59,6 @@ export class GameManager {
 
 
     receiveMove(move) {
-        console.log("GameManager: 手を受信しました", move);
         this.boardUI.lastsend = null;
         const result = this.board.movePieceLocal(move);
         if (result.res) {
@@ -85,13 +83,11 @@ export class GameManager {
             // リアルタイム将棋では手番に関係なく思考が必要になる可能性があるため、
             // プレイヤーの手が適用されたら常にCPUに盤面変化を通知
             if (this.cpu !== null) {
-                console.log("GameManager: 盤面が変化しました。CPUに通知します。");
                 this.cpu.boardChanged(move); // 盤面情報をワーカーに送信
             }
 
             return true;
         } else if (result.reserve) {
-            console.log("moveReserved");
             const now = performance.now();
             const piece = this.board.map[move.x][move.y];
             let tebanMoveTime = this.board.moveTime.sente;
@@ -117,7 +113,6 @@ export class GameManager {
                         this.cpu = null;
                     }
                     if (this.cpu !== null) {
-                        console.log("GameManager: 盤面が変化しました。CPUに通知します。");
                         this.cpu.boardChanged({ ...move, servertime }); // 盤面情報をワーカーに送信
                     }
                 } else {
@@ -131,13 +126,10 @@ export class GameManager {
 
     // Web WorkerからCPUの手を受け取るメソッド
     handleCpuMove(move) {
-        console.log("GameManager: CPUの手を受信しました", move);
         const now = performance.now();
         const serverMove = { ...move, servertime: now }
-        console.log(serverMove);
         const result = this.board.movePieceLocal(serverMove);
         if (result.res) {
-            console.log("GameManager: CPUの手を適用しました。");
             audioManager.playSound("sound"); // 効果音
 
             if (this.boardUI.draggingPiece) {

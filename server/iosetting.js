@@ -9,7 +9,6 @@ export function ioSetup() {
             if (data.player_id.length > 36) return;
             const playerInfo = await serverState.getPlayerInfo(data.player_id);
             serverState.addPlayer(socket, playerInfo.player_id);
-            console.log('playerInfo', playerInfo);
             const displayRating = getDisplayRating(playerInfo.rating, playerInfo.total_games);
             socket.emit('easyLogin', { player_id: playerInfo.player_id, rating: displayRating, total_games: playerInfo.total_games });
         });
@@ -22,7 +21,6 @@ export function ioSetup() {
             if (!serverState.players[socket.id]) return;
             if (serverState.players[socket.id].roomId !== null) return;
             serverState.players[socket.id].requestMatch(data);
-            console.log("requestMatchfin");
         });
 
         socket.on("cancelMatch", () => {

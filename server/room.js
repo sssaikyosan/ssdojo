@@ -44,15 +44,12 @@ export class Room {
     }
 
     handleMove(id, data) {
-        console.log("handleMove");
         let servertime = performance.now();
         let validPlayer = false;
         let result = null;
         if (this.sente.includes(id) && data.teban === 1) validPlayer = true;
         if (this.gote.includes(id) && data.teban === -1) validPlayer = true;
-        console.log("validPlayer");
         if (validPlayer) result = this.board.movePieceLocal({ ...data, servertime });
-        console.log(result);
         if (result && result.res) {
             this.emitToRoom("newMove", { ...data, servertime });
             let endGame = this.board.checkGameEnd(data);
@@ -60,7 +57,6 @@ export class Room {
                 this.gameFinished(endGame.player, endGame.text);
             }
         } else if (result && result.reserve) {
-            console.log("moveReserved");
             const now = performance.now();
             const piece = this.board.map[data.x][data.y];
             let tebanMoveTime = this.board.moveTime.sente;
@@ -289,7 +285,6 @@ export class Room {
     updateSetting(id, data) {
         // オーナーであるかを確認
         if (this.ownerId === id) {
-            console.log(`Updating settings for room ${this.roomId}:`, data);
             // 設定を更新
             if (data.maxplayers < 2) {
                 this.maxplayers = 2;
@@ -355,7 +350,6 @@ export class Room {
         if (!stayOwner) this.changeOwner();
         const names = this.getPlayerNames();
         const readys = this.getReadys();
-        console.log("readys", readys);
         // 部屋設定情報も含めてブロードキャスト
         this.emitToRoom("roomUpdate", {
             roomId: this.roomId,
@@ -429,7 +423,6 @@ export class Room {
             idx: roomIdx,
             isOwner: this.ownerId === id
         }
-        console.log(data);
         return data;
     }
 

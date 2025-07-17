@@ -220,13 +220,11 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
 
     // 先手の開始ビデオ再生終了後に後手の開始ビデオを再生
     senteCharacterUI.startVideoElement[0].addEventListener('ended', () => {
-        console.log('先手ビデオ再生終了、後手ビデオ再生開始');
         goteCharacterUI.playStartVideo(0);
     });
 
     senteCharacterUI.startVideoElement[0].addEventListener('canplaythrough', () => {
         senteCharacterUI.playStartVideo(0);
-        console.log('動画の再生準備ができました:');
     });
 
     playScene.add(gameManager.boardUI);
@@ -243,7 +241,6 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
     playScene.destroy = () => {
         toTitleButton.removeEventListener("click", handleToTitleClick);
     };
-    console.log(gameManager.teban);
 
     return playScene;
 }
@@ -252,6 +249,7 @@ export function backToTitle() {
     resultOverlay.style.display = "none";
     connectToServer();
     setScene(createTitleScene());
+    audioManager.playBGM('title');
 }
 
 export function endGame(data) {

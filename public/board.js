@@ -246,7 +246,6 @@ export class Board {
     if (teban === -1) tebanMoveTime = this.moveTime.gote;
     if (servertime - piece.lastmovetime < tebanMoveTime) {
       if ((piece.lastmovetime + tebanMoveTime - servertime) < (tebanMoveTime / 5) && !piece.reserve) {
-        console.log("reserve");
         return { res: false, capture: null, reserve: true }
       } else {
         return { res: false, capture: null, reserve: false };

@@ -57,7 +57,7 @@ server.listen(PORT, () => {
 ioSetup();
 
 app.post('/createroom', (req, res) => {
-    console.log('Received createroom request:', req.body);
+    console.log('Received createroom request');
     // TODO: マッチングサーバーから受け取った情報を使ってゲームを開始するロジックを実装
     const { roomId, roomType, sente, gote, spectators, owner } = req.body; // roomId, player1, player2 の情報を取得
 

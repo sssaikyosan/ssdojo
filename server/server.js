@@ -63,8 +63,6 @@ const socketOptions = {
 export const io = new Server(server, socketOptions);
 export const serverState = new ServerState(io, JSON.parse(process.env.GAME_SERVERS));
 
-console.log("game_server", serverState.game_servers);
-
 // HTTPSサーバーを起動
 const PORT = 5000;
 server.listen(PORT, () => {

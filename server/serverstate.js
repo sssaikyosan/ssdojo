@@ -23,7 +23,6 @@ export class ServerState {
 
     // プレイヤーのレーティングデータをデータベースに保存（挿入または更新）(Postgure クラスに処理を委譲)
     async savePlayerInfo(data) { // メソッド名を変更
-        console.log(`Saving player info for UserID: ${data.player_id} via Postgure...`);
         await this.postgureDb.savePlayerInfo(data);
     }
 
@@ -32,7 +31,6 @@ export class ServerState {
         if (!playerInfo) {
             const player_id = uuid();
             const initialPlayerInfo = { player_id: player_id, rating: 1500, total_games: 0, lastLogin: new Date(), name: '' };
-            console.log(`Create player info for UserID: ${player_id} via Postgure...`);
             await this.postgureDb.savePlayerInfo(initialPlayerInfo);
             return initialPlayerInfo;
         }
@@ -67,13 +65,7 @@ export class ServerState {
 
                 this.matchMake(player1, player2);
 
-
-                console.log("matched", this.players[player1].characterName);
-                console.log("matched", this.players[player2].characterName);
-
-
                 console.log(new Date(), `Matched players: (先手:${this.players[player1].name}) vs (後手:${this.players[player2].name})`);
-                console.log(matchMakingPlayers.length);
             }
         }
     }
@@ -361,8 +353,6 @@ export class ServerState {
             spectators: [this.players[socket.id].player_id],
             owner: this.players[socket.id].player_id
         });
-
-        console.log(this.players[socket.id].player_id);
 
         const options = {
             method: 'POST',

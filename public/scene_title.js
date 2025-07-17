@@ -475,7 +475,6 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
 
 // キャラクター選択シーン
 export function createCharacterSelectScene(titleCharacter) {
-    console.log(titleCharacter);
     const playBGMOnce = () => {
         if (audioManager.currentBGM === null) {
             audioManager.playBGM('title');

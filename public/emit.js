@@ -31,7 +31,6 @@ export function sendPutPiece(nx, ny, type) {
 }
 
 export function sendMovePiece(x, y, nx, ny, nari) {
-    console.log("sendmovepiece", x, y, nx, ny, nari);
     if (!gameManager.board.canMove(x, y, nx, ny, nari, gameManager.teban)) return false;
     if (gameManager.cpu === null) {
         socket.emit("movePiece", {
