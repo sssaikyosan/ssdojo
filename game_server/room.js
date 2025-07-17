@@ -474,7 +474,7 @@ export class Room {
             moveTime: this.moveTime,
             roomteban: roomTeban,
             idx: roomIdx,
-            isOwner: this.ownerId === id
+            isOwner: this.ownerId === serverState.players[id].player_id
         }
         return data;
     }
