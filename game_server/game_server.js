@@ -2,8 +2,10 @@ import 'dotenv/config';
 
 import express from 'express';
 import http from 'http';
+import path from 'path';
 import fs from 'fs';
 import https from 'https';
+import { fileURLToPath } from 'url';
 import { Server } from 'socket.io';
 
 
@@ -12,29 +14,33 @@ import { ServerState } from './serverstate.js'; // ゲームサーバー側で�
 import { Room } from './room.js';
 import { Player } from './player.js';
 
+export const __filename = fileURLToPath(import.meta.url);
+export const __dirname = path.dirname(__filename);
+
 const app = express();
 
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '..', 'game_public')));
+// ルートパスへのリクエストにindex.htmlを送信
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'game_public', 'index.html'));
+});
 
 let server;
 // Socket.IO 接続ハンドラ内でプレイヤーを識別し、ルームに割り当てる処理が必要になる
 if (process.env.NODE_ENV === 'development') {
     const options = {
-        key: fs.readFileSync('./localhost+1-key.pem'),
-        cert: fs.readFileSync('./localhost+1.pem')
+        key: fs.readFileSync('./localhost-key.pem'),
+        cert: fs.readFileSync('./localhost.pem')
     };
     server = https.createServer(options, app);
 } else {
-    const options = {
-        key: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/privkey.pem'),
-        cert: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/fullchain.pem')
-    };
-    server = https.createServer(options, app);
+    server = http.createServer(app);
 }
 
 const socketOptions = {
     cors: {
-        origin: ['https://ssdojo.net', 'https://localhost:5000'], // 許可するオリジンを具体的に指定
+        origin: ['https://ssdojo.net', 'https://localhost:5000'],
         credentials: true
     }
 };

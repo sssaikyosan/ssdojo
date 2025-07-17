@@ -13,6 +13,7 @@ export class ServerState {
     postgureDb;
     rooms = {};
     game_servers = [];
+    next_game_server_idx = 0;
 
     constructor(io, game_servers) {
         this.io = io;
@@ -97,8 +98,12 @@ export class ServerState {
 
         const time = performance.now();
 
-        const randIdx = Math.floor(Math.random() * this.game_servers.length);
-        const gameServerAddress = this.game_servers[randIdx];
+        const gameServerAddress = this.game_servers[next_game_server_idx];
+        this.next_game_server_idx++;
+        if (this.next_game_server_idx >= this.game_servers.length) {
+            this.next_game_server_idx = 0;
+        }
+
         const postData = JSON.stringify({
             roomId: roomId,
             roomType: 'rating',
@@ -118,6 +123,8 @@ export class ServerState {
 
         // ゲームサーバーへのリクエスト送信と応答処理
         const req = https.request(gameServerAddress + '/createroom', options, (res) => {
+            let responseData = '';
+            res.on('data', (chunk) => { responseData += chunk; });
             console.log(`Game server response status: ${res.statusCode}`);
             res.on('end', () => {
                 if (res.statusCode === 200) {
@@ -337,8 +344,13 @@ export class ServerState {
 
     createRoom(socket) { // ownerId 引数を追加
         const roomId = generateRandomString();
-        const randIdx = Math.floor(Math.random() * this.game_servers.length);
-        const gameServerAddress = this.game_servers[randIdx]; // ゲームサーバーのアドレスとポート
+
+        const gameServerAddress = this.game_servers[next_game_server_idx]; // ゲームサーバーのアドレスとポート
+        this.next_game_server_idx++;
+        if (this.next_game_server_idx >= this.game_servers.length) {
+            this.next_game_server_idx = 0;
+        }
+
         this.rooms[roomId] = gameServerAddress;
 
         const postData = JSON.stringify({

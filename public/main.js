@@ -59,16 +59,15 @@ function generateUniqueId() {
   });
 }
 
-// ストレージからキャラクターを読み込む、またはランダムに選択する関数
+// ストレージからキャラクターを読み込む関数
 function loadOrSelectCharacter() {
   const storedCharacter = localStorage.getItem('selectedCharacter');
   if (storedCharacter && characterFiles.some(file => file === storedCharacter)) {
     selectedCharacterName = storedCharacter;
     console.log(`Loaded character from storage: ${selectedCharacterName}`);
   } else {
-    // ストレージにない場合、または無効な場合はランダムに選択
-    const randomIndex = Math.floor(Math.random() * characterFiles.length);
-    selectedCharacterName = characterFiles[randomIndex];
+    // ストレージにない場合、または無効な場合は0を設定
+    selectedCharacterName = characterFiles[0];
     localStorage.setItem('selectedCharacter', selectedCharacterName);
     console.log(`Randomly selected character: ${selectedCharacterName}`);
   }
@@ -423,6 +422,7 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
         characterName: selectedCharacterName
       });
     } else {
+      console.log('emit joinRatingRoom...');
       socket.emit('joinRatingRoom', {
         player_id: player_id, // 永続的なプレイヤーID
         roomId: roomFoundData.roomId,

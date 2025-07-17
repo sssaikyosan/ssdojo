@@ -40,8 +40,8 @@ if (process.env.NODE_ENV === 'development') {
     res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
   });
   const options = {
-    key: fs.readFileSync('./localhost+1-key.pem'),
-    cert: fs.readFileSync('./localhost+1.pem')
+    key: fs.readFileSync('./localhost-key.pem'),
+    cert: fs.readFileSync('./localhost.pem')
   };
   server = https.createServer(options, app);
 } else {
