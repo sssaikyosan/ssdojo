@@ -102,12 +102,6 @@ export function ioSetup() {
 
         // 切断時の処理
         socket.on("disconnect", () => {
-            if (serverState.players[socket.id]) {
-                if (serverState.rooms[serverState.players[socket.id].roomId]) {
-                    const room = serverState.rooms[serverState.players[socket.id].roomId];
-                    room.leaveRoom(socket.id);
-                }
-            }
             serverState.deletePlayer(socket.id);
         });
     });

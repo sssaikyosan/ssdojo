@@ -43,7 +43,7 @@ export class ServerState {
     //プレイヤーの削除
     deletePlayer(id) {
         if (!this.players[id]) return false;
-        if (this.players[id].roomId) {
+        if (this.players[id].roomId && this.rooms[this.players[id].roomId]) {
             this.rooms[this.players[id].roomId].leaveRoom(id);
         }
         delete this.players[id];

@@ -97,6 +97,9 @@ export const matchingServerUrl = window.location.hostname === 'localhost' ?
   'https://ssdojo.net:5000';
 
 export function connectToServer() {
+  if (socket && socket.connected) {
+    socket.disconnect();
+  }
   //@ts-ignore
   socket = io(matchingServerUrl, { withCredentials: true });
   setupSocket(); // マッチングサーバー用のイベントハンドラを設定
