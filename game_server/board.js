@@ -22,15 +22,17 @@ export class Board {
   starttime = 0;
   time = 0;
   moveTime = { sente: 5, gote: 5 }
+  pawnfourline = false;
 
   // 盤面の初期化
-  init(servertime, time, moveTime = { sente: 5, gote: 5 }) {
+  init(servertime, time, moveTime = { sente: 5, gote: 5 }, pawnfourline = false) {
     this.serverstarttime = servertime;
     // this.komadaiServerTime = { sente: servertime, gote: servertime };
     // this.komadaipTime = { sente: time, gote: time };
     this.starttime = time;
     this.time = time;
-    this.moveTime = { sente: moveTime.sente * 1000, gote: moveTime.gote * 1000 }
+    this.moveTime = { sente: moveTime.sente * 1000, gote: moveTime.gote * 1000 };
+    this.pawnfourline = pawnfourline;
     this.map = [[null, null, null, null, null, null, null, null, null],
     [null, null, null, null, null, null, null, null, null],
     [null, null, null, null, null, null, null, null, null],
@@ -162,8 +164,8 @@ export class Board {
       for (let i = 0; i < BOARD_SIZE; i++) {
         if (this.map[x][i] && this.map[x][i].type === 'pawn' && this.map[x][i].teban === teban) return true;
       }
-      if (teban === 1 && y < 5) return true;
-      if (teban === -1 && y > 3) return true;
+      if (this.pawnfourline && teban === 1 && y < 5) return true;
+      if (this.pawnfourline && teban === -1 && y > 3) return true;
     }
     return false;
   }
