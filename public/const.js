@@ -144,7 +144,7 @@ export const PIECE_MOVES = {
   ]
 };
 
-export const CHARACTER_FOLDER = "characters25070202"
+export const CHARACTER_FOLDER = "characters25071801"
 export const characterInfo = {
   rei: {
     name: "緋月 零",
