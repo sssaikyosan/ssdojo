@@ -107,7 +107,7 @@ export function getUnPromotedType(type) {
   const promotedTypes = {
     prom_pawn: 'pawn',
     prom_lance: 'lance',
-    prom_knight: 'prom_knight',
+    prom_knight: 'knight',
     prom_silver: 'silver',
     horse: 'bishop',
     dragon: 'rook'

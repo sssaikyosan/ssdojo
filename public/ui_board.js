@@ -17,6 +17,7 @@ export class BoardUI extends UI {
   started = false;
   lastsend = null;
   touchable = true;
+  rightClicked = false;
 
   reserved = [];
 
@@ -205,6 +206,25 @@ export class BoardUI extends UI {
     }
   }
 
+  onMouseDownRight(pos) {
+    this.rightClicked = true;
+    const { x, y } = this.getBoardPosition(pos);
+    if (x == -1 || y == -1) {
+      const komadaiPiece = this.getKomadaiPieceAt(pos);
+      if (komadaiPiece) {
+        this.draggingPiecePos = pos;
+        this.draggingPiece = { x: -1, y: -1, type: komadaiPiece, teban: this.teban, lastmoveptime: -5000 };
+        // this.board.komadaiPieces[this.board.teban === 1 ? 'sente' : 'gote'][komadaiPiece]--;
+      }
+    } else if (this.board.map[x][y]) {
+      if (this.board.map[x][y].teban == this.teban) {
+        const piece = this.board.map[x][y];
+        this.draggingPiece = { x: x, y: y, type: piece.type, teban: this.teban, lastmoveptime: piece.lastmoveptime };
+        this.draggingPiecePos = pos;
+      }
+    }
+  }
+
   onMouseMove(pos) {
     if (this.draggingPiece) {
       this.draggingPiecePos = pos;
@@ -233,7 +253,7 @@ export class BoardUI extends UI {
       let nari = false;
       if (this.board.canPromote(this.draggingPiece.y, y, gameManager.teban, this.draggingPiece.type)) {
         nari = true;
-      }
+      } this.onMouseUpRight
       sendMovePiece(this.draggingPiece.x, this.draggingPiece.y, x, y, nari);
       if (gameManager.cpu === null) {
         const time = this.board.serverstarttime + performance.now() - this.board.starttime;
@@ -248,6 +268,7 @@ export class BoardUI extends UI {
   }
 
   onMouseUpRight(pos) {
+    this.rightClicked = false;
     if (!this.draggingPiece) return;
     const { x, y } = this.getBoardPosition(pos);
     if (this.draggingPiece.x === -1) {
@@ -406,6 +427,7 @@ export class BoardUI extends UI {
         while (moveX >= 0 && moveX < BOARD_SIZE && moveY >= 0 && moveY < BOARD_SIZE) {
           const piece = this.board.map[moveX][moveY];
           if (piece && piece.teban === this.teban) break;
+          if (this.rightClicked && this.board.isTopCell(moveX, moveY, this.draggingPiece.type, gameManager.teban)) break;
           if (drawSquare(moveX, moveY, this.teban)) return true;
           if (!move.recursive) break;
           if (piece) break;

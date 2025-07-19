@@ -87,6 +87,19 @@ export class KomadaiUI {
     }
   }
 
+  onMouseDownRight(pos) {
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (pos.x / 2 > i * this.cellSize && pos.x / 2 < (i + 1) * this.cellSize &&
+          pos.y > j * this.cellSize && pos.y < (j + 1) * this.cellSize) {
+          if (this.types[i][j]) {
+            this.board.draggingPiece = this.board.komadaiPieces[this.board.teban][this.types[i][j]];
+          }
+        }
+      }
+    }
+  }
+
   drawKomadaiTimer(ctx, scale, ptimeDiff) {
     if (ptimeDiff >= MOVETIME) return;
     const radius = Math.max(0, KOMADAI_TIMER_SIZE * scale);

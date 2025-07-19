@@ -185,7 +185,12 @@ function addEventListeners() {
 
   canvas.addEventListener('mousedown', (event) => {
     if (!scene) return;
-    scene.touchCheck(event, 'mousedown');
+    if (event.button == 2) {
+      scene.touchCheck(event, 'mousedown-right');
+    } else {
+      scene.touchCheck(event, 'mousedown');
+    }
+
   })
   canvas.addEventListener('mousemove', (event) => {
     if (!scene) return;

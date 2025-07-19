@@ -72,10 +72,12 @@ export class UI {
 
   unTouch(pos) { }
   onMouseDown(pos) { }
+  onMouseDownRight(pos) { }
   onMouseMove(pos) { }
   onMouseUp(pos) { }
   onMouseUpRight(pos) { }
   onSearchMouseDown(pos) { }
+  onSearchMouseDownRight(pos) { }
   onSearchMouseMove(pos) { }
   onSearchMouseUp(pos) { }
   onSearchMouseUpRight(pos) { }
@@ -109,6 +111,9 @@ export class UI {
         case 'mousedown':
           this.onSearchMouseDown(cpos);
           break;
+        case 'mousedown-right':
+          this.onSearchMouseDownRight(cpos);
+          break;
         case 'mousemove':
           this.onSearchMouseMove(cpos);
           break;
@@ -128,6 +133,9 @@ export class UI {
       switch (str) {
         case 'mousedown':
           this.onMouseDown(cpos);
+          break;
+        case 'mousedown-right':
+          this.onMouseDownRight(cpos);
           break;
         case 'mousemove':
           this.onMouseMove(cpos);
