@@ -1,7 +1,7 @@
 //タイトルシーン要素
 
 import { createPlayScene } from "./scene_game.js";
-import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, player_id, setScene, characterFiles, setSelectedCharacterName } from "./main.js";
+import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, player_id, setScene, characterFiles, setSelectedCharacterName, connectToServer, disconnectFromServer } from "./main.js";
 import { Scene } from "./scene.js";
 import { OverlayUI } from "./ui.js";
 import { BackgroundImageUI } from "./ui_background.js";
@@ -78,7 +78,9 @@ export const cancelMatchButton = new ButtonUI({
     textSize: 0.04,
     textColors: ['#ffffffff', '#00000000', '#00000000'],
     onClick: () => {
-        socket.emit('cancelMatch');
+        if (socket) {
+            socket.emit('cancelMatch');
+        }
     }
 });
 
@@ -117,16 +119,6 @@ rankingOverlay.add(rankingTitle);
 statusOverlay.add(playCountText);
 statusOverlay.add(ratingText);
 
-
-// const onlineText = new TextUI({
-//     text: () => `総部屋数: ${serverStatus.ratingRoomCount + serverStatus.privateRoomCount}, レート部屋: ${serverStatus.ratingRoomCount}, オンライン: ${serverStatus.online}人`,
-//     x: 0,
-//     y: 0.48,
-//     size: 0.025,
-//     colors: ["#ffffff", "#00000000", "#00000000"],
-//     position: 'center'
-// });
-
 const matchingText = new TextUI({
     text: () => {
         return "マッチング中";
@@ -152,6 +144,7 @@ function clearTitleHTML() {
 
 //タイトルシーン
 export function createTitleScene(savedTitleCharacter = null, loadNameInput = true) {
+    disconnectFromServer(); // タイトルシーンに来たら、まず接続を切断
     clearTitleHTML();
 
     let titleScene = new Scene();
@@ -159,44 +152,53 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     titleScene.add(backgroundImageUI);
     cpuLevelOverlay.visible = false;
 
-    // 初回クリックでBGMを再生するためのイベントリスナー
     const playBGMOnce = () => {
         if (audioManager.currentBGM === null) {
             audioManager.playBGM('title');
         }
-
-        document.removeEventListener('click', playBGMOnce); // イベントリスナーを解除
+        document.removeEventListener('click', playBGMOnce);
     };
     document.addEventListener('click', playBGMOnce);
 
-    //オンライン対戦
-    function handleNameSubmit() {
+    function startOnlineMatch() {
         setPlayerName(nameInput.value.trim());
         localStorage.setItem("playerName", playerName);
         if (playerName == "") setPlayerName("名無しの棋士");
-        // マッチングを開始
-        socket.emit("requestMatch", { name: playerName, characterName: selectedCharacterName, player_id: player_id });
+
         clearTitleHTML();
         titleScene.remove(joinRoomButton);
         titleScene.remove(makeRoomButton);
         titleScene.remove(cpuButton);
         titleScene.remove(cpuLevelOverlay);
         titleScene.remove(charaSelectButton);
+        titleScene.remove(playButton);
         titleScene.add(matchingText);
         titleScene.add(loading);
         titleScene.add(cancelMatchButton);
+
+        connectToServer().then(socket => {
+            socket.emit("requestMatch", { name: playerName, characterName: selectedCharacterName, player_id: player_id });
+        }).catch(err => {
+            console.error("Failed to connect for matching:", err);
+            alert("サーバーへの接続に失敗しました。");
+            setScene(createTitleScene());
+        });
     }
 
     function makeRoomSubmit() {
         setPlayerName(nameInput.value.trim());
         localStorage.setItem("playerName", playerName);
         if (playerName == "") setPlayerName("名無しの棋士");
-        // ルーム作成をサーバーにリクエスト
-        socket.emit("createRoom", { name: playerName, characterName: selectedCharacterName, player_id: player_id });
         clearTitleHTML();
+
+        connectToServer().then(socket => {
+            socket.emit("createRoom", { name: playerName, characterName: selectedCharacterName, player_id: player_id });
+        }).catch(err => {
+            console.error("Failed to connect for creating room:", err);
+            alert("サーバーへの接続に失敗しました。");
+            setScene(createTitleScene());
+        });
     }
-
-
 
     function joinRoomSubmit() {
         setPlayerName(nameInput.value.trim());
@@ -204,9 +206,14 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         if (playerName == "") setPlayerName("名無しの棋士");
         const roomId = roomIdInput.value.trim();
         if (roomId) {
-            // ルーム参加をサーバーにリクエスト
-            socket.emit("joinRoom", { roomId: roomId, name: playerName, characterName: selectedCharacterName, player_id: player_id });
             clearTitleHTML();
+            connectToServer().then(socket => {
+                socket.emit("joinRoom", { roomId: roomId, name: playerName, characterName: selectedCharacterName, player_id: player_id });
+            }).catch(err => {
+                console.error("Failed to connect for joining room:", err);
+                alert("サーバーへの接続に失敗しました。");
+                setScene(createTitleScene());
+            });
         }
     }
 
@@ -219,7 +226,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     const title = new TextUI({
         text: () => "リアルタイム将棋",
         x: 0,
-        y: -0.3, // 配置を調整
+        y: -0.3,
         size: 0.12,
         colors: ["#c2a34f", "#000000", "#ffffff"]
     });
@@ -228,9 +235,9 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     let titleCharacter = savedTitleCharacter;
     if (titleCharacter === null) {
         titleCharacter = new CharacterImageUI({
-            image: selectedCharacterName, // 初期表示はなし
-            x: -0.55, // 中央に配置
-            y: 0.15, // 適切なY座標に調整
+            image: selectedCharacterName,
+            x: -0.55,
+            y: 0.15,
             width: 0.7,
             height: 0.7,
             touchable: true
@@ -248,10 +255,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         color: '#df398c',
         textSize: 0.05,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
-        onClick: () => {
-            handleNameSubmit();
-            titleScene.remove(playButton);
-        }
+        onClick: startOnlineMatch
     });
     titleScene.add(playButton);
 
@@ -264,9 +268,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         color: '#3241c9',
         textSize: 0.025,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
-        onClick: () => {
-            makeRoomSubmit();
-        }
+        onClick: makeRoomSubmit
     });
     titleScene.add(makeRoomButton);
 
@@ -279,9 +281,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         color: '#3241c9',
         textSize: 0.025,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
-        onClick: () => {
-            joinRoomSubmit();
-        }
+        onClick: joinRoomSubmit
     });
     titleScene.add(joinRoomButton);
 
@@ -294,9 +294,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         color: '#3241c9',
         textSize: 0.025,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
-        onClick: () => {
-            cpuButtonSubmit();
-        }
+        onClick: cpuButtonSubmit
     });
     titleScene.add(cpuButton);
 
@@ -309,18 +307,14 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     });
 
     const ruleTitle = new TextUI({
-        text: () => {
-            return 'ルール'
-        },
+        text: () => 'ルール',
         x: 0,
         y: -0.14,
         size: 0.06,
         colors: ['#ffffffff', '#000000ff', '#00000000'],
     });
     const ruleText = new TextUI({
-        text: () => {
-            return '駒の動きは通常の将棋と同じですが手番がありません。　　　　　連続で何度も動かせますが動かした駒は一定時間動かせません。　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　トライ勝利ルールを採用しています。自玉が敵玉の開始位置（先手なら5一、後手なら5九)に到達したら勝利となります。　　　　　　　　　　　　　　　'
-        },
+        text: () => '駒の動きは通常の将棋と同じですが手番がありません。　　　　　連続で何度も動かせますが動かした駒は一定時間動かせません。　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　トライ勝利ルールを採用しています。自玉が敵玉の開始位置（先手なら5一、後手なら5九)に到達したら勝利となります。　　　　　　　　　　　　　　　',
         x: 0,
         y: -0.06,
         size: 0.025,
@@ -336,15 +330,12 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         color: '#3241c9',
         textSize: 0.032,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
-        onClick: () => {
-            ruleOverlay.visible = false;
-        }
+        onClick: () => { ruleOverlay.visible = false; }
     });
 
     ruleOverlay.add(ruleTitle);
     ruleOverlay.add(ruleText);
     ruleOverlay.add(closeRuleButton);
-
 
     const ctrlOverlay = new OverlayUI({
         x: 0,
@@ -363,7 +354,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         color: '#3241c9',
         textSize: 0.025,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
-        onClick: () => {
+        onClick: () => { 
             ruleOverlay.visible = true;
             ctrlOverlay.visible = false;
         }
@@ -372,9 +363,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     titleScene.add(ruleButton);
 
     const ctrlTitle = new TextUI({
-        text: () => {
-            return '操作方法'
-        },
+        text: () => '操作方法',
         x: 0,
         y: -0.14,
         size: 0.06,
@@ -382,9 +371,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     });
 
     const ctrlText = new TextUI({
-        text: () => {
-            return '　　　　マウスドラッグ　駒の移動　　　　　　　　　　　　　　　　　　　　右ドラッグ　成らず　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　ショートカットキー：　スペース-歩　　　　　　　　　　　　　　　　　　　　　　　Q-香　W-桂　E-角　　　　　　　　　　　A-銀　S-金　D-飛'
-        },
+        text: () => '　　　　マウスドラッグ　駒の移動　　　　　　　　　　　　　　　　　　　　右ドラッグ　成らず　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　ショートカットキー：　スペース-歩　　　　　　　　　　　　　　　　　　　　　　　Q-香　W-桂　E-角　　　　　　　　　　　A-銀　S-金　D-飛',
         x: 0,
         y: -0.06,
         size: 0.025,
@@ -400,16 +387,12 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         color: '#3241c9',
         textSize: 0.032,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
-        onClick: () => {
-            ctrlOverlay.visible = false;
-        }
+        onClick: () => { ctrlOverlay.visible = false; }
     });
 
     ctrlOverlay.add(ctrlTitle);
     ctrlOverlay.add(ctrlText);
     ctrlOverlay.add(closeCtrlButton);
-
-
 
     const ctrlButton = new ButtonUI({
         text: '操作方法',
@@ -427,7 +410,6 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     });
     titleScene.add(ctrlOverlay);
     titleScene.add(ctrlButton);
-
 
     const charaSelectButton = new ButtonUI({
         text: 'キャラ変更',
@@ -458,7 +440,6 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
 
     if (loadNameInput) {
         const savedName = localStorage.getItem("playerName");
-
         if (savedName) {
             nameInput.value = savedName;
         }
@@ -471,17 +452,13 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     return titleScene;
 }
 
-
-
-
 // キャラクター選択シーン
 export function createCharacterSelectScene(titleCharacter) {
     const playBGMOnce = () => {
         if (audioManager.currentBGM === null) {
             audioManager.playBGM('title');
         }
-
-        document.removeEventListener('click', playBGMOnce); // イベントリスナーを解除
+        document.removeEventListener('click', playBGMOnce);
     };
     document.addEventListener('click', playBGMOnce);
 
@@ -497,13 +474,11 @@ export function createCharacterSelectScene(titleCharacter) {
         colors: ["#bbdd44", "#000000", "#FFFFFF"]
     });
 
-
-    // キャラクター一覧を表示
-    const charactersPerRow = 3; // 1行に表示するキャラクター数
-    const characterSize = 0.22; // キャラクター画像の表示サイズ
-    const padding = 0.08; // キャラクター間の余白
-    const startX = -(charactersPerRow * (characterSize + padding) - characterSize - padding) / 2 + 0.4; // 開始X座標
-    const startY = -0.04; // 開始Y座標
+    const charactersPerRow = 3;
+    const characterSize = 0.22;
+    const padding = 0.08;
+    const startX = -(charactersPerRow * (characterSize + padding) - characterSize - padding) / 2 + 0.4;
+    const startY = -0.04;
 
     let overlayUI = new OverlayUI({
         x: 0.4,
@@ -522,9 +497,7 @@ export function createCharacterSelectScene(titleCharacter) {
     });
 
     const characterProfileText = new TextUI({
-        text: () => {
-            return characterInfo[selectedCharacterName].profile;
-        },
+        text: () => characterInfo[selectedCharacterName].profile,
         x: -0.05,
         y: 0.35,
         size: 0.03,
@@ -547,15 +520,12 @@ export function createCharacterSelectScene(titleCharacter) {
         }
     });
 
-
-
     selectScene.add(overlayUI);
     selectScene.add(profileOverlayUI);
     selectScene.add(characterProfileText);
     selectScene.add(titleCharacter);
     selectScene.add(selectTitle);
     selectScene.add(charaSubmitButton);
-
 
     characterFiles.forEach((characterName, index) => {
         const row = Math.floor(index / charactersPerRow);
@@ -581,9 +551,7 @@ export function createCharacterSelectScene(titleCharacter) {
         });
 
         const characterNameText = new TextUI({
-            text: () => {
-                return characterInfo[characterName].name;
-            },
+            text: () => characterInfo[characterName].name,
             x: 0,
             y: characterSize / 3 + 0.10,
             size: 0.03,
@@ -606,9 +574,6 @@ export function createCharacterSelectScene(titleCharacter) {
             characterUI.height = characterSize;
         }
 
-
-
-        // キャラクターがクリックされたときの処理
         faceOverlayUI.onMouseDown = () => {
             setSelectedCharacterName(characterName);
             localStorage.setItem('selectedCharacter', characterName);
@@ -620,9 +585,7 @@ export function createCharacterSelectScene(titleCharacter) {
                     titleCharacter.spawnVoiceText(0);
                 }
             });
-            characterProfileText.text = () => {
-                return characterInfo[characterName].profile;
-            }
+            characterProfileText.text = () => characterInfo[characterName].profile;
         };
 
         selectScene.add(faceOverlayUI);
@@ -631,7 +594,6 @@ export function createCharacterSelectScene(titleCharacter) {
     });
 
     clearTitleHTML();
-
     discordButton.style.display = "block";
 
     return selectScene;
@@ -646,9 +608,7 @@ export function roomJoinFailed(scene) {
         color: '#187a1c'
     });
     const roomJoinFailedtext = new TextUI({
-        text: () => {
-            return "入室に失敗しました"
-        },
+        text: () => "入室に失敗しました",
         x: 0,
         y: 0.002,
         size: 0.025,
@@ -656,7 +616,6 @@ export function roomJoinFailed(scene) {
     });
     roomJoinFailedOverlay.add(roomJoinFailedtext);
     scene.add(roomJoinFailedOverlay);
-    // 2秒後にメッセージを非表示にする
     setTimeout(() => {
         scene.remove(roomJoinFailedOverlay);
     }, 2500);
@@ -683,9 +642,7 @@ export function updateRanking() {
                     return `${i + 1}位:${Math.round(serverStatus.topPlayers[i].rating)} ${serverStatus.topPlayers[i].name}`;
                 }
             } else {
-                rankingOverlay.childs[i].text = () => {
-                    return ``;
-                }
+                rankingOverlay.childs[i].text = () => ``;
             }
         }
     }

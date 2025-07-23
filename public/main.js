@@ -50,15 +50,6 @@ title_img.src = '/images/title.png';
 export const battle_img = new Image(1920, 1080);
 battle_img.src = '/images/battle.png';
 
-// ユニークなIDを生成する関数
-function generateUniqueId() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
-
 // ストレージからキャラクターを読み込む関数
 function loadOrSelectCharacter() {
   const storedCharacter = localStorage.getItem('selectedCharacter');
@@ -103,19 +94,43 @@ export const matchingServerUrl = window.location.hostname === 'localhost' ?
   'https://localhost:5000' :
   'https://ssdojo.net:5000';
 
+// Socket.IOサーバーへの接続を開始する関数
 export function connectToServer() {
-  if (socket && socket.connected) {
-    socket.disconnect();
-  }
-  //@ts-ignore
-  socket = io(matchingServerUrl, { withCredentials: true });
-  setupSocket(); // マッチングサーバー用のイベントハンドラを設定
+  return new Promise((resolve, reject) => {
+    if (socket && socket.connected) {
+      console.log('Already connected to server.');
+      resolve(socket);
+      return;
+    }
+
+    //@ts-ignore
+    socket = io(matchingServerUrl, { withCredentials: true });
+
+    socket.on('connect', () => {
+      console.log('Socket.IO connected successfully!');
+      setupSocket(); // 接続が確立したらイベントハンドラを設定
+      resolve(socket);
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('Socket.IO connection error:', err);
+      reject(err);
+    });
+  });
 }
 
-let isFirstLogin = true;
+// Socket.IOサーバーから切断する関数
+export function disconnectFromServer() {
+  if (socket && socket.connected) {
+    socket.disconnect();
+    console.log('Socket.IO disconnected.');
+  }
+  socket = null;
+}
+
 
 // 初期化関数
-function init() {
+async function init() {
   // 初期化済みであれば何もしない
   if (isInitialized) {
     console.warn("init関数が複数回呼び出されましたが、二重初期化を防ぎました。");
@@ -135,25 +150,49 @@ function init() {
   // ユーザーIDの読み込みまたは生成
   player_id = localStorage.getItem('shogiUserId');
   if (!player_id) {
+    // プレイヤーIDがない場合は、サーバーに新規作成を要求する
     player_id = 'create';
   }
 
   // キャラクターの読み込みまたは選択
   loadOrSelectCharacter();
 
-  // Socket.IOの初期化 (最初はマッチングサーバーに接続)
-
-  connectToServer();
-
-
   // イベントリスナーの追加
   addEventListeners();
   resizeCanvas();
 
-
-
   gameManager = new GameManager();
 
+  // タイトル画面に必要な情報をAPIから取得
+  try {
+    const response = await fetch(`/api/title-info?playerId=${player_id}`);
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+    const data = await response.json();
+
+    // サーバーから受け取った情報でステータスとランキングを更新
+    if (data.player) {
+      // player_idが更新された場合（新規作成時）は、localStorageにも保存
+      if (player_id !== data.player.player_id) {
+        player_id = data.player.player_id;
+        localStorage.setItem('shogiUserId', player_id);
+      }
+      setStatus(data.player.rating, data.player.total_games);
+    }
+    if (data.ranking) {
+      serverStatus.topPlayers = data.ranking;
+    }
+
+  } catch (error) {
+    console.error('Failed to fetch title info:', error);
+    // エラーが発生しても、とりあえずタイトル画面は表示
+  }
+
+  // 最初にタイトルシーンを表示
+  setScene(createTitleScene());
+  resizeHTML();
+  roop();
 }
 
 // キャンバスのリサイズ
@@ -292,10 +331,6 @@ function addEventListeners() {
   }
 }
 
-function reconnect() {
-
-}
-
 // Socket.IO イベントハンドラ設定関数
 export function setupSocket() {
   // 既存のイベントハンドラを全て削除
@@ -303,18 +338,18 @@ export function setupSocket() {
     socket.removeAllListeners();
   }
 
-  // ユーザーIDをサーバーに送信 (接続先に応じて適切なIDを送信する必要があるかもしれない)
+  // 接続が確立したときの基本的なハンドラ
   socket.on('connect', () => {
-    socket.emit('sendUserId', { player_id: player_id });
+    console.log('Socket connected and handlers are set up.');
+    // 以前はここで sendUserId を送っていたが、requestMatch に統合されたため不要
   });
 
   socket.on('disconnect', (reason) => {
     console.log('Socket disconnected:', reason);
-    // 切断理由に応じた処理（例: エラーメッセージ表示、タイトル画面に戻るなど）
-    if (reason === 'io client disconnect') {
-      console.log('Client initiated disconnect.');
-    } else {
+    if (reason !== 'io client disconnect') {
       console.error('Server initiated or network error disconnect.');
+      setScene(createTitleScene());
+      alert('サーバーとの接続が切れました。タイトルに戻ります。');
     }
   });
 
@@ -325,19 +360,6 @@ export function setupSocket() {
     updateRanking();
   });
 
-  // 簡単ログイン成功 (マッチングサーバーからのイベント)
-  socket.on('easyLogin', (data) => {
-    player_id = data.player_id;
-    localStorage.setItem('shogiUserId', player_id);
-    setStatus(data.rating, data.total_games);
-    setScene(createTitleScene());
-    if (isFirstLogin) {
-      resizeHTML();
-      roop();
-      isFirstLogin = false;
-    }
-  });
-
   // レーティングを受信 (マッチングサーバーからのイベント)
   socket.on('receiveRating', (data) => {
     setStatus(data.rating, data.total_games);
@@ -345,20 +367,11 @@ export function setupSocket() {
 
   // マッチングが成立したときの処理 (マッチングサーバーからのイベント)
   socket.on('matchFound', (data) => {
-    // マッチングサーバーとの接続を切断
-    if (socket && socket.connected) {
-      socket.disconnect();
-    }
-
-    // ゲームサーバーのアドレスを取得
+    disconnectFromServer();
     const gameServerAddress = data.gameServerAddress;
-
-    // ゲームサーバーに新しく接続
     //@ts-ignore
     socket = io(gameServerAddress, { withCredentials: true });
-
-    // ゲームサーバー用のイベントハンドラを設定
-    setupGameSocketHandlers(data); // ゲームサーバー接続後のハンドラを設定する新しい関数を呼び出す
+    setupGameSocketHandlers(data);
   });
 
   // マッチングキャンセル (マッチングサーバーからのイベント)
@@ -367,35 +380,19 @@ export function setupSocket() {
   });
 
   socket.on("roomCreated", (data) => {
-    if (socket && socket.connected) {
-      socket.disconnect();
-    }
-
-    // ゲームサーバーのアドレスを取得
+    disconnectFromServer();
     const gameServerAddress = data.gameServerAddress;
-
-    // ゲームサーバーに新しく接続
     //@ts-ignore
     socket = io(gameServerAddress, { withCredentials: true });
-
-    // ゲームサーバー用のイベントハンドラを設定
-    setupGameSocketHandlers(data); // ゲームサーバー接続後のハンドラを設定する新しい関数を呼び出す
+    setupGameSocketHandlers(data);
   });
 
   socket.on("roomFound", (data) => {
-    if (socket && socket.connected) {
-      socket.disconnect();
-    }
-
-    // ゲームサーバーのアドレスを取得
+    disconnectFromServer();
     const gameServerAddress = data.gameServerAddress;
-
-    // ゲームサーバーに新しく接続
     //@ts-ignore
     socket = io(gameServerAddress, { withCredentials: true });
-
-    // ゲームサーバー用のイベントハンドラを設定
-    setupGameSocketHandlers(data, true); // ゲームサーバー接続後のハンドラを設定する新しい関数を呼び出す
+    setupGameSocketHandlers(data, true);
   });
 
   socket.on("roomJoinFailed", (data) => {
@@ -406,38 +403,32 @@ export function setupSocket() {
 
 // ゲームサーバー接続後の Socket.IO イベントハンドラ設定関数
 function setupGameSocketHandlers(roomFoundData, privateroom = false) {
-  // 既存のイベントハンドラを全て削除 (マッチングサーバー用のハンドラをクリア)
   if (socket) {
     socket.removeAllListeners();
   }
 
   socket.on('connect', () => {
-    // ゲームサーバーに接続したら、ゲーム参加に必要な情報を送信
-    // 例: プレイヤーの永続ID, ルームID
     if (privateroom) {
       socket.emit('joinRoom', {
-        player_id: player_id, // 永続的なプレイヤーID
+        player_id: player_id,
         roomId: roomFoundData.roomId,
         name: playerName,
         characterName: selectedCharacterName
       });
     } else {
       socket.emit('joinRatingRoom', {
-        player_id: player_id, // 永続的なプレイヤーID
+        player_id: player_id,
         roomId: roomFoundData.roomId,
         name: playerName,
         characterName: selectedCharacterName
       });
     }
-
   });
 
   socket.on('disconnect', (reason) => {
-    setScene(createTitleScene());
+    console.log("disconected");
   });
 
-  // ゲームサーバーからのイベントハンドラを設定
-  // 例:
   socket.on('startRatingGame', (data) => {
     setScene(createPlayScene(
       data.senteName,
@@ -448,7 +439,7 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
       data.goteCharacter,
       data.roomId,
       data.servertime,
-      data.roomteban, // 自分の手番
+      data.roomteban,
     ));
   });
 
@@ -466,8 +457,6 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
     ));
   });
 
-  // 既存のゲーム関連イベントハンドラをここに移動または再定義
-  // 例:
   socket.on('newMove', (data) => {
     if (gameManager && gameManager.boardUI) {
       gameManager.boardUI.removeReserved(data);
@@ -554,25 +543,23 @@ const characterImagePromises = characterFiles.map(file =>
     const img = new Image();
     img.src = `/${CHARACTER_FOLDER}/${file}/image.png`;
     img.onload = () => {
-      const name = file; // 拡張子を除いたファイル名をキーとする
+      const name = file;
       characterImages[name] = img;
       resolve();
     };
     img.onerror = () => {
       console.error(`Failed to load image: /${CHARACTER_FOLDER}/${file}/image.png`);
-      // 画像のロードに失敗してもPromiseは解決済みとする
       resolve();
     };
     const img_face = new Image();
     img_face.src = `/${CHARACTER_FOLDER}/${file}/image_face.png`;
     img_face.onload = () => {
-      const name = file; // 拡張子を除いたファイル名をキーとする
+      const name = file;
       characterImages[name + '_face'] = img_face;
       resolve();
     };
     img_face.onerror = () => {
       console.error(`Failed to load image: /${CHARACTER_FOLDER}/${file}/image_face.png`);
-      // 画像のロードに失敗してもPromiseは解決済みとする
       resolve();
     };
   })

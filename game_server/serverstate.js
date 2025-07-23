@@ -53,21 +53,31 @@ export class ServerState {
     //部屋の削除
     deleteRoom(roomId) {
         if (!this.rooms[roomId]) return false;
-        if (this.rooms[roomId].sente && this.players[this.rooms[roomId].sente]) {
-            this.players[this.rooms[roomId].sente].state = "";
-            this.players[this.rooms[roomId].sente].roomId = null;
+        let send = true;
+        if (this.rooms[roomId].roomType === 'rating') {
+            send = false;
         }
-        if (this.rooms[roomId].gote && this.players[this.rooms[roomId].gote]) {
-            this.players[this.rooms[roomId].gote].state = "";
-            this.players[this.rooms[roomId].gote].roomId = null;
-        }
-        for (let spectator in this.rooms[roomId].spectators) {
-            this.players[spectator].roomId = null;
-        }
+
+        const room = this.rooms[roomId];
+        // プレイヤーを全員強制的に退出&切断
+        [...room.sente, ...room.gote, ...room.spectators].forEach(playerId => {
+            if (this.players[playerId]) {
+                const socket = this.players[playerId].socket;
+
+                // クライアントに通知（任意）
+                socket.emit("error", { message: "The room has been closed." });
+
+                // ソケットをサーバー側から切断
+                socket.disconnect(true); // true = forced
+            }
+        });
         delete this.rooms[roomId];
 
+        console.log("Room deleted:", roomId);
         console.log("playersCount", Object.keys(this.players).length);
         console.log("roomCount", Object.keys(this.rooms).length);
+
+        if (!send) return true;
 
         const serverAddress = process.env.SERVER_URL || 'https://localhost:5000'; // ゲームサーバーのアドレスとポート
         const postData = JSON.stringify({
@@ -100,6 +110,7 @@ export class ServerState {
         });
 
         req.end(postData);
+        return true;
     }
 
     async ratingProcess(win, sente, gote, text) {

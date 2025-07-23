@@ -186,7 +186,7 @@ export class ServerState {
     }
 
 
-    createRoom(socket) { // ownerId 引数を追加
+    createRoom(socket, data) { // ownerId 引数を追加
         const roomId = generateRandomString();
 
         const gameServerAddress = this.game_servers[this.next_game_server_idx]; // ゲームサーバーのアドレスとポート
@@ -197,13 +197,19 @@ export class ServerState {
 
         this.rooms[roomId] = gameServerAddress;
 
+        const ownerInfo = {
+            id: this.players[socket.id].player_id,
+            name: data.name,
+            characterName: data.characterName
+        };
+
         const postData = JSON.stringify({
             roomId: roomId,
             roomType: 'private',
             sente: [],
             gote: [],
-            spectators: [this.players[socket.id].player_id],
-            owner: this.players[socket.id].player_id
+            spectators: [ownerInfo], // 観戦者にオーナー情報を入れる
+            owner: ownerInfo // オーナー情報
         });
 
         const options = {

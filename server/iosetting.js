@@ -3,22 +3,43 @@ import { io, serverState } from './server.js';
 export function ioSetup() {
     io.on("connection", (socket) => {
 
-        // ユーザーIDを受信
-        socket.on('sendUserId', async (data) => {
-            if (data.player_id.length > 36) return;
-            const playerInfo = await serverState.getPlayerInfo(data.player_id);
-            serverState.addPlayer(socket, playerInfo.player_id);
-            socket.emit('easyLogin', { player_id: playerInfo.player_id, rating: playerInfo.rating, total_games: playerInfo.total_games });
-        });
+        // プレイヤーがマッチングを要求（ユーザー登録も兼ねる）
+        socket.on("requestMatch", async (data) => {
+            console.log("requestMatch received:", data);
+            if (!data.name || !data.characterName || !data.player_id) {
+                console.error('Invalid data for requestMatch');
+                return;
+            }
+            if (data.name.length > 30 || data.characterName.length > 50 || data.player_id.length > 50) {
+                console.error('Data length validation failed for requestMatch');
+                return;
+            }
 
-        // プレイヤーがマッチングを要求
-        socket.on("requestMatch", (data) => {
-            console.log("requestMatch");
-            if (!data.name || !data.characterName || !data.player_id) return;
-            if (data.name.length > 30 || data.characterName.length > 50 || data.player_id.length > 50) return;
-            if (!serverState.players[socket.id]) return;
-            if (serverState.players[socket.id].roomId !== null) return;
-            serverState.players[socket.id].requestMatch(data);
+            try {
+                // 1. プレイヤー情報を取得
+                const playerInfo = await serverState.getPlayerInfo(data.player_id);
+                if (!playerInfo) {
+                    console.error(`Player info not found for id: ${data.player_id}`);
+                    return;
+                }
+
+                // 2. プレイヤーをサーバー状態に追加
+                serverState.addPlayer(socket, playerInfo.player_id);
+
+                // 3. マッチングを要求
+                if (serverState.players[socket.id]) {
+                    if (serverState.players[socket.id].roomId !== null) {
+                        console.warn(`Player ${playerInfo.player_id} is already in a room.`);
+                        return; // 既になんらかのルームにいる場合は何もしない
+                    }
+                    serverState.players[socket.id].requestMatch(data);
+                    console.log(`Player ${playerInfo.player_id} is now matching.`);
+                } else {
+                    console.error('Failed to add player to server state.');
+                }
+            } catch (error) {
+                console.error('Error processing requestMatch:', error);
+            }
         });
 
         socket.on("cancelMatch", () => {
@@ -28,25 +49,69 @@ export function ioSetup() {
             socket.emit("cancelMatch");
         });
 
-        socket.on("createRoom", (data) => {
-            console.log("createRoom");
-            if (!data.name || !data.characterName || !data.player_id) return;
-            if (data.name.length > 24 || data.characterName.length > 36 || data.player_id.length > 36) return;
+        socket.on("createRoom", async (data) => {
+            console.log("createRoom received:", data);
+            if (!data.name || !data.characterName || !data.player_id) {
+                console.error('Invalid data for createRoom');
+                return;
+            }
+            if (data.name.length > 24 || data.characterName.length > 36 || data.player_id.length > 36) {
+                console.error('Data length validation failed for createRoom');
+                return;
+            }
 
-            serverState.createRoom(socket); // オーナーIDを渡すように修正
+            try {
+                const playerInfo = await serverState.getPlayerInfo(data.player_id);
+                if (!playerInfo) {
+                    console.error(`Player info not found for id: ${data.player_id}`);
+                    return;
+                }
+
+                serverState.addPlayer(socket, playerInfo.player_id);
+                
+                if (serverState.players[socket.id]) {
+                    serverState.createRoom(socket, data); // プレイヤー情報も渡す
+                } else {
+                    console.error('Failed to add player to server state before creating room.');
+                }
+            } catch (error) {
+                console.error('Error processing createRoom:', error);
+            }
         });
 
-        socket.on("joinRoom", (data) => {
-            if (!data.name || !data.characterName || !data.player_id || !data.roomId) return;
-            if (data.name.length > 30 || data.characterName.length > 50 || data.player_id.length > 50 || data.roomId.length > 10) return;
-            const url = serverState.rooms[data.roomId];
-            if (url) {
-                socket.emit("roomFound", {
-                    roomId: data.roomId,
-                    gameServerAddress: url
-                });
-            } else {
-                socket.emit("roomJoinFailed", { roomId: data.roomId, text: '部屋が見つかりません' })
+        socket.on("joinRoom", async (data) => {
+            console.log("joinRoom received:", data);
+            if (!data.name || !data.characterName || !data.player_id || !data.roomId) {
+                console.error('Invalid data for joinRoom');
+                return;
+            }
+            if (data.name.length > 30 || data.characterName.length > 50 || data.player_id.length > 50 || data.roomId.length > 10) {
+                console.error('Data length validation failed for joinRoom');
+                return;
+            }
+
+            try {
+                const playerInfo = await serverState.getPlayerInfo(data.player_id);
+                if (!playerInfo) {
+                    console.error(`Player info not found for id: ${data.player_id}`);
+                    socket.emit("roomJoinFailed", { roomId: data.roomId, text: 'プレイヤー情報の取得に失敗しました' });
+                    return;
+                }
+
+                serverState.addPlayer(socket, playerInfo.player_id);
+
+                const url = serverState.rooms[data.roomId];
+                if (url) {
+                    socket.emit("roomFound", {
+                        roomId: data.roomId,
+                        gameServerAddress: url
+                    });
+                } else {
+                    socket.emit("roomJoinFailed", { roomId: data.roomId, text: '部屋が見つかりません' });
+                }
+            } catch (error) {
+                console.error('Error processing joinRoom:', error);
+                socket.emit("roomJoinFailed", { roomId: data.roomId, text: 'エラーが発生しました' });
             }
         });
 
