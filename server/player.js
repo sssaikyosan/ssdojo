@@ -32,15 +32,6 @@ export class Player {
         return false;
     }
 
-    goToPlay(roomId) {
-        this.state = "playing";
-        this.roomId = roomId;
-    }
-
-    readyToPlay() {
-        this.state = "ready";
-    }
-
     cancelReady() {
         if (!this.roomId) return false;
         if (this.state === 'ready') {
@@ -61,17 +52,5 @@ export class Player {
         } else {
             return res;
         }
-    }
-
-    leaveRoom() {
-        if (!this.roomId) return;
-        serverState.rooms[this.roomId].leaveRoom(this.socket.id);
-        this.roomId = null;
-        this.state = 'waiting';
-    }
-
-    chat(data) {
-        if (!this.roomId) return;
-        serverState.rooms[roomId].chat(this.name, data.text);
     }
 }

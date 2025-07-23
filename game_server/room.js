@@ -41,14 +41,23 @@ export class Room {
         }
         if (this.roomType === 'rating' && this.sente.length === 1 && this.gote.length === 1) {
             const names = this.getPlayerNames();
+            let senteRating = null;
+            let goteRating = null;
+            if (serverState.players[this.sente[0]].total_games >= 10) {
+                senteRating = serverState.players[this.sente[0]].rating;
+            }
+            if (serverState.players[this.gote[0]].total_games >= 10) {
+                goteRating = serverState.players[this.gote[0]].rating;
+            }
             const now = performance.now();
             this.startGame(now);
+
             const data = {
                 senteName: names.sente[0],
-                senteRating: serverState.players[this.sente[0]].rating,
+                senteRating: senteRating,
                 senteCharacter: serverState.players[this.sente[0]].characterName,
                 goteName: names.gote[0],
-                goteRating: serverState.players[this.gote[0]].rating,
+                goteRating: goteRating,
                 goteCharacter: serverState.players[this.gote[0]].characterName,
                 roomId: this.roomId,
                 servertime: now,

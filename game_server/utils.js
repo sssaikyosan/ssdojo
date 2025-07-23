@@ -114,26 +114,13 @@ export function getUnPromotedType(type) {
   };
   return promotedTypes[type] || type;
 }
-/**
- * 文字列の配列から指定した文字を削除した新しい配列を返します。
- * @param {string[]} arr - 処理対象の文字列の配列
- * @param {string} charToRemove - 削除したい文字
- * @returns {string[]} 指定した文字が削除された新しい配列
- */
-export function removeCharFromArray(arr, charToRemove) {
-  return arr.filter(char => char !== charToRemove);
-}
-
-export function getDisplayRating(elorate, total_games) {
-  return elorate - (200 - total_games) * 5;
-}
 
 export function calRating(winEloRating, winGames, loseEloRating, loseGames) {
   let winkFactor = 20;
   let losekFactor = 20;
 
-  if (winGames < 100) winkFactor = 20 + (2 * (100 - winGames) / 5);
-  if (loseGames < 100) losekFactor = 20 + (2 * (100 - loseGames) / 5);
+  if (winGames < 10) winkFactor = 100;
+  if (loseGames < 10) losekFactor = 100;
 
   const expectedWin = 1 / (1 + Math.pow(10, (loseEloRating - winEloRating) / 400));
   const expectedLose = 1 / (1 + Math.pow(10, (winEloRating - loseEloRating) / 400));

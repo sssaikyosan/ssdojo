@@ -185,11 +185,15 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
     let opponentRatingUI = null;
 
     if (!cpulevel) {
-        const roundRating = Math.round(arryRating);
+        let arryRatingtext = "測定中";
+        if (arryRating) {
+            const roundRating = Math.round(arryRating);
+            arryRatingtext = `${roundRating}`
+        }
         playerRatingUI = new TextUI({
             text: () => {
                 // main.jsで計算された表示用レーティングを使用
-                return `レート: ${roundRating}`;
+                return `レート: ` + arryRatingtext;
             },
             x: -0.43,
             y: 0.44, // プレイヤー名の下に表示するためにy座標を調整
@@ -200,13 +204,15 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
             backgroundColor: '#000000cc'
         });
 
-
-
-        const opponentRoundRating = Math.round(enemyRating);
+        let opponentRatingtext = "測定中";
+        if (enemyRating) {
+            const opponentRoundRating = Math.round(enemyRating);
+            opponentRatingtext = `${opponentRoundRating}`
+        }
         opponentRatingUI = new TextUI({
             text: () => {
                 // main.jsで計算された表示用レーティングを使用
-                return `レート: ${opponentRoundRating}`;
+                return `レート: ` + opponentRatingtext;
             },
             x: 0.43,
             y: -0.44, // プレイヤー名の下に表示するためにy座標を調整
@@ -276,11 +282,20 @@ export function endGame(data) {
             }, 1000);
         }
     } else if (data.winPlayer === gameManager.teban) {
-        const oldrate = Math.round(data.winRating);
-        const newrate = Math.round(data.newWinRating);
-        changeRating.textContent = "レート変動 " + oldrate + " → " + newrate;
+        let oldrateText = "測定中"
+        let newrateText = "測定中"
+        if (data.winGames >= 11) {
+            const oldrate = Math.round(data.winRating);
+            oldrateText = `${oldrate}`
+        }
+        if (data.winGames >= 10) {
+            const newrate = Math.round(data.newWinRating);
+            newrateText = `${newrate}`
+        }
+
+        changeRating.textContent = "レート変動 " + oldrateText + " → " + newrateText;
         scene.add(winText);
-        setStatus(newrate, data.winGames);
+        setStatus(newrateText, data.winGames);
         // 勝利時音声の再生
         if (arryCharacterUI.image) {
             if (arryCharacterUI.playWinVideo(0)) {
@@ -290,18 +305,25 @@ export function endGame(data) {
             } else {
                 resultOverlay.style.display = "block";
             }
-
         } else {
             setTimeout(() => {
                 resultOverlay.style.display = "block";
             }, 1000);
         }
     } else {
-        const oldrate = Math.round(data.loseRating);
-        const newrate = Math.round(data.newLoseRating);
-        changeRating.textContent = "レート変動 " + oldrate + " → " + newrate;
+        let oldrateText = "測定中"
+        let newrateText = "測定中"
+        if (data.loseGames >= 11) {
+            const oldrate = Math.round(data.loseRating);
+            oldrateText = `${oldrate}`
+        }
+        if (data.loseGames >= 10) {
+            const newrate = Math.round(data.newLoseRating);
+            newrateText = `${newrate}`
+        }
+        changeRating.textContent = "レート変動 " + oldrateText + " → " + newrateText;
         scene.add(loseText);
-        setStatus(newrate, data.loseGames);
+        setStatus(newrateText, data.loseGames);
         // 敵勝利時音声の再生
         if (enemyCharacterUI.image) {
             if (enemyCharacterUI.playWinVideo(0)) {

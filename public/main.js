@@ -87,9 +87,16 @@ export function setStatus(rating, total_games) {
   playCountText.text = () => {
     return `試合数:${total_games}`
   }
-  ratingText.text = () => {
-    return `レート:${Math.round(rating)}`
+  if (total_games >= 10) {
+    ratingText.text = () => {
+      return `レート:${Math.round(rating)}`
+    }
+  } else {
+    ratingText.text = () => {
+      return `レート: 測定中`
+    }
   }
+
 }
 
 export const matchingServerUrl = window.location.hostname === 'localhost' ?
@@ -316,7 +323,6 @@ export function setupSocket() {
   socket.on('serverStatus', (data) => {
     serverStatus = data;
     updateRanking();
-    // ランキング表示を更新
   });
 
   // 簡単ログイン成功 (マッチングサーバーからのイベント)

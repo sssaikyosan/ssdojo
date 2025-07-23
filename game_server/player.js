@@ -1,5 +1,4 @@
 import { serverState } from "./game_server.js";
-import { getDisplayRating } from "./utils.js";
 
 export class Player {
     player_id = null;
@@ -9,6 +8,7 @@ export class Player {
     socket = null;
     state = "";
     rating = 500;
+    total_games = 0;
 
     constructor(socket, player_id) {
         this.socket = socket;
@@ -19,7 +19,8 @@ export class Player {
         this.player_id = playerInfo.player_id;
         this.name = name;
         this.characterName = characterName;
-        this.rating = getDisplayRating(playerInfo.rating, playerInfo.total_games);
+        this.rating = playerInfo.rating;
+        this.total_games = playerInfo.total_games;
     }
 
     requestMatch(data) {

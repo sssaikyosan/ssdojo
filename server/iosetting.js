@@ -1,5 +1,4 @@
 import { io, serverState } from './server.js';
-import { getDisplayRating } from './utils.js';
 
 export function ioSetup() {
     io.on("connection", (socket) => {
@@ -9,8 +8,7 @@ export function ioSetup() {
             if (data.player_id.length > 36) return;
             const playerInfo = await serverState.getPlayerInfo(data.player_id);
             serverState.addPlayer(socket, playerInfo.player_id);
-            const displayRating = getDisplayRating(playerInfo.rating, playerInfo.total_games);
-            socket.emit('easyLogin', { player_id: playerInfo.player_id, rating: displayRating, total_games: playerInfo.total_games });
+            socket.emit('easyLogin', { player_id: playerInfo.player_id, rating: playerInfo.rating, total_games: playerInfo.total_games });
         });
 
         // プレイヤーがマッチングを要求

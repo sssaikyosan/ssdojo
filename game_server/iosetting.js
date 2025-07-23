@@ -1,5 +1,4 @@
 import { io, serverState } from './game_server.js';
-import { getDisplayRating } from './utils.js';
 
 export function ioSetup() {
     io.on("connection", (socket) => {

@@ -74,4 +74,4 @@ ioSetup();
 setInterval(() => {
   serverState.matchMakingProcess(); // マッチングプロセスを定期的に実行
   serverState.sendServerStatus();
-}, 2000);
+}, 3000);

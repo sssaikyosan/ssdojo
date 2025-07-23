@@ -1,7 +1,7 @@
 import { Player } from './player.js'
 import uuid from 'uuid-random';
 import fs from 'fs';
-import { getDisplayRating, calRating, generateRandomString } from './utils.js';
+import { calRating, generateRandomString } from './utils.js';
 import { Room } from './room.js';
 import https from 'https';
 import { Postgure } from './postgure.js'; // Postgure クラスをインポート
@@ -155,22 +155,17 @@ export class ServerState {
             await this.savePlayerInfo(newWinRatingData);
             await this.savePlayerInfo(newLoseRatingData);
 
-            const winRating = getDisplayRating(winEloRating, winGames);
-            const newWinRating = getDisplayRating(rateData.newWinRating, winGames + 1);
-            const loseRating = getDisplayRating(loseEloRating, loseGames);
-            const newLoseRating = getDisplayRating(rateData.newLoseRating, loseGames + 1);
-
             // トッププレイヤーリストを取得
             let currentTopPlayers = await this.postgureDb.readTopPlayers();
 
             // 勝利プレイヤーの新しい表示レーティングがトップ30に入るか判定
-            const minTopRating = currentTopPlayers.length < 30 ? -Infinity : getDisplayRating(currentTopPlayers[currentTopPlayers.length - 1].rating, currentTopPlayers[currentTopPlayers.length - 1].total_games);
+            const minTopRating = currentTopPlayers.length < 30 ? -Infinity : currentTopPlayers[currentTopPlayers.length - 1].rating;
 
             let replaceTop = false;
 
-            if (newWinRating >= minTopRating) {
+            if (rateData.newWinRating >= minTopRating && newWinRatingData.total_games >= 10) {
                 replaceTop = true;
-                console.log(`勝利プレイヤー ${newWinRatingData.name} (${newWinRating}) がトップ10圏内に入りました。`);
+                console.log(`勝利プレイヤー ${newWinRatingData.name} (${rateData.newWinRating}) がトップ10圏内に入りました。`);
                 // トッププレイヤーリストに勝利プレイヤーを追加（または更新）
                 const existingIndex = currentTopPlayers.findIndex(p => p.player_id === newWinRatingData.player_id);
                 if (existingIndex > -1) {
@@ -193,9 +188,8 @@ export class ServerState {
                     });
                 }
             }
-            if (loseRating >= minTopRating) {
+            if (loseEloRating >= minTopRating && newLoseRatingData.total_games >= 10) {
                 replaceTop = true;
-                // トッププレイヤーリストに勝利プレイヤーを追加（または更新）
                 const existingIndex = currentTopPlayers.findIndex(p => p.player_id === newLoseRatingData.player_id);
                 if (existingIndex > -1) {
                     currentTopPlayers[existingIndex] = {
@@ -211,7 +205,7 @@ export class ServerState {
 
             if (replaceTop) {
                 // レーティングの高い順にソート
-                currentTopPlayers.sort((a, b) => getDisplayRating(b.rating, b.total_games) - getDisplayRating(a.rating, a.total_games));
+                currentTopPlayers.sort((a, b) => b.rating - a.rating);
 
                 // トップ30に絞る
                 currentTopPlayers = currentTopPlayers.slice(0, 30);
@@ -228,11 +222,11 @@ export class ServerState {
             const data = {
                 winPlayer: win,
                 text: text,
-                winRating: winRating,
-                newWinRating: newWinRating,
+                winRating: winEloRating,
+                newWinRating: rateData.newWinRating,
                 winGames: newWinRatingData.total_games, // 更新後のゲーム数を使用
-                loseRating: loseRating,
-                newLoseRating: newLoseRating,
+                loseRating: loseEloRating,
+                newLoseRating: rateData.newLoseRating,
                 loseGames: newLoseRatingData.total_games // 更新後のゲーム数を使用
             }
             return data;

@@ -132,9 +132,9 @@ export class AudioManager {
             if (settingsString) {
                 const settings = JSON.parse(settingsString);
                 // 読み込んだ設定が有効な数値か確認し、一時変数に格納。無効な場合はデフォルト値を使用。
-                const loadedBgmVolume = (typeof settings.bgmVolume === 'number' && isFinite(settings.bgmVolume)) ? settings.bgmVolume : 1;
-                const loadedSoundVolume = (typeof settings.soundVolume === 'number' && isFinite(settings.soundVolume)) ? settings.soundVolume : 1;
-                const loadedVoiceVolume = (typeof settings.voiceVolume === 'number' && isFinite(settings.voiceVolume)) ? settings.voiceVolume : 1;
+                const loadedBgmVolume = (typeof settings.bgmVolume === 'number' && isFinite(settings.bgmVolume)) ? settings.bgmVolume : 0.2;
+                const loadedSoundVolume = (typeof settings.soundVolume === 'number' && isFinite(settings.soundVolume)) ? settings.soundVolume : 0.2;
+                const loadedVoiceVolume = (typeof settings.voiceVolume === 'number' && isFinite(settings.voiceVolume)) ? settings.voiceVolume : 0.2;
 
                 // 一時変数に格納した値を使って音量プロパティを設定
                 this.setBGMVolume(loadedBgmVolume);
@@ -143,16 +143,16 @@ export class AudioManager {
 
             } else {
                 // 設定がない場合はデフォルト値をセット
-                this.setBGMVolume(1);
-                this.setSoundVolume(1);
-                this.setVoiceVolume(1);
+                this.setBGMVolume(0.2);
+                this.setSoundVolume(0.2);
+                this.setVoiceVolume(0.2);
             }
         } catch (e) {
             console.error('ローカルストレージからの読み込みに失敗しました:', e);
             // 読み込み失敗時もデフォルト値をセット
-            this.setBGMVolume(1);
-            this.setSoundVolume(1);
-            this.setVoiceVolume(1);
+            this.setBGMVolume(0.2);
+            this.setSoundVolume(0.2);
+            this.setVoiceVolume(0.2);
         }
     }
 }
