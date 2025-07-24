@@ -374,6 +374,11 @@ export function setupSocket() {
     setupGameSocketHandlers(data);
   });
 
+  socket.on('matchFailed', () => {
+    console.log("matchFailed");
+    setScene(createTitleScene());
+  });
+
   // マッチングキャンセル (マッチングサーバーからのイベント)
   socket.on("cancelMatch", () => {
     setScene(createTitleScene());

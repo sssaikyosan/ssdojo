@@ -114,6 +114,10 @@ export class Room {
             if (piece.teban === -1) tebanMoveTime = this.board.moveTime.gote;
             servertime = piece.lastmovetime + tebanMoveTime;
             setTimeout(() => {
+                if (this.gameState !== 'playing') {
+                    io.to(id).emit("reservedMoveFailed", { ...data, servertime });
+                    return
+                }
                 const reserveResult = this.board.movePieceLocal({ ...data, servertime });
                 if (reserveResult && reserveResult.res) {
                     this.emitToRoom("newMove", { ...data, servertime });
@@ -148,6 +152,7 @@ export class Room {
     }
 
     async gameFinished(win, text, playerId = null) {
+        this.gameState = 'finished';
         console.log('gameend', this);
         if (this.roomType === 'rating') {
             if (this.sente.length !== 1 || this.gote.length !== 1) {

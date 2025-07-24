@@ -7,7 +7,7 @@ export class Player {
     roomId = null;
     socket = null;
     state = "";
-    rating = 500;
+    rating = 0;
     total_games = 0;
 
     constructor(socket, player_id) {
@@ -15,12 +15,9 @@ export class Player {
         this.player_id = player_id;
     }
 
-    setInfo(playerInfo, name, characterName) {
-        this.player_id = playerInfo.player_id;
+    setInfo(name, characterName) {
         this.name = name;
         this.characterName = characterName;
-        this.rating = playerInfo.rating;
-        this.total_games = playerInfo.total_games;
     }
 
     requestMatch(data) {

@@ -38,22 +38,22 @@ app.get('/api/title-info', async (req, res) => {
   if (!playerId || playerId === 'create') {
     // playerIdがない、または新規作成の場合は、ランキング情報のみを返す（新規プレイヤー情報も作成）
     try {
-        const newPlayerId = generateUniqueId(); // 新しいIDを生成
-        const initialData = {
-            player_id: newPlayerId,
-            total_games: 0,
-            rating: 500,
-            lastLogin: new Date(),
-            name: '名無しの棋士'
-        };
-        await postgure.savePlayerInfo(initialData);
+      const newPlayerId = generateUniqueId(); // 新しいIDを生成
+      const initialData = {
+        player_id: newPlayerId,
+        total_games: 0,
+        rating: 500,
+        lastLogin: new Date(),
+        name: '名無しの棋士'
+      };
+      await postgure.savePlayerInfo(initialData);
 
-        const topPlayers = await postgure.readTopPlayers();
-        
-        return res.json({
-            player: { ...initialData, player_id: newPlayerId }, // 新規作成したプレイヤー情報を返す
-            ranking: topPlayers
-        });
+      const topPlayers = await postgure.readTopPlayers();
+
+      return res.json({
+        player: { ...initialData, player_id: newPlayerId }, // 新規作成したプレイヤー情報を返す
+        ranking: topPlayers
+      });
 
     } catch (error) {
       console.error('Error creating new player or fetching top players:', error);

@@ -115,12 +115,18 @@ export function getUnPromotedType(type) {
   return promotedTypes[type] || type;
 }
 
-export function calRating(winEloRating, winGames, loseEloRating, loseGames) {
-  let winkFactor = 20;
-  let losekFactor = 20;
+function getKFactor(games) {
+  if (games < 10) {
+    return 1000 / (3 + games);
+  } else if (games < 30) {
+    return 12 + (30 - games) * (30 - games) / 30;
+  }
+  return 12;
+}
 
-  if (winGames < 10) winkFactor = 100;
-  if (loseGames < 10) losekFactor = 100;
+export function calRating(winEloRating, winGames, loseEloRating, loseGames) {
+  let winkFactor = getKFactor(winGames);
+  let losekFactor = getKFactor(loseGames);
 
   const expectedWin = 1 / (1 + Math.pow(10, (loseEloRating - winEloRating) / 400));
   const expectedLose = 1 / (1 + Math.pow(10, (winEloRating - loseEloRating) / 400));

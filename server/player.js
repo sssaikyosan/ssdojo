@@ -7,13 +7,16 @@ export class Player {
     roomId = null;
     socket = null;
     state = "";
+    rating = 0;
+    total_games = 0;
+
     constructor(socket, player_id) {
         this.socket = socket;
         this.player_id = player_id;
     }
 
     requestMatch(data) {
-        if (this.state === "playing" || this.state === "ready") return false;
+        if (this.state === "matching" || this.state === "playing" || this.state === "ready") return false;
         if (this.roomId !== null) return false;
         if (!data.name) return false;
         if (!data.characterName) return false;
@@ -21,36 +24,22 @@ export class Player {
         this.characterName = data.characterName;
         this.player_id = data.player_id;
         this.state = "matching";
+
+        // 新しいマッチングシステムに追加
+        serverState.addToMatchingQueue(this.socket.id);
+
         return true;
     }
 
     cancelMatch() {
         if (this.state = "matching") {
             this.state = "waiting";
+
+            // キューから削除
+            serverState.removeFromMatchingQueue(this.socket.id);
+
             return true;
         };
         return false;
-    }
-
-    cancelReady() {
-        if (!this.roomId) return false;
-        if (this.state === 'ready') {
-            this.state = "waiting";
-        }
-        serverState.rooms[this.roomId].roomUpdate();
-    }
-
-    joinRoom(roomId, name, characterName) {
-        if (this.roomId) return 'すでに入っている部屋があります';
-        this.name = name;
-        this.characterName = characterName;
-        const res = serverState.rooms[roomId].joinRoom(this.socket.id);
-        if (res === "roomJoined") {
-            this.roomId = roomId;
-            serverState.rooms[roomId].roomUpdate();
-            return "roomJoined"
-        } else {
-            return res;
-        }
     }
 }

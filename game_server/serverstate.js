@@ -34,9 +34,12 @@ export class ServerState {
         return playerInfo;
     }
 
-    addPlayer(socket, player_id) {
-        if (!socket.id || !player_id) return false;
-        this.players[socket.id] = new Player(socket, player_id);
+    addPlayer(socket, playerInfo) {
+        if (!socket.id || !playerInfo.player_id) return false;
+        const player = new Player(socket, playerInfo.player_id);
+        player.rating = playerInfo.rating;
+        player.total_games = playerInfo.total_games;
+        this.players[socket.id] = player;
         return true;
     }
 

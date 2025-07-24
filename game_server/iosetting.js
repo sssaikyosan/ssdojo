@@ -13,8 +13,8 @@ export function ioSetup() {
             const roomType = serverState.rooms[roomId].roomType;
 
             if (roomType === 'rating') {
-                if (serverState.addPlayer(socket, playerInfo.player_id)) {
-                    serverState.players[socket.id].setInfo(playerInfo, data.name, data.characterName);
+                if (serverState.addPlayer(socket, playerInfo)) {
+                    serverState.players[socket.id].setInfo(data.name, data.characterName);
                     serverState.rooms[roomId].addPlayer(socket.id, teban, data);
                 }
             }
@@ -27,8 +27,8 @@ export function ioSetup() {
             const playerInfo = await serverState.getPlayerInfo(data.player_id);
             const roomId = data.roomId;
 
-            if (serverState.addPlayer(socket, playerInfo.player_id)) {
-                serverState.players[socket.id].setInfo(playerInfo, data.name, data.characterName);
+            if (serverState.addPlayer(socket, playerInfo)) {
+                serverState.players[socket.id].setInfo(data.name, data.characterName);
                 const res = serverState.joinRoom(socket.id, roomId);
                 if (res === "roomJoined") {
                     const room = serverState.rooms[roomId];

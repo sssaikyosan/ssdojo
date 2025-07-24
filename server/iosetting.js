@@ -24,7 +24,7 @@ export function ioSetup() {
                 }
 
                 // 2. プレイヤーをサーバー状態に追加
-                serverState.addPlayer(socket, playerInfo.player_id);
+                serverState.addPlayer(socket, playerInfo);
 
                 // 3. マッチングを要求
                 if (serverState.players[socket.id]) {
@@ -67,8 +67,8 @@ export function ioSetup() {
                     return;
                 }
 
-                serverState.addPlayer(socket, playerInfo.player_id);
-                
+                serverState.addPlayer(socket, playerInfo);
+
                 if (serverState.players[socket.id]) {
                     serverState.createRoom(socket, data); // プレイヤー情報も渡す
                 } else {
@@ -98,7 +98,7 @@ export function ioSetup() {
                     return;
                 }
 
-                serverState.addPlayer(socket, playerInfo.player_id);
+                serverState.addPlayer(socket, playerInfo);
 
                 const url = serverState.rooms[data.roomId];
                 if (url) {
