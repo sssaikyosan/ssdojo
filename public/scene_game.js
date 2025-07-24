@@ -125,8 +125,7 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
     if (roomteban === 'sente' || cpulevel !== null) teban = 1;
     if (roomteban === 'gote') teban = -1;
 
-    gameManager.setRoom(roomId, teban, servertime, { sente: MOVETIME, gote: MOVETIME }, false, cpulevel);
-    gameManager.setRoom(roomId, teban, servertime, moveTime, pawnLimit4thRank);
+    gameManager.setRoom(roomId, teban, servertime, moveTime, pawnLimit4thRank, cpulevel);
 
     let arryNames = null;
     let enemyNames = null;
@@ -286,194 +285,91 @@ export function backToTitle() {
 }
 
 export function endGame(data) {
-    if (gameManager.teban === 0) {
-        changeRating.textContent = "レート変動 なし(観戦)";
-        if (data.winPlayer === 1 && arryCharacterUI.image) {
-            if (arryCharacterUI.playWinVideo(0)) {
-                arryCharacterUI.winVideoElement[0].addEventListener('ended', () => {
-                    resultOverlay.style.display = "block";
-                });
-            } else {
-                resultOverlay.style.display = "block";
-            }
-        } else if (data.winPlayer === -1 && enemyCharacterUI.image) {
-            if (enemyCharacterUI.playWinVideo(0)) {
-                enemyCharacterUI.winVideoElement[0].addEventListener('ended', () => {
-                    resultOverlay.style.display = "block";
-                });
-            }
-            resultOverlay.style.display = "block";
-        } else {
-            setTimeout(() => {
-                resultOverlay.style.display = "block";
-            }, 1000);
-        }
-    } else if (data.winPlayer === gameManager.teban) {
-        let oldrateText = "測定中"
-        let newrateText = "測定中"
-        if (data.winGames >= 11) {
-            const oldrate = Math.round(data.winRating);
-            oldrateText = `${oldrate}`
-        }
-        if (data.winGames >= 10) {
-            const newrate = Math.round(data.newWinRating);
-            newrateText = `${newrate}`
-        }
-
-        changeRating.textContent = "レート変動 " + oldrateText + " → " + newrateText;
-        scene.add(winText);
-        setStatus(newrateText, data.winGames);
-        // 勝利時音声の再生
-        if (arryCharacterUI.image) {
-            if (arryCharacterUI.playWinVideo(0)) {
-                arryCharacterUI.winVideoElement[0].addEventListener('ended', () => {
-                    resultOverlay.style.display = "block";
-                });
-            } else {
-                resultOverlay.style.display = "block";
-            }
-        } else {
-            setTimeout(() => {
-                resultOverlay.style.display = "block";
-            }, 1000);
-        }
-    } else {
-        let oldrateText = "測定中"
-        let newrateText = "測定中"
-        if (data.loseGames >= 11) {
-            const oldrate = Math.round(data.loseRating);
-            oldrateText = `${oldrate}`
-        }
-        if (data.loseGames >= 10) {
-            const newrate = Math.round(data.newLoseRating);
-            newrateText = `${newrate}`
-        }
-        changeRating.textContent = "レート変動 " + oldrateText + " → " + newrateText;
-        scene.add(loseText);
-        setStatus(newrateText, data.loseGames);
-        // 敵勝利時音声の再生
-        if (enemyCharacterUI.image) {
-            if (enemyCharacterUI.playWinVideo(0)) {
-                enemyCharacterUI.winVideoElement[0].addEventListener('ended', () => {
-                    resultOverlay.style.display = "block";
-                });
-            } else {
-                resultOverlay.style.display = "block";
-            }
-        } else {
-            setTimeout(() => {
-                resultOverlay.style.display = "block";
-            }, 1000);
-        }
-    }
+    const mywin = data.winPlayer * gameManager.teban;
+    setRatingText(data, mywin);
+    setResultText(mywin);
+    characterWinMove(mywin, resultOverlay);
 
     gameManager.resetRoom();
     gameManager.board.finished = true;
 }
 
 export function endRoomGame(data) {
-    if (!gameManager.roomId === data.roomId) {
-        roomUpdate(data);
-        return;
-    }
-
-    if (gameManager.teban === 0) {
-        scene.add(endText);
-        if (data.win === 1 && arryCharacterUI.image) {
-            if (arryCharacterUI.playWinVideo(0)) {
-                arryCharacterUI.winVideoElement[0].addEventListener('ended', () => {
-                    roomResultOverlay.style.display = "block";
-                });
-            } else {
-                roomResultOverlay.style.display = "block";
-            }
-        } else if (data.win === -1 && enemyCharacterUI.image) {
-            if (enemyCharacterUI.playWinVideo(0)) {
-                enemyCharacterUI.winVideoElement[0].addEventListener('ended', () => {
-                    roomResultOverlay.style.display = "block";
-                });
-            } else {
-                roomResultOverlay.style.display = "block";
-            }
-
-        } else {
-            setTimeout(() => {
-                roomResultOverlay.style.display = "block";
-            }, 1000);
-        }
-    } else if (data.win === gameManager.teban) {
-        // 勝利時音声の再生
-        if (arryCharacterUI.image) {
-            if (arryCharacterUI.playWinVideo(0)) {
-                arryCharacterUI.winVideoElement[0].addEventListener('ended', () => {
-                    roomResultOverlay.style.display = "block";
-                });
-            } else {
-                roomResultOverlay.style.display = "block";
-            }
-
-        } else {
-            setTimeout(() => {
-                roomResultOverlay.style.display = "block";
-            }, 1000);
-        }
-        scene.add(winText);
-
-    } else if (data.win === -gameManager.teban) {
-        // 敵勝利時音声の再生
-        if (enemyCharacterUI.image) {
-            if (enemyCharacterUI.playWinVideo(0)) {
-                enemyCharacterUI.winVideoElement[0].addEventListener('ended', () => {
-                    roomResultOverlay.style.display = "block";
-                });
-            } else {
-                roomResultOverlay.style.display = "block";
-            }
-        } else {
-            setTimeout(() => {
-                roomResultOverlay.style.display = "block";
-            }, 1000);
-        }
-        scene.add(loseText);
-
-
-    } else {
-        roomUpdate(data);
-    }
+    const mywin = data.winPlayer * gameManager.teban;
+    setResultText(mywin);
+    characterWinMove(mywin, roomResultOverlay);
 
     gameManager.teban = 0;
     gameManager.board.finished = true;
 }
 
+function setRatingText(data, mywin) {
+    if (mywin === 0 || gameManager.cpu !== null) {
+        changeRating.textContent = "レート変動 なし";
+        return
+    }
 
-export function endCPUGame(data) {
-    changeRating.textContent = "レート変動 なし";
-    if (data.winPlayer === gameManager.teban) {
+    let oldrateText = "測定中"
+    let newrateText = "測定中"
+    let targetoldrate = data.winRating;
+    let targetnewrate = data.newWinRating;
+    if (mywin === -1) {
+        targetoldrate = data.loseRating;
+        targetnewrate = data.newLoseRating;
+    }
+    if (targetoldrate !== null) {
+        oldrateText = `${Math.round(targetoldrate)}`
+    }
+    if (targetnewrate !== null) {
+        newrateText = `${Math.round(targetnewrate)}`
+    }
+    changeRating.textContent = "レート変動 " + oldrateText + " → " + newrateText;
+}
+
+function setResultText(mywin) {
+    if (mywin === 1) {
         scene.add(winText);
-        // 勝利時音声の再生
-        if (arryCharacterUI.image) {
-            arryCharacterUI.playWinVideo(0);
+    } else if (mywin === -1) {
+        scene.add(loseText);
+    } else if (mywin === 0) {
+        scene.add(endText);
+    }
+}
+
+function characterWinMove(mywin, overlay) {
+    if (mywin === 1 && arryCharacterUI.image) {
+        if (arryCharacterUI.playWinVideo(0)) {
             arryCharacterUI.winVideoElement[0].addEventListener('ended', () => {
-                resultOverlay.style.display = "block";
+                overlay.style.display = "block";
             });
         } else {
             setTimeout(() => {
-                resultOverlay.style.display = "block";
+                overlay.style.display = "block";
+            }, 1000);
+        }
+    } else if (mywin === -1 && enemyCharacterUI.image) {
+        if (enemyCharacterUI.playWinVideo(0)) {
+            enemyCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                overlay.style.display = "block";
+            });
+        } else {
+            setTimeout(() => {
+                overlay.style.display = "block";
+            }, 1000);
+        }
+    } else if (mywin === 0 && arryCharacterUI.image) {
+        if (arryCharacterUI.playWinVideo(0)) {
+            arryCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                overlay.style.display = "block";
+            });
+        } else {
+            setTimeout(() => {
+                overlay.style.display = "block";
             }, 1000);
         }
     } else {
-        scene.add(loseText);
-        // 敵勝利時音声の再生
-        if (enemyCharacterUI.image) {
-            enemyCharacterUI.playWinVideo(0);
-            enemyCharacterUI.winVideoElement[0].addEventListener('ended', () => {
-                resultOverlay.style.display = "block";
-            });
-        } else {
-            setTimeout(() => {
-                resultOverlay.style.display = "block";
-            }, 1000);
-        }
+        setTimeout(() => {
+            overlay.style.display = "block";
+        }, 1000);
     }
-    gameManager.board.finished = true;
 }

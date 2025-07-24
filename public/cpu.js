@@ -33,11 +33,4 @@ export class CPU {
             console.error("CPU: Worker error:", error);
         };
     }
-
-    endGame() {
-        if (this.worker) {
-            this.worker.terminate(); // Workerを停止
-            this.worker = null; // 参照をクリア
-        }
-    }
 }

@@ -3,7 +3,7 @@ import { BoardUI } from './ui_board.js';
 import { audioManager } from './main.js'; // audio_manager.jsからインポート
 import { Board } from './board.js';
 import { CPU } from './cpu.js'; // CPUクラスをインポート
-import { endCPUGame } from './scene_game.js';
+import { endGame } from './scene_game.js';
 import { MOVETIME } from './const.js';
 
 export class GameManager {
@@ -75,8 +75,7 @@ export class GameManager {
             const gameEnd = this.board.checkGameEnd(move);
 
             if (gameEnd.player !== 0 && this.cpu !== null) {
-                this.cpu.endGame();
-                endCPUGame({ winPlayer: gameEnd.player, text: gameEnd.text });
+                endGame({ winPlayer: gameEnd.player, text: gameEnd.text });
                 this.cpu = null;
             }
 
@@ -108,8 +107,7 @@ export class GameManager {
                     this.boardUI.removeReserved(move);
                     const gameEnd = this.board.checkGameEnd(move);
                     if (gameEnd.player !== 0 && this.cpu !== null) {
-                        this.cpu.endGame();
-                        endCPUGame({ winPlayer: gameEnd.player, text: gameEnd.text });
+                        endGame({ winPlayer: gameEnd.player, text: gameEnd.text });
                         this.cpu = null;
                     }
                     if (this.cpu !== null) {
@@ -140,8 +138,7 @@ export class GameManager {
             }
             const gameEnd = this.board.checkGameEnd(serverMove);
             if (gameEnd.player !== 0 && this.cpu !== null) {
-                this.cpu.endGame();
-                endCPUGame({ winPlayer: gameEnd.player, text: gameEnd.text });
+                endGame({ winPlayer: gameEnd.player, text: gameEnd.text });
                 this.cpu = null;
             }
             this.cpu.boardChanged(serverMove);

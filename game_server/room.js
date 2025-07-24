@@ -197,7 +197,7 @@ export class Room {
                 readys: readys,
                 maxplayers: this.maxplayers,
                 moveTime: this.moveTime,
-                win: win,
+                winPlayer: win,
                 text: text
             });
             this.gameState = "waiting";
