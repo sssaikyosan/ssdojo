@@ -631,7 +631,7 @@ function cpuLevelSubmit(level) {
     if (playerName == "") setPlayerName("名無しの棋士");
     clearTitleHTML();
     const now = performance.now();
-    setScene(createPlayScene(playerName, null, selectedCharacterName, `CPUレベル${level}`, null, null, null, now, 'sente', { sente: MOVETIME, gote: MOVETIME }, false, level));
+    setScene(createPlayScene([playerName], null, selectedCharacterName, [`CPUレベル${level}`], null, null, null, 'cpu', now, 'sente', { sente: MOVETIME, gote: MOVETIME }, false, level));
 }
 
 export function updateRanking() {

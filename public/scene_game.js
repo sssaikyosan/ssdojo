@@ -188,8 +188,8 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
                 return `${arryNames[i]}`;
             },
             x: -0.43,
-            y: 0.4 - i * 0.045,
-            size: 0.03,
+            y: 0.4 - i * 0.038,
+            size: 0.025,
             colors: ["#FFFFFF", "#000000"],
             textBaseline: 'bottom',
             position: 'right',
@@ -204,8 +204,8 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
                 return `${enemyNames[i]}`;
             },
             x: 0.43,
-            y: -0.4 + i * 0.045,
-            size: 0.03,
+            y: -0.4 + i * 0.038,
+            size: 0.025,
             colors: ["#FFFFFF", "#000000"],
             textBaseline: 'top',
             position: 'left',
