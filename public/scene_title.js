@@ -8,7 +8,7 @@ import { BackgroundImageUI } from "./ui_background.js";
 import { CharacterImageUI } from "./ui_character.js";
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
-import { characterInfo } from "./const.js";
+import { characterInfo, MOVETIME } from "./const.js";
 import { ImageUI } from "./ui_image.js";
 import { ButtonUI } from "./ui_button.js";
 
@@ -354,7 +354,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         color: '#3241c9',
         textSize: 0.025,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
-        onClick: () => { 
+        onClick: () => {
             ruleOverlay.visible = true;
             ctrlOverlay.visible = false;
         }
@@ -631,7 +631,7 @@ function cpuLevelSubmit(level) {
     if (playerName == "") setPlayerName("名無しの棋士");
     clearTitleHTML();
     const now = performance.now();
-    setScene(createPlayScene(playerName, 500, selectedCharacterName, `CPUレベル${level}`, 500, null, null, now, 'sente', level));
+    setScene(createPlayScene(playerName, null, selectedCharacterName, `CPUレベル${level}`, null, null, null, now, 'sente', { sente: MOVETIME, gote: MOVETIME }, false, level));
 }
 
 export function updateRanking() {

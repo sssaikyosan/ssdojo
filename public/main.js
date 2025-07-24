@@ -3,10 +3,9 @@ import { GameManager } from "./game_manager.js";
 import { Board } from './board.js';
 import { AudioManager } from "./audio_manager.js"; // audio_manager.jsからインポート
 import { createTitleScene, nameInput, playCountText, ratingText, roomIdInput, roomJoinFailed, updateRanking } from "./scene_title.js";
-import { createPlayScene, endGame } from "./scene_game.js";
+import { createPlayScene, backToRoom, endGame, endRoomGame } from "./scene_game.js";
 import { createRoomScene, roomUpdate } from "./scene_room.js";
-import { backToRoom, createRoomPlayScene, endRoomGame } from "./scene_roomgame.js";
-import { CHARA_QUOTES, CHARACTER_FOLDER } from "./const.js";
+import { CHARA_QUOTES, CHARACTER_FOLDER, MOVETIME } from "./const.js";
 
 // 初期化フラグ
 let isInitialized = false;
@@ -434,7 +433,7 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
     console.log("disconected");
   });
 
-  socket.on('startRatingGame', (data) => {
+  socket.on('startGame', (data) => {
     setScene(createPlayScene(
       data.senteName,
       data.senteRating,
@@ -443,18 +442,24 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
       data.goteRating,
       data.goteCharacter,
       data.roomId,
+      data.roomType,
       data.servertime,
       data.roomteban,
+      { sente: MOVETIME, gote: MOVETIME },
+      false
     ));
   });
 
   socket.on('startRoomGame', (data) => {
-    setScene(createRoomPlayScene(
+    setScene(createPlayScene(
       data.senteName,
+      null,
       data.senteCharacter,
       data.goteName,
+      null,
       data.goteCharacter,
       data.roomId,
+      data.roomType,
       data.servertime,
       data.roomteban,
       data.moveTime,

@@ -221,24 +221,12 @@ export class ServerState {
                     this.players[player1].state = "waiting";
                     this.io.to(this.players[player1].socket.id).emit("matchFound", {
                         roomId: roomId,
-                        teban: 1,
-                        servertime: time,
-                        name: this.players[player2].name,
-                        characterName: this.players[player2].characterName,
-                        rating: this.players[player1].rating,
-                        opponentRating: this.players[player2].rating,
                         gameServerAddress: gameServerAddress // ゲームサーバーのアドレスを追加
                     });
 
                     this.players[player2].state = "waiting";
                     this.io.to(this.players[player2].socket.id).emit("matchFound", {
                         roomId: roomId,
-                        teban: -1,
-                        servertime: time,
-                        name: this.players[player1].name,
-                        characterName: this.players[player1].characterName,
-                        rating: this.players[player2].rating,
-                        opponentRating: this.players[player1].rating,
                         gameServerAddress: gameServerAddress // ゲームサーバーのアドレスを追加
                     });
                 } else {

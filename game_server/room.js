@@ -41,8 +41,8 @@ export class Room {
         }
         if (this.roomType === 'rating' && this.sente.length === 1 && this.gote.length === 1) {
             const names = this.getPlayerNames();
-            let senteRating = null;
-            let goteRating = null;
+            let senteRating = -Infinity;
+            let goteRating = -Infinity;
             if (serverState.players[this.sente[0]].total_games >= 10) {
                 senteRating = serverState.players[this.sente[0]].rating;
             }
@@ -53,18 +53,19 @@ export class Room {
             this.startGame(now);
 
             const data = {
-                senteName: names.sente[0],
+                senteName: names.sente,
                 senteRating: senteRating,
                 senteCharacter: serverState.players[this.sente[0]].characterName,
-                goteName: names.gote[0],
+                goteName: names.gote,
                 goteRating: goteRating,
                 goteCharacter: serverState.players[this.gote[0]].characterName,
                 roomId: this.roomId,
+                roomType: this.roomType,
                 servertime: now,
                 moveTime: this.moveTime,
             };
-            console.log(data);
-            this.emitToRoom("startRatingGame", data);
+            console.log("startGame", names.sente[0], names.gote[0]);
+            this.emitToRoom("startGame", data);
             for (const id of this.sente) {
                 serverState.players[id].goToPlay(this.roomId);
             }
@@ -153,7 +154,7 @@ export class Room {
 
     async gameFinished(win, text, playerId = null) {
         this.gameState = 'finished';
-        console.log('gameend', this);
+        console.log('gameend', this.roomType);
         if (this.roomType === 'rating') {
             if (this.sente.length !== 1 || this.gote.length !== 1) {
                 console.log('プレイ人数に不正');
@@ -313,6 +314,7 @@ export class Room {
             goteCharacter: serverState.players[this.gote[0]].characterName,
             spectators: names.spectators,
             roomId: this.roomId,
+            roomType: this.roomType,
             servertime: now,
             state: this.gameState,
             maxplayers: this.maxplayers,

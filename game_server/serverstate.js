@@ -163,7 +163,7 @@ export class ServerState {
                 name: losePlayer.name
             };
 
-            console.log(`レーティング更新: ${winPlayerId}: ${newWinRatingData.rating} (${winEloRating}), ${losePlayerId}: ${newLoseRatingData.rating} (${loseEloRating})`);
+            console.log(`レーティング更新: ${winPlayer.name}: ${newWinRatingData.rating} (${winEloRating}), ${losePlayer.name}: ${newLoseRatingData.rating} (${loseEloRating})`);
 
             // レーティングデータをデータベースに保存 (Postgure 経由)
             await this.savePlayerInfo(newWinRatingData);

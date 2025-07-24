@@ -1,5 +1,6 @@
+import { cancelOverlay, createRoomScene, leaveRoomOverlay, readyOverlay, roomIdOverlay, roomUpdate, spectatorsOverlay, tebanOverlay } from "./scene_room.js";
 import { MOVETIME } from "./const.js";
-import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus, setupSocket, connectToServer } from "./main.js";
+import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus, setupSocket, connectToServer, socket } from "./main.js";
 import { Scene } from "./scene.js";
 import { createTitleScene } from "./scene_title.js";
 import { BackgroundImageUI } from "./ui_background.js";
@@ -10,6 +11,13 @@ export const changeRating = document.getElementById("changeRating");
 
 const resultOverlay = document.getElementById("resultOverlay");
 const toTitleButton = document.getElementById("toTitleButton");
+
+toTitleButton.addEventListener("click", handleToTitleClick);
+
+const roomResultOverlay = document.getElementById("roomResultOverlay");
+const toRoomButton = document.getElementById("toRoomButton");
+
+toRoomButton.addEventListener("click", handleToRoomClick);
 
 export let opponentCharacter = null;
 
@@ -76,18 +84,36 @@ export const countDownText = new TextUI({
     textBaseline: "bottom",
 });
 
-
+export function hideRoomUI() {
+    roomResultOverlay.style.display = "none";
+    roomIdOverlay.style.display = 'none';
+    tebanOverlay.style.display = 'none';
+    spectatorsOverlay.style.display = 'none';
+    readyOverlay.style.display = 'none';
+    cancelOverlay.style.display = 'none';
+    leaveRoomOverlay.style.display = 'none';
+}
 
 // Define the event handler function for the "To Title" button
 export function handleToTitleClick() {
     backToTitle();
 }
 
+export function handleToRoomClick() {
+    socket.emit("backToRoom");
+}
+
+export function backToRoom(data) {
+    roomResultOverlay.style.display = "none";
+    setScene(createRoomScene(data));
+    audioManager.playBGM('title');
+}
+
 let arryCharacterUI;
 let enemyCharacterUI;
 
 //ゲームシーン
-export function createPlayScene(senteName, senteRating, senteCharacter, goteName, goteRating, goteCharacter, roomId, servertime, roomteban, cpulevel = null) {
+export function createPlayScene(senteName, senteRating, senteCharacter, goteName, goteRating, goteCharacter, roomId, roomType, servertime, roomteban, moveTime, pawnLimit4thRank, cpulevel = null) {
     let playScene = new Scene();
 
     // 背景画像UIを追加 (他のUIより前に描画されるように最初に追加)
@@ -100,11 +126,12 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
     if (roomteban === 'gote') teban = -1;
 
     gameManager.setRoom(roomId, teban, servertime, { sente: MOVETIME, gote: MOVETIME }, false, cpulevel);
+    gameManager.setRoom(roomId, teban, servertime, moveTime, pawnLimit4thRank);
 
     let arryNames = null;
     let enemyNames = null;
-    let arryRating = 500;
-    let enemyRating = 500;
+    let arryRating = null;
+    let enemyRating = null;
     let arryCharacter = null;
     let enemyCharacter = null;
     let senteCharacterUI = null;
@@ -155,38 +182,44 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
     playScene.add(arryCharacterUI);
     playScene.add(enemyCharacterUI);
 
-    let playerNameUI = new TextUI({
-        text: () => {
-            return `${arryNames}`;
-        },
-        x: -0.43,
-        y: 0.4,
-        size: 0.03,
-        colors: ["#FFFFFF", "#000000"],
-        textBaseline: 'bottom',
-        position: 'right',
-        backgroundColor: '#000000cc'
-    });
+    for (let i = 0; i < arryNames.length; i++) {
+        let arryNamesUI = new TextUI({
+            text: () => {
+                return `${arryNames[i]}`;
+            },
+            x: -0.43,
+            y: 0.4 - i * 0.045,
+            size: 0.03,
+            colors: ["#FFFFFF", "#000000"],
+            textBaseline: 'bottom',
+            position: 'right',
+            backgroundColor: '#000000cc'
+        });
+        playScene.add(arryNamesUI);
+    }
 
-    let opponentNameUI = new TextUI({
-        text: () => {
-            return `${enemyNames}`;
-        },
-        x: 0.43,
-        y: -0.4,
-        size: 0.03,
-        colors: ["#FFFFFF", "#000000"],
-        textBaseline: 'top',
-        position: 'left',
-        backgroundColor: '#000000cc'
-    });
+    for (let i = 0; i < enemyNames.length; i++) {
+        let enemyNamesUI = new TextUI({
+            text: () => {
+                return `${enemyNames[i]}`;
+            },
+            x: 0.43,
+            y: -0.4 + i * 0.045,
+            size: 0.03,
+            colors: ["#FFFFFF", "#000000"],
+            textBaseline: 'top',
+            position: 'left',
+            backgroundColor: '#000000cc'
+        });
+        playScene.add(enemyNamesUI);
+    }
 
     let playerRatingUI = null;
     let opponentRatingUI = null;
 
-    if (!cpulevel) {
-        let arryRatingtext = "測定中";
-        if (arryRating) {
+    if (roomType === 'rating') {
+        let arryRatingtext = "測定中"
+        if (arryRating !== -Infinity) {
             const roundRating = Math.round(arryRating);
             arryRatingtext = `${roundRating}`
         }
@@ -205,7 +238,7 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
         });
 
         let opponentRatingtext = "測定中";
-        if (enemyRating) {
+        if (enemyRating !== -Infinity) {
             const opponentRoundRating = Math.round(enemyRating);
             opponentRatingtext = `${opponentRoundRating}`
         }
@@ -233,20 +266,14 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
         senteCharacterUI.playStartVideo(0);
     });
 
+    hideRoomUI();
+
     playScene.add(gameManager.boardUI);
     // playScene.add(playerOverlayUI);
-    playScene.add(playerNameUI);
-    playScene.add(opponentNameUI);
     if (playerRatingUI) playScene.add(playerRatingUI); // レーティング表示UIを追加
     if (opponentRatingUI) playScene.add(opponentRatingUI); // レーティング表示UIを追加
     playScene.add(countDownText);
     playScene.add(timeText);
-
-    toTitleButton.addEventListener("click", handleToTitleClick);
-    // Add destroy method to remove event listeners
-    playScene.destroy = () => {
-        toTitleButton.removeEventListener("click", handleToTitleClick);
-    };
 
     return playScene;
 }
@@ -340,12 +367,84 @@ export function endGame(data) {
         }
     }
 
-
-    // Use the named function for adding the listener
-
     gameManager.resetRoom();
     gameManager.board.finished = true;
 }
+
+export function endRoomGame(data) {
+    if (!gameManager.roomId === data.roomId) {
+        roomUpdate(data);
+        return;
+    }
+
+    if (gameManager.teban === 0) {
+        scene.add(endText);
+        if (data.win === 1 && arryCharacterUI.image) {
+            if (arryCharacterUI.playWinVideo(0)) {
+                arryCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                    roomResultOverlay.style.display = "block";
+                });
+            } else {
+                roomResultOverlay.style.display = "block";
+            }
+        } else if (data.win === -1 && enemyCharacterUI.image) {
+            if (enemyCharacterUI.playWinVideo(0)) {
+                enemyCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                    roomResultOverlay.style.display = "block";
+                });
+            } else {
+                roomResultOverlay.style.display = "block";
+            }
+
+        } else {
+            setTimeout(() => {
+                roomResultOverlay.style.display = "block";
+            }, 1000);
+        }
+    } else if (data.win === gameManager.teban) {
+        // 勝利時音声の再生
+        if (arryCharacterUI.image) {
+            if (arryCharacterUI.playWinVideo(0)) {
+                arryCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                    roomResultOverlay.style.display = "block";
+                });
+            } else {
+                roomResultOverlay.style.display = "block";
+            }
+
+        } else {
+            setTimeout(() => {
+                roomResultOverlay.style.display = "block";
+            }, 1000);
+        }
+        scene.add(winText);
+
+    } else if (data.win === -gameManager.teban) {
+        // 敵勝利時音声の再生
+        if (enemyCharacterUI.image) {
+            if (enemyCharacterUI.playWinVideo(0)) {
+                enemyCharacterUI.winVideoElement[0].addEventListener('ended', () => {
+                    roomResultOverlay.style.display = "block";
+                });
+            } else {
+                roomResultOverlay.style.display = "block";
+            }
+        } else {
+            setTimeout(() => {
+                roomResultOverlay.style.display = "block";
+            }, 1000);
+        }
+        scene.add(loseText);
+
+
+    } else {
+        roomUpdate(data);
+    }
+
+    gameManager.teban = 0;
+    gameManager.board.finished = true;
+}
+
 
 export function endCPUGame(data) {
     changeRating.textContent = "レート変動 なし";
