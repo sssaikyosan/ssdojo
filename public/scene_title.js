@@ -144,7 +144,6 @@ function clearTitleHTML() {
 
 //タイトルシーン
 export function createTitleScene(savedTitleCharacter = null, loadNameInput = true) {
-    disconnectFromServer(); // タイトルシーンに来たら、まず接続を切断
     clearTitleHTML();
 
     let titleScene = new Scene();

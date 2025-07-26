@@ -91,7 +91,7 @@ export function setStatus(rating, total_games) {
 
 export const matchingServerUrl = window.location.hostname === 'localhost' ?
   'https://localhost:5000' :
-  'https://ssdojo.net:5000';
+  'https://ssdojo.net';
 
 // Socket.IOサーバーへの接続を開始する関数
 export function connectToServer() {
@@ -127,6 +127,34 @@ export function disconnectFromServer() {
   socket = null;
 }
 
+export async function getTitleInfo() {
+  try {
+    const response = await fetch(`/api/title-info?playerId=${player_id}`);
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+    const data = await response.json();
+    console.log(data);
+
+    // サーバーから受け取った情報でステータスとランキングを更新
+    if (data.player) {
+      // player_idが更新された場合（新規作成時）は、localStorageにも保存
+      if (player_id !== data.player.player_id) {
+        player_id = data.player.player_id;
+        localStorage.setItem('shogiUserId', player_id);
+      }
+      setStatus(data.player.rating, data.player.total_games);
+    }
+    if (data.ranking) {
+      serverStatus.topPlayers = data.ranking;
+    }
+
+  } catch (error) {
+    console.error('Failed to fetch title info:', error);
+    // エラーが発生しても、とりあえずタイトル画面は表示
+  }
+}
+
 
 // 初期化関数
 async function init() {
@@ -148,6 +176,7 @@ async function init() {
 
   // ユーザーIDの読み込みまたは生成
   player_id = localStorage.getItem('shogiUserId');
+  console.log(player_id);
   if (!player_id) {
     // プレイヤーIDがない場合は、サーバーに新規作成を要求する
     player_id = 'create';
@@ -163,30 +192,7 @@ async function init() {
   gameManager = new GameManager();
 
   // タイトル画面に必要な情報をAPIから取得
-  try {
-    const response = await fetch(`/api/title-info?playerId=${player_id}`);
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-    const data = await response.json();
-
-    // サーバーから受け取った情報でステータスとランキングを更新
-    if (data.player) {
-      // player_idが更新された場合（新規作成時）は、localStorageにも保存
-      if (player_id !== data.player.player_id) {
-        player_id = data.player.player_id;
-        localStorage.setItem('shogiUserId', player_id);
-      }
-      setStatus(data.player.rating, data.player.total_games);
-    }
-    if (data.ranking) {
-      serverStatus.topPlayers = data.ranking;
-    }
-
-  } catch (error) {
-    console.error('Failed to fetch title info:', error);
-    // エラーが発生しても、とりあえずタイトル画面は表示
-  }
+  await getTitleInfo();
 
   // 最初にタイトルシーンを表示
   setScene(createTitleScene());
@@ -352,13 +358,6 @@ export function setupSocket() {
     }
   });
 
-
-  // 待機人数の更新 (マッチングサーバーからのイベント)
-  socket.on('serverStatus', (data) => {
-    serverStatus = data;
-    updateRanking();
-  });
-
   // レーティングを受信 (マッチングサーバーからのイベント)
   socket.on('receiveRating', (data) => {
     setStatus(data.rating, data.total_games);
@@ -434,6 +433,7 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
   });
 
   socket.on('startGame', (data) => {
+    console.log("startGame", data);
     setScene(createPlayScene(
       data.senteName,
       data.senteRating,

@@ -117,6 +117,7 @@ export function ioSetup() {
 
         // 切断時の処理
         socket.on("disconnect", () => {
+            serverState.removeFromMatchingQueue(socket.id);
             serverState.deletePlayer(socket.id);
         });
     });

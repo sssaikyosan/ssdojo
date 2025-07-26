@@ -1,6 +1,7 @@
 import 'dotenv/config';
 
 import express from 'express';
+import http from 'http';
 import https from 'https';
 import { Server } from 'socket.io';
 import fs from 'fs';
@@ -35,6 +36,8 @@ app.post('/roomdeleted', (req, res) => {
 app.get('/api/title-info', async (req, res) => {
   const playerId = req.query.playerId;
 
+  console.log(playerId);
+
   if (!playerId || playerId === 'create') {
     // playerIdがない、または新規作成の場合は、ランキング情報のみを返す（新規プレイヤー情報も作成）
     try {
@@ -42,7 +45,7 @@ app.get('/api/title-info', async (req, res) => {
       const initialData = {
         player_id: newPlayerId,
         total_games: 0,
-        rating: 500,
+        rating: 1500,
         lastLogin: new Date(),
         name: '名無しの棋士'
       };
@@ -63,18 +66,30 @@ app.get('/api/title-info', async (req, res) => {
 
   // 既存プレイヤーIDがある場合は、プレイヤー情報とランキング情報の両方を返す
   try {
-    const [playerInfo, topPlayers] = await Promise.all([
+    let [playerInfo, topPlayers] = await Promise.all([
       postgure.readPlayerInfo(playerId),
       postgure.readTopPlayers()
     ]);
 
+    if (!playerInfo) {
+      const newPlayerId = generateUniqueId();
+      playerInfo = {
+        player_id: newPlayerId,
+        total_games: 0,
+        rating: 1500,
+        lastLogin: new Date(),
+        name: '名無しの棋士'
+      };
+      await postgure.savePlayerInfo(playerInfo);
+    }
+
     res.json({
-      player: playerInfo ? {
+      player: {
         rating: playerInfo.rating,
         name: playerInfo.name,
         total_games: playerInfo.total_games,
         player_id: playerInfo.player_id
-      } : null,
+      },
       ranking: topPlayers
     });
 
@@ -108,11 +123,7 @@ if (process.env.NODE_ENV === 'development') {
   };
   server = https.createServer(options, app);
 } else {
-  const options = {
-    key: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/privkey.pem'),
-    cert: fs.readFileSync('/etc/letsencrypt/live/ssdojo.net/fullchain.pem')
-  };
-  server = https.createServer(options, app);
+  server = http.createServer(app);
 }
 
 const socketOptions = {
@@ -136,5 +147,4 @@ ioSetup();
 
 setInterval(() => {
   serverState.matchMakingProcess(); // マッチングプロセスを定期的に実行
-  serverState.sendServerStatus();
 }, 3000);

@@ -12,6 +12,8 @@ export function ioSetup() {
             const teban = serverState.canJoinRoom[data.player_id].teban;
             const roomType = serverState.rooms[roomId].roomType;
 
+
+
             if (roomType === 'rating') {
                 if (serverState.addPlayer(socket, playerInfo)) {
                     serverState.players[socket.id].setInfo(data.name, data.characterName);

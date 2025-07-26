@@ -1,6 +1,6 @@
 import { cancelOverlay, createRoomScene, leaveRoomOverlay, readyOverlay, roomIdOverlay, roomUpdate, spectatorsOverlay, tebanOverlay } from "./scene_room.js";
 import { MOVETIME } from "./const.js";
-import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus, setupSocket, connectToServer, socket } from "./main.js";
+import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus, setupSocket, connectToServer, socket, disconnectFromServer, getTitleInfo } from "./main.js";
 import { Scene } from "./scene.js";
 import { createTitleScene } from "./scene_title.js";
 import { BackgroundImageUI } from "./ui_background.js";
@@ -218,7 +218,7 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
 
     if (roomType === 'rating') {
         let arryRatingtext = "測定中"
-        if (arryRating !== -Infinity) {
+        if (arryRating !== -999999) {
             const roundRating = Math.round(arryRating);
             arryRatingtext = `${roundRating}`
         }
@@ -237,7 +237,7 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
         });
 
         let opponentRatingtext = "測定中";
-        if (enemyRating !== -Infinity) {
+        if (enemyRating !== -999999) {
             const opponentRoundRating = Math.round(enemyRating);
             opponentRatingtext = `${opponentRoundRating}`
         }
@@ -277,9 +277,10 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
     return playScene;
 }
 
-export function backToTitle() {
+export async function backToTitle() {
     resultOverlay.style.display = "none";
-    connectToServer();
+    disconnectFromServer();
+    await getTitleInfo();
     setScene(createTitleScene());
     audioManager.playBGM('title');
 }
@@ -317,10 +318,10 @@ function setRatingText(data, mywin) {
         targetoldrate = data.loseRating;
         targetnewrate = data.newLoseRating;
     }
-    if (targetoldrate !== null) {
+    if (targetoldrate !== -99999) {
         oldrateText = `${Math.round(targetoldrate)}`
     }
-    if (targetnewrate !== null) {
+    if (targetnewrate !== -99999) {
         newrateText = `${Math.round(targetnewrate)}`
     }
     changeRating.textContent = "レート変動 " + oldrateText + " → " + newrateText;

@@ -233,14 +233,34 @@ export class ServerState {
                 console.log('トッププレイヤーリストを更新しました。');
             }
 
+            let winRating = -99999;
+            let loseRating = -99999;
+            let newWinRating = -99999;
+            let newLoseRating = -99999;
+
+            if (newWinRatingData.total_games >= 10) {
+                newWinRating = rateData.newWinRating;
+
+            }
+            if (newWinRatingData.total_games >= 11) {
+                winRating = winEloRating;
+            }
+
+            if (newLoseRatingData.total_games >= 10) {
+                newLoseRating = rateData.newLoseRating;
+            }
+            if (newLoseRatingData.total_games >= 11) {
+                loseRating = loseEloRating;
+            }
+
             const data = {
                 winPlayer: win,
                 text: text,
-                winRating: winEloRating,
-                newWinRating: rateData.newWinRating,
+                winRating: winRating,
+                newWinRating: newWinRating,
                 winGames: newWinRatingData.total_games, // 更新後のゲーム数を使用
-                loseRating: loseEloRating,
-                newLoseRating: rateData.newLoseRating,
+                loseRating: loseRating,
+                newLoseRating: newLoseRating,
                 loseGames: newLoseRatingData.total_games // 更新後のゲーム数を使用
             }
             return data;

@@ -41,8 +41,8 @@ export class Room {
         }
         if (this.roomType === 'rating' && this.sente.length === 1 && this.gote.length === 1) {
             const names = this.getPlayerNames();
-            let senteRating = -Infinity;
-            let goteRating = -Infinity;
+            let senteRating = -999999;
+            let goteRating = -999999;
             if (serverState.players[this.sente[0]].total_games >= 10) {
                 senteRating = serverState.players[this.sente[0]].rating;
             }
@@ -64,7 +64,8 @@ export class Room {
                 servertime: now,
                 moveTime: this.moveTime,
             };
-            console.log("startGame", names.sente[0], names.gote[0]);
+            console.log("startGame", names.sente[0], senteRating, names.gote[0], goteRating);
+            console.log("data", data);
             this.emitToRoom("startGame", data);
             for (const id of this.sente) {
                 serverState.players[id].goToPlay(this.roomId);

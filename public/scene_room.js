@@ -1,6 +1,6 @@
 // ルームUIを定義するファイル
 import { Scene } from "./scene.js";
-import { battle_img, connectToServer, setScene, socket } from "./main.js"; // setScene関数をインポート
+import { battle_img, connectToServer, disconnectFromServer, getTitleInfo, setScene, socket } from "./main.js"; // setScene関数をインポート
 import { createTitleScene, discordButton } from "./scene_title.js"; // タイトルシーンに戻るために必要
 import { BackgroundImageUI } from "./ui_background.js";
 
@@ -93,9 +93,10 @@ function moveSubmit(teban) {
     socket.emit("moveTeban", { teban: teban });
 }
 
-function leaveRoom() {
+async function leaveRoom() {
     socket.emit("leaveRoom");
-    connectToServer();
+    disconnectFromServer();
+    await getTitleInfo();
     setScene(createTitleScene());
 
     currentRoomId = null;
