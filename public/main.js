@@ -20,7 +20,7 @@ export let socket = null; // Socket.IO 接続オブジェクト
 export let scene = null; // scene変数はmain.jsで管理
 export let playerName = "";
 export let player_id = null; // 永続的なプレイヤーID
-export let serverStatus = { topPlayers: [] };
+export let serverStatus = { topPlayers: [], announcement: "" };
 
 export let playerRatingElement = null;
 export let gamesPlayedElement = null;
@@ -147,6 +147,9 @@ export async function getTitleInfo() {
     }
     if (data.ranking) {
       serverStatus.topPlayers = data.ranking;
+    }
+    if (data.announcement) {
+      serverStatus.announcement = data.announcement;
     }
 
   } catch (error) {

@@ -15,10 +15,29 @@ import { Postgure } from './postgure.js';
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = path.dirname(__filename);
 
+const configFilePath = path.join(__dirname, 'config.json');
+
+let count = 0;
+let announcementMessage = "";
+
+function loadConfig() {
+  try {
+    const configData = fs.readFileSync(configFilePath, 'utf8');
+    const config = JSON.parse(configData);
+    announcementMessage = config.announcement;
+    console.log("Announcement message loaded:", announcementMessage);
+  } catch (error) {
+    console.error("Error loading config file:", error.message);
+    // エラー処理（例: デフォルト値を設定するなど）
+  }
+}
+
 const app = express();
 app.use(express.json());
 
 const postgure = new Postgure();
+
+
 
 app.post('/roomdeleted', (req, res) => {
   console.log('Received roomdeleted request:', req.body);
@@ -54,8 +73,9 @@ app.get('/api/title-info', async (req, res) => {
       const topPlayers = await postgure.readTopPlayers();
 
       return res.json({
-        player: { ...initialData, player_id: newPlayerId }, // 新規作成したプレイヤー情報を返す
-        ranking: topPlayers
+        player: { ...initialData, player_id: newPlayerId },
+        ranking: topPlayers,
+        announcement: announcementMessage
       });
 
     } catch (error) {
@@ -90,7 +110,8 @@ app.get('/api/title-info', async (req, res) => {
         total_games: playerInfo.total_games,
         player_id: playerInfo.player_id
       },
-      ranking: topPlayers
+      ranking: topPlayers,
+      announcement: announcementMessage
     });
 
   } catch (error) {
@@ -143,8 +164,16 @@ server.listen(PORT, () => {
   console.log(new Date(), `HTTPS Server is running on port ${PORT})`);
 });
 
+
+
 ioSetup();
 
 setInterval(() => {
   serverState.matchMakingProcess(); // マッチングプロセスを定期的に実行
+  if (count >= 10) {
+    loadConfig();
+    count = 0;
+    console.log("Current announcement:", announcementMessage);
+  }
+  count++
 }, 3000);

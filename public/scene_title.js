@@ -231,6 +231,17 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     });
     titleScene.add(title);
 
+    const announce = new TextUI({
+        text: () => `${serverStatus.announcement}`,
+        x: -0.86,
+        y: -0.48,
+        size: 0.02,
+        colors: ["#ffffff", "#000000", "#00000000"],
+        position: "left",
+        textBaseline: "top"
+    });
+    titleScene.add(announce);
+
     let titleCharacter = savedTitleCharacter;
     if (titleCharacter === null) {
         titleCharacter = new CharacterImageUI({

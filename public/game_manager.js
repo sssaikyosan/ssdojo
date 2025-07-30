@@ -76,7 +76,6 @@ export class GameManager {
 
             if (gameEnd.player !== 0 && this.cpu !== null) {
                 endGame({ winPlayer: gameEnd.player, text: gameEnd.text });
-                this.cpu = null;
             }
 
             // リアルタイム将棋では手番に関係なく思考が必要になる可能性があるため、
@@ -139,10 +138,9 @@ export class GameManager {
             const gameEnd = this.board.checkGameEnd(serverMove);
             if (gameEnd.player !== 0 && this.cpu !== null) {
                 endGame({ winPlayer: gameEnd.player, text: gameEnd.text });
-                this.cpu = null;
+            } else {
+                this.cpu.boardChanged(serverMove);
             }
-            this.cpu.boardChanged(serverMove);
-
         } else {
             console.error("GameManager: CPUの手の適用に失敗しました。", serverMove);
             // エラーハンドリング
