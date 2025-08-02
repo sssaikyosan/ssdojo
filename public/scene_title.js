@@ -323,12 +323,14 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         size: 0.06,
         colors: ['#ffffffff', '#000000ff', '#00000000'],
     });
+
     const ruleText = new TextUI({
-        text: () => '駒の動きは通常の将棋と同じですが手番がありません。　　　　　連続で何度も動かせますが動かした駒は一定時間動かせません。　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　トライ勝利ルールを採用しています。自玉が敵玉の開始位置（先手なら5一、後手なら5九)に到達したら勝利となります。　　　　　　　　　　　　　　　',
-        x: 0,
+        text: () => '駒の動きは通常の将棋と同じですが手番がありません。連続で\n何度も動かせますが動かした駒は一定時間動かせません。\n\nトライ勝利ルールを採用しています。自玉が敵玉の開始位置\n（先手なら5一、後手なら5九)に到達したら勝利となります。',
+        x: -0.35,
         y: -0.06,
         size: 0.025,
         colors: ['#ffffffff', '#00000000', '#00000000'],
+        position: 'left'
     });
 
     const closeRuleButton = new ButtonUI({
@@ -351,7 +353,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         x: 0,
         y: 0,
         height: 0.4,
-        width: 0.8,
+        width: 0.4,
         visible: false
     });
 
@@ -381,11 +383,12 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     });
 
     const ctrlText = new TextUI({
-        text: () => '　　　　マウスドラッグ　駒の移動　　　　　　　　　　　　　　　　　　　　右ドラッグ　成らず　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　ショートカットキー：　スペース-歩　　　　　　　　　　　　　　　　　　　　　　　Q-香　W-桂　E-角　　　　　　　　　　　A-銀　S-金　D-飛',
-        x: 0,
+        text: () => 'マウスドラッグ - 駒の移動\n右ドラッグ - 成らず\n\nスペース - 歩\nQ - 香　W - 桂　E - 角\nA - 銀　S - 金　D - 飛',
+        x: -0.15,
         y: -0.06,
         size: 0.025,
         colors: ['#ffffffff', '#00000000', '#00000000'],
+        position: 'left'
     });
 
     const closeCtrlButton = new ButtonUI({

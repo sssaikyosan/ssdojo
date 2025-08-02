@@ -14,7 +14,6 @@ export class TextUI extends UI {
     this.position = params.position;
     this.colors = params.colors;
     this.backgroundColor = params.backgroundColor;
-    this.nextline = 30;
     this.lineoffset = 0.1;
   }
 
@@ -48,33 +47,25 @@ export class TextUI extends UI {
       ctx.fillRect(backgroundX, backgroundY, backgroundWidth, backgroundHeight);
     }
     const size = this.size * scale;
-    let length = this.text().length;
-    let line = 0;
-    switch (this.colors.length) {
-      case 1:
-        while (length > line * this.nextline) {
-          drawText(ctx, this.text().substring(line * this.nextline, (line + 1) * this.nextline), 0, line * (size + size * this.lineoffset), size, this.colors[0], this.textBaseline, this.position);
-          line++;
-        }
-        break;
-      case 2:
-        while (length > line * this.nextline) {
-          drawTextWithOutline(ctx, this.text().substring(line * this.nextline, (line + 1) * this.nextline), 0, line * (size + size * this.lineoffset), size, this.colors, this.textBaseline, this.position);
-          line++;
-        }
-        break;
-      case 3:
-        while (length > line * this.nextline) {
-          drawTextWithDoubleOutline(ctx, this.text().substring(line * this.nextline, (line + 1) * this.nextline), 0, line * (size + size * this.lineoffset), size, this.colors, this.textBaseline, this.position);
-          line++;
-        }
-        break;
-      default:
-        while (length > line * this.nextline) {
-          drawText(ctx, this.text().substring(line * this.nextline, (line + 1) * this.nextline), 0, line * (size + size * this.lineoffset), size, this.colors[0], this.textBaseline, this.position);
-          line++;
-        }
-        break;
+    const lines = this.text().split('\n');
+    let y = 0;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      switch (this.colors.length) {
+        case 1:
+          drawText(ctx, line, 0, y, size, this.colors[0], this.textBaseline, this.position);
+          break;
+        case 2:
+          drawTextWithOutline(ctx, line, 0, y, size, this.colors, this.textBaseline, this.position);
+          break;
+        case 3:
+          drawTextWithDoubleOutline(ctx, line, 0, y, size, this.colors, this.textBaseline, this.position);
+          break;
+        default:
+          drawText(ctx, line, 0, y, size, this.colors[0], this.textBaseline, this.position);
+          break;
+      }
+      y += size + size * this.lineoffset;
     }
   }
   /**
