@@ -1,6 +1,6 @@
 import { cancelOverlay, createRoomScene, leaveRoomOverlay, readyOverlay, roomIdOverlay, roomUpdate, spectatorsOverlay, tebanOverlay } from "./scene_room.js";
 import { MOVETIME } from "./const.js";
-import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus, setupSocket, connectToServer, socket, disconnectFromServer, getTitleInfo } from "./main.js";
+import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus, setupSocket, connectToServer, socket, disconnectFromServer, getTitleInfo, strings } from "./main.js";
 import { Scene } from "./scene.js";
 import { createTitleScene } from "./scene_title.js";
 import { BackgroundImageUI } from "./ui_background.js";
@@ -25,36 +25,39 @@ export function setOpponentCharacter(character) {
     opponentCharacter = character;
 }
 
-export const endText = new TextUI({
-    text: () => {
-        return "試合終了";
-    },
-    x: 0.0,
-    y: -0.2,
-    size: 0.2,
-    colors: ["#ff6739", "#30140b", "#ffffff"]
-});
+let endText;
+let winText;
+let loseText;
 
-//勝敗結果テキスト
-export const winText = new TextUI({
-    text: () => {
-        return "勝利";
-    },
-    x: 0.0,
-    y: -0.2,
-    size: 0.2,
-    colors: ["#ff6739", "#30140b", "#ffffff"]
-});
-
-export const loseText = new TextUI({
-    text: () => {
-        return "敗北";
-    },
-    x: 0.0,
-    y: -0.2,
-    size: 0.2,
-    colors: ["#b639ff", "#270b36", "#ffffff"]
-});
+export function initGameText() {
+    endText = new TextUI({
+        text: () => {
+            return "試合終了";
+        },
+        x: 0.0,
+        y: -0.2,
+        size: 0.2,
+        colors: ["#ff6739", "#30140b", "#ffffff"]
+    });
+    winText = new TextUI({
+        text: () => {
+            return "勝利";
+        },
+        x: 0.0,
+        y: -0.2,
+        size: 0.2,
+        colors: ["#ff6739", "#30140b", "#ffffff"]
+    });
+    loseText = new TextUI({
+        text: () => {
+            return "敗北";
+        },
+        x: 0.0,
+        y: -0.2,
+        size: 0.2,
+        colors: ["#b639ff", "#270b36", "#ffffff"]
+    });
+}
 
 export const timeText = new TextUI({
     text: () => {
@@ -217,7 +220,7 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
     let opponentRatingUI = null;
 
     if (roomType === 'rating') {
-        let arryRatingtext = "測定中"
+        let arryRatingtext = `${strings['indeterminate']}`;
         if (arryRating !== -999999) {
             const roundRating = Math.round(arryRating);
             arryRatingtext = `${roundRating}`
@@ -236,7 +239,7 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
             backgroundColor: '#000000cc'
         });
 
-        let opponentRatingtext = "測定中";
+        let opponentRatingtext = `${strings['indeterminate']}`;
         if (enemyRating !== -999999) {
             const opponentRoundRating = Math.round(enemyRating);
             opponentRatingtext = `${opponentRoundRating}`
@@ -244,7 +247,7 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
         opponentRatingUI = new TextUI({
             text: () => {
                 // main.jsで計算された表示用レーティングを使用
-                return `レート: ` + opponentRatingtext;
+                return `${strings['rating']}: ` + opponentRatingtext;
             },
             x: 0.43,
             y: -0.44, // プレイヤー名の下に表示するためにy座標を調整
@@ -306,12 +309,12 @@ export function endRoomGame(data) {
 
 function setRatingText(data, mywin) {
     if (mywin === 0 || gameManager.cpu !== null) {
-        changeRating.textContent = "レート変動 なし";
+        changeRating.textContent = `${strings['rating-change']} ` + 'none';
         return
     }
 
-    let oldrateText = "測定中"
-    let newrateText = "測定中"
+    let oldrateText = `${strings['indeterminate']}`
+    let newrateText = `${strings['indeterminate']}`
     let targetoldrate = data.winRating;
     let targetnewrate = data.newWinRating;
     if (mywin === -1) {
@@ -324,7 +327,7 @@ function setRatingText(data, mywin) {
     if (targetnewrate !== -99999) {
         newrateText = `${Math.round(targetnewrate)}`
     }
-    changeRating.textContent = "レート変動 " + oldrateText + " → " + newrateText;
+    changeRating.textContent = `${strings['rating-change']} ` + oldrateText + " → " + newrateText;
 }
 
 function setResultText(mywin) {

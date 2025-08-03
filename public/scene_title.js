@@ -1,7 +1,7 @@
 //タイトルシーン要素
 
 import { createPlayScene } from "./scene_game.js";
-import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, player_id, setScene, characterFiles, setSelectedCharacterName, connectToServer, disconnectFromServer } from "./main.js";
+import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, player_id, setScene, characterFiles, setSelectedCharacterName, connectToServer, strings, scene } from "./main.js";
 import { Scene } from "./scene.js";
 import { OverlayUI } from "./ui.js";
 import { BackgroundImageUI } from "./ui_background.js";
@@ -16,125 +16,138 @@ export const discordButton = document.getElementById("discordButton");
 
 export const roomIdInput = /** @type {HTMLInputElement} */ (document.getElementById("roomIdInput"));
 export const nameInput = /** @type {HTMLInputElement} */ (document.getElementById("nameInput"));
+let cpuLevelOverlay;
+export let statusOverlay;
+export let playCountText;
+export let ratingText;
+export let cancelMatchButton;
+let rankingOverlay;
+let rankingTitle;
+let matchingText;
+let loading;
 
-const cpuLevelOverlay = new OverlayUI({
-    x: 0.65,
-    y: 0.16,
-    height: 0.19,
-    width: 0.11,
-    visible: false
-});
+export function initTitleText() {
+    cpuLevelOverlay = new OverlayUI({
+        x: 0.65,
+        y: 0.16,
+        height: 0.19,
+        width: 0.11,
+        visible: false
+    });
 
-for (let i = 0; i < 4; i++) {
-    const cpulevelButton = new ButtonUI({
-        text: `レベル${i}`,
-        x: 0.0,
-        y: 0.067 - i * 0.045,
-        height: 0.04,
-        width: 0.1,
-        color: '#3241c9',
-        textSize: 0.025,
+    for (let i = 0; i < 4; i++) {
+        const cpulevelButton = new ButtonUI({
+            text: `${strings['level']}${i}`,
+            x: 0.0,
+            y: 0.067 - i * 0.045,
+            height: 0.04,
+            width: 0.1,
+            color: '#3241c9',
+            textSize: 0.025,
+            textColors: ['#ffffffff', '#00000000', '#00000000'],
+            onClick: () => {
+                cpuLevelSubmit(i.toString());
+            }
+        });
+        cpuLevelOverlay.add(cpulevelButton);
+    }
+
+    statusOverlay = new OverlayUI({
+        x: -0.78,
+        y: 0.43,
+        width: 0.2,
+        height: 0.1,
+        color: '#111122bb'
+    });
+
+    playCountText = new TextUI({
+        text: () => `${strings['game-count']}: -`,
+        x: 0,
+        y: -0.015,
+        size: 0.025,
+        colors: ["#ffffff", "#00000000", "#00000000"],
+        position: 'center'
+    });
+
+    ratingText = new TextUI({
+        text: () => `${strings['rating']}: -`,
+        x: 0,
+        y: 0.025,
+        size: 0.025,
+        colors: ["#ffffff", "#00000000", "#00000000"],
+        position: 'center'
+    });
+
+    cancelMatchButton = new ButtonUI({
+        text: `${strings['cancel']}`,
+        x: 0.65,
+        y: 0.4,
+        height: 0.08,
+        width: 0.24,
+        color: '#df398c',
+        textSize: 0.04,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
         onClick: () => {
-            cpuLevelSubmit(i.toString());
+            if (socket) {
+                socket.emit('cancelMatch');
+            }
         }
     });
-    cpuLevelOverlay.add(cpulevelButton);
-}
 
-export const statusOverlay = new OverlayUI({
-    x: -0.78,
-    y: 0.43,
-    width: 0.2,
-    height: 0.1,
-    color: '#111122bb'
-});
+    rankingOverlay = new OverlayUI({
+        x: 0.72,
+        y: -0.22,
+        width: 0.3,
+        height: 0.36
+    });
 
-export const playCountText = new TextUI({
-    text: () => `試合数: -`,
-    x: 0,
-    y: -0.015,
-    size: 0.025,
-    colors: ["#ffffff", "#00000000", "#00000000"],
-    position: 'center'
-});
-
-export const ratingText = new TextUI({
-    text: () => `レート: -`,
-    x: 0,
-    y: 0.025,
-    size: 0.025,
-    colors: ["#ffffff", "#00000000", "#00000000"],
-    position: 'center'
-});
-
-export const cancelMatchButton = new ButtonUI({
-    text: 'キャンセル',
-    x: 0.65,
-    y: 0.4,
-    height: 0.08,
-    width: 0.24,
-    color: '#df398c',
-    textSize: 0.04,
-    textColors: ['#ffffffff', '#00000000', '#00000000'],
-    onClick: () => {
-        if (socket) {
-            socket.emit('cancelMatch');
-        }
-    }
-});
-
-const rankingOverlay = new OverlayUI({
-    x: 0.72,
-    y: -0.22,
-    width: 0.3,
-    height: 0.36
-});
-
-const rankingTitle = new TextUI({
-    text: () => {
-        return `ランキング`
-    },
-    x: 0,
-    y: -0.15,
-    size: 0.03,
-    colors: ["#ffffffff", "#00000000", "#00000000"]
-});
-
-for (let i = 0; i < 10; i++) {
-    const rankingText = new TextUI({
+    rankingTitle = new TextUI({
         text: () => {
-            return ``
+            return `${strings['ranking']}`
         },
-        x: -0.13,
-        y: -0.11 + i * 0.03,
-        size: 0.022,
-        colors: ["#ffffffff", "#00000000", "#00000000"],
-        position: 'left'
+        x: 0,
+        y: -0.15,
+        size: 0.03,
+        colors: ["#ffffffff", "#00000000", "#00000000"]
     });
-    rankingOverlay.add(rankingText);
+
+    for (let i = 0; i < 10; i++) {
+        const rankingText = new TextUI({
+            text: () => {
+                return ``
+            },
+            x: -0.13,
+            y: -0.11 + i * 0.03,
+            size: 0.022,
+            colors: ["#ffffffff", "#00000000", "#00000000"],
+            position: 'left'
+        });
+        rankingOverlay.add(rankingText);
+    }
+
+    rankingOverlay.add(rankingTitle);
+    statusOverlay.add(playCountText);
+    statusOverlay.add(ratingText);
+
+    matchingText = new TextUI({
+        text: () => {
+            return `${strings['matching']}`;
+        },
+        x: 0.0,
+        y: 0.4,
+        size: 0.05,
+        colors: ["#ffffff", "#00000000", "#00000000"],
+        position: 'center'
+    });
+
+    loading = new LoadingUI({
+        x: 0.2,
+        y: 0.4,
+        radius: 0.03,
+    });
 }
 
-rankingOverlay.add(rankingTitle);
-statusOverlay.add(playCountText);
-statusOverlay.add(ratingText);
 
-const matchingText = new TextUI({
-    text: () => {
-        return "マッチング中";
-    },
-    x: 0.0,
-    y: 0.4,
-    size: 0.05,
-    colors: ["#ffffff", "#00000000", "#00000000"],
-    position: 'center'
-});
-
-const loading = new LoadingUI({
-    x: 0.2,
-    y: 0.4,
-    radius: 0.03,
-});
 
 function clearTitleHTML() {
     discordButton.style.display = "none";
@@ -162,7 +175,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     function startOnlineMatch() {
         setPlayerName(nameInput.value.trim());
         localStorage.setItem("playerName", playerName);
-        if (playerName == "") setPlayerName("名無しの棋士");
+        if (playerName == "") setPlayerName(`${strings['anonymous']}`);
 
         clearTitleHTML();
         titleScene.remove(joinRoomButton);
@@ -179,7 +192,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
             socket.emit("requestMatch", { name: playerName, characterName: selectedCharacterName, player_id: player_id });
         }).catch(err => {
             console.error("Failed to connect for matching:", err);
-            alert("サーバーへの接続に失敗しました。");
+            alert("failed to connect server");
             setScene(createTitleScene());
         });
     }
@@ -187,14 +200,14 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     function makeRoomSubmit() {
         setPlayerName(nameInput.value.trim());
         localStorage.setItem("playerName", playerName);
-        if (playerName == "") setPlayerName("名無しの棋士");
+        if (playerName == "") setPlayerName(`${strings['anonymous']}`);
         clearTitleHTML();
 
         connectToServer().then(socket => {
             socket.emit("createRoom", { name: playerName, characterName: selectedCharacterName, player_id: player_id });
         }).catch(err => {
             console.error("Failed to connect for creating room:", err);
-            alert("サーバーへの接続に失敗しました。");
+            alert("failed to connect server");
             setScene(createTitleScene());
         });
     }
@@ -202,7 +215,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     function joinRoomSubmit() {
         setPlayerName(nameInput.value.trim());
         localStorage.setItem("playerName", playerName);
-        if (playerName == "") setPlayerName("名無しの棋士");
+        if (playerName == "") setPlayerName(`${strings['anonymous']}`);
         const roomId = roomIdInput.value.trim();
         if (roomId) {
             clearTitleHTML();
@@ -210,7 +223,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
                 socket.emit("joinRoom", { roomId: roomId, name: playerName, characterName: selectedCharacterName, player_id: player_id });
             }).catch(err => {
                 console.error("Failed to connect for joining room:", err);
-                alert("サーバーへの接続に失敗しました。");
+                alert("failed to connect server");
                 setScene(createTitleScene());
             });
         }
@@ -223,7 +236,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     updateRanking();
 
     const title = new TextUI({
-        text: () => "リアルタイム将棋",
+        text: () => `${strings['title']}`,
         x: 0,
         y: -0.3,
         size: 0.12,
@@ -257,7 +270,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     titleScene.add(titleCharacter);
 
     const playButton = new ButtonUI({
-        text: 'オンライン対戦',
+        text: `${strings['online-match']}`,
         x: 0.65,
         y: 0.4,
         height: 0.1,
@@ -270,7 +283,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     titleScene.add(playButton);
 
     const makeRoomButton = new ButtonUI({
-        text: '部屋作成',
+        text: `${strings['make-room']}`,
         x: 0.78,
         y: 0.3,
         height: 0.05,
@@ -283,7 +296,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     titleScene.add(makeRoomButton);
 
     const joinRoomButton = new ButtonUI({
-        text: '部屋参加',
+        text: `${strings['join-room']}`,
         x: 0.64,
         y: 0.3,
         height: 0.05,
@@ -296,7 +309,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     titleScene.add(joinRoomButton);
 
     const cpuButton = new ButtonUI({
-        text: 'CPU対戦',
+        text: `${strings['cpu-match']}`,
         x: 0.78,
         y: 0.24,
         height: 0.05,
@@ -317,7 +330,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     });
 
     const ruleTitle = new TextUI({
-        text: () => 'ルール',
+        text: () => `${strings['rule']}`,
         x: 0,
         y: -0.14,
         size: 0.06,
@@ -325,7 +338,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     });
 
     const ruleText = new TextUI({
-        text: () => '駒の動きは通常の将棋と同じですが手番がありません。連続で\n何度も動かせますが動かした駒は一定時間動かせません。\n\nトライ勝利ルールを採用しています。自玉が敵玉の開始位置\n（先手なら5一、後手なら5九)に到達したら勝利となります。',
+        text: () => `${strings['rule-text']}`,
         x: -0.35,
         y: -0.06,
         size: 0.025,
@@ -334,7 +347,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     });
 
     const closeRuleButton = new ButtonUI({
-        text: '閉じる',
+        text: `${strings['close']}`,
         x: 0,
         y: 0.16,
         width: 0.15,
@@ -358,7 +371,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     });
 
     const ruleButton = new ButtonUI({
-        text: 'ルール',
+        text: `${strings['rule']}`,
         x: 0.78,
         y: 0.02,
         height: 0.05,
@@ -375,7 +388,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     titleScene.add(ruleButton);
 
     const ctrlTitle = new TextUI({
-        text: () => '操作方法',
+        text: () => `${strings['manual']}`,
         x: 0,
         y: -0.14,
         size: 0.06,
@@ -383,7 +396,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     });
 
     const ctrlText = new TextUI({
-        text: () => 'マウスドラッグ - 駒の移動\n右ドラッグ - 成らず\n\nスペース - 歩\nQ - 香　W - 桂　E - 角\nA - 銀　S - 金　D - 飛',
+        text: () => `${strings['manual-text']}`,
         x: -0.15,
         y: -0.06,
         size: 0.025,
@@ -392,7 +405,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     });
 
     const closeCtrlButton = new ButtonUI({
-        text: '閉じる',
+        text: `${strings['close']}`,
         x: 0,
         y: 0.16,
         width: 0.15,
@@ -408,7 +421,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     ctrlOverlay.add(closeCtrlButton);
 
     const ctrlButton = new ButtonUI({
-        text: '操作方法',
+        text: `${strings['manual']}`,
         x: 0.64,
         y: 0.02,
         height: 0.05,
@@ -425,7 +438,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     titleScene.add(ctrlButton);
 
     const charaSelectButton = new ButtonUI({
-        text: 'キャラ変更',
+        text: `${strings['change-character']}`,
         x: -0.58,
         y: 0.45,
         height: 0.06,
@@ -480,7 +493,7 @@ export function createCharacterSelectScene(titleCharacter) {
     selectScene.add(backgroundImageUI);
 
     const selectTitle = new TextUI({
-        text: () => "キャラクター選択",
+        text: () => `${strings['select-character']}`,
         x: 0.4,
         y: -0.23,
         size: 0.06,
@@ -621,7 +634,7 @@ export function roomJoinFailed(scene) {
         color: '#187a1c'
     });
     const roomJoinFailedtext = new TextUI({
-        text: () => "入室に失敗しました",
+        text: () => `${strings['join-failed']}`,
         x: 0,
         y: 0.002,
         size: 0.025,
@@ -641,10 +654,10 @@ function cpuButtonSubmit() {
 function cpuLevelSubmit(level) {
     setPlayerName(nameInput.value.trim());
     localStorage.setItem("playerName", playerName);
-    if (playerName == "") setPlayerName("名無しの棋士");
+    if (playerName == "") setPlayerName(`${strings['anonymous']}`);
     clearTitleHTML();
     const now = performance.now();
-    setScene(createPlayScene([playerName], null, selectedCharacterName, [`CPUレベル${level}`], null, null, null, 'cpu', now, 'sente', { sente: MOVETIME, gote: MOVETIME }, false, level));
+    setScene(createPlayScene([playerName], null, selectedCharacterName, [`CPU${strings['level']}${level}`], null, null, null, 'cpu', now, 'sente', { sente: MOVETIME, gote: MOVETIME }, false, level));
 }
 
 export function updateRanking() {
@@ -652,7 +665,7 @@ export function updateRanking() {
         for (let i = 0; i < 10; i++) {
             if (serverStatus.topPlayers[i]) {
                 rankingOverlay.childs[i].text = () => {
-                    return `${i + 1}位:${Math.round(serverStatus.topPlayers[i].rating)} ${serverStatus.topPlayers[i].name}`;
+                    return `${i + 1}.${Math.round(serverStatus.topPlayers[i].rating)} ${serverStatus.topPlayers[i].name}`;
                 }
             } else {
                 rankingOverlay.childs[i].text = () => ``;

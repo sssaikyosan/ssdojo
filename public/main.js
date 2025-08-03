@@ -2,8 +2,8 @@ import { Keyboard } from "./keyboard.js";
 import { GameManager } from "./game_manager.js";
 import { Board } from './board.js';
 import { AudioManager } from "./audio_manager.js"; // audio_manager.jsからインポート
-import { createTitleScene, nameInput, playCountText, ratingText, roomIdInput, roomJoinFailed, updateRanking } from "./scene_title.js";
-import { createPlayScene, backToRoom, endGame, endRoomGame } from "./scene_game.js";
+import { createTitleScene, initTitleText, nameInput, playCountText, ratingText, roomIdInput, roomJoinFailed, updateRanking } from "./scene_title.js";
+import { createPlayScene, backToRoom, endGame, endRoomGame, initGameText } from "./scene_game.js";
 import { createRoomScene, roomUpdate } from "./scene_room.js";
 import { CHARA_QUOTES, CHARACTER_FOLDER, MOVETIME } from "./const.js";
 
@@ -77,15 +77,15 @@ export function setPlayerName(name) {
 
 export function setStatus(rating, total_games) {
   playCountText.text = () => {
-    return `試合数:${total_games}`
+    return `${strings['game-count']}:${total_games}`
   }
   if (total_games >= 10) {
     ratingText.text = () => {
-      return `レート:${Math.round(rating)}`
+      return `${strings['rating']}:${Math.round(rating)}`
     }
   } else {
     ratingText.text = () => {
-      return `レート: 測定中`
+      return `${strings['rating']}: ${strings['indeterminate']}`
     }
   }
 
@@ -160,7 +160,8 @@ export async function getTitleInfo() {
   }
 }
 
-async function loadStrings(lang) {
+async function loadStrings() {
+  const lang = 'jp'
   // 言語データの読み込み
   try {
     const response = await fetch(`/lang/${lang}.json`);
@@ -174,6 +175,7 @@ async function loadStrings(lang) {
     // エラー時は空オブジェクトを設定
     strings = {};
   }
+  console.log(strings);
 }
 
 // 初期化関数
@@ -185,7 +187,9 @@ async function init() {
   }
   isInitialized = true;
 
-  loadStrings('jp');
+  await loadStrings();
+  initTitleText();
+  initGameText();
 
   // キャンバスの初期化
   canvas = document.getElementById('shogiCanvas');
