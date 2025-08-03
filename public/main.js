@@ -448,8 +448,8 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
       data.roomType,
       data.servertime,
       data.roomteban,
-      { sente: MOVETIME, gote: MOVETIME },
-      false
+      data.moveTime,
+      data.pawnLimit4thRank
     ));
   });
 

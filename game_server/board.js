@@ -21,11 +21,11 @@ export class Board {
   serverstarttime = 0;
   starttime = 0;
   time = 0;
-  moveTime = { sente: 5, gote: 5 }
+  moveTime = { sente: MOVETIME, gote: MOVETIME }
   pawnLimit4thRank = false;
 
   // 盤面の初期化
-  init(servertime, time, moveTime = { sente: 5, gote: 5 }, pawnLimit4thRank = false) {
+  init(servertime, time, moveTime = { sente: MOVETIME, gote: MOVETIME }, pawnLimit4thRank = false) {
     this.serverstarttime = servertime;
     // this.komadaiServerTime = { sente: servertime, gote: servertime };
     // this.komadaipTime = { sente: time, gote: time };

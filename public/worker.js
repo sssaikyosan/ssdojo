@@ -186,10 +186,10 @@ class Board {
 
     // 盤面の初期化
     init(servertime, time) {
-        this.serverstarttime = servertime;
+        this.serverstarttime = servertime - MOVETIME * 1000 + 5 * 1000;
         // this.komadaiServerTime = { sente: servertime, gote: servertime };
         // this.komadaipTime = { sente: time, gote: time };
-        this.starttime = time;
+        this.starttime = time - MOVETIME * 1000 + 5 * 1000;
         this.time = time;
         this.matched = true;
         this.komadaiPieces = {

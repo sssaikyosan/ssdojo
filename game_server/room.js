@@ -16,8 +16,8 @@ export class Room {
         this.ownerId = ownerId; // オーナーのplayer_idを保持
         this.maxplayers = 12; // 最大プレイヤー数のデフォルト値
         this.moveTime = { // 持ち時間のデフォルト値
-            sente: 5,
-            gote: 5
+            sente: MOVETIME,
+            gote: MOVETIME
         };
         this.pawnLimit4thRank = false;
     }
@@ -63,6 +63,7 @@ export class Room {
                 roomType: this.roomType,
                 servertime: now,
                 moveTime: this.moveTime,
+                pawnLimit4thRank: this.pawnLimit4thRank
             };
             console.log("startGame", names.sente[0], senteRating, names.gote[0], goteRating);
             console.log("data", data);

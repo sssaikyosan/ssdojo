@@ -1,6 +1,6 @@
 {
     "title": "リアルタイム将棋",
-    "volme-setting": "音量設定",
+    "volume-setting": "音量設定",
     "bgm-volume": "BGM",
     "se-volume": "効果音",
     "voice-volume": "キャラ音声",
@@ -15,7 +15,7 @@
     "game-count": "試合数",
     "rating": "レート",
     "select-character": "キャラクター選択",
-    "sumbit": "決定",
+    "submit": "決定",
     "move-first": "先手に移動",
     "move-second": "後手に移動",
     "spectate": "観戦",
