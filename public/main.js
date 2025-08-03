@@ -10,6 +10,8 @@ import { CHARA_QUOTES, CHARACTER_FOLDER, MOVETIME } from "./const.js";
 // 初期化フラグ
 let isInitialized = false;
 
+export let strings = {}; // 言語データを保持する変数
+
 export let pieceImages = {};
 export let characterImages = {}; // キャラクター画像用オブジェクトを追加
 export let canvas = null;
@@ -158,6 +160,21 @@ export async function getTitleInfo() {
   }
 }
 
+async function loadStrings(lang) {
+  // 言語データの読み込み
+  try {
+    const response = await fetch(`/lang/${lang}.json`);
+    if (!response.ok) {
+      throw new Error(`Failed to load language file: ${response.status}`);
+    }
+    strings = await response.json();
+    console.log('Language data loaded:', strings);
+  } catch (error) {
+    console.error('Failed to load language data:', error);
+    // エラー時は空オブジェクトを設定
+    strings = {};
+  }
+}
 
 // 初期化関数
 async function init() {
@@ -167,6 +184,9 @@ async function init() {
     return;
   }
   isInitialized = true;
+
+  loadStrings('jp');
+
   // キャンバスの初期化
   canvas = document.getElementById('shogiCanvas');
   //@ts-ignore
