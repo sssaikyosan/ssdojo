@@ -66,7 +66,7 @@ app.get('/api/title-info', async (req, res) => {
         total_games: 0,
         rating: 1500,
         lastLogin: new Date(),
-        name: '名無しの棋士'
+        name: ''
       };
       await postgure.savePlayerInfo(initialData);
 
@@ -98,7 +98,7 @@ app.get('/api/title-info', async (req, res) => {
         total_games: 0,
         rating: 1500,
         lastLogin: new Date(),
-        name: '名無しの棋士'
+        name: ''
       };
       await postgure.savePlayerInfo(playerInfo);
     }

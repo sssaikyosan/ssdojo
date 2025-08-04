@@ -197,7 +197,7 @@ export function initTitleText() {
     ratingText.text = () => {
         return `${strings['rating']}:${playerStatus.rating}`
     }
-    cancelMatchButton.text = () => {
+    cancelMatchButton.text.text = () => {
         return `${strings['cancel']}`
     }
     rankingTitle.text = () => {
@@ -616,7 +616,7 @@ export function createCharacterSelectScene(titleCharacter) {
     });
 
     const charaSubmitButton = new ButtonUI({
-        text: "決定",
+        text: strings['submit'],
         x: 0.4,
         y: 0.22,
         height: 0.07,

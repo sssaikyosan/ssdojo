@@ -171,6 +171,8 @@ export async function loadStrings(lang) {
     }
     strings = await response.json();
     console.log('Language data loaded:', strings);
+    // 言語設定をlocalStorageに保存
+    localStorage.setItem('language', lang);
   } catch (error) {
     console.error('Failed to load language data:', error);
     // エラー時は空オブジェクトを設定
@@ -179,21 +181,40 @@ export async function loadStrings(lang) {
   initTitleText();
   initGameText();
   initRoomText();
+  localStorage.setItem('Language', lang);
+}
+
+function loadLanguage() {
+  try {
+    let lang = localStorage.getItem('Language');
+    if (lang) {
+      return lang;
+    } else {
+      return null;
+    }
+  } catch (e) {
+    console.error('ローカルストレージからの読み込みに失敗しました:', e);
+    return null;
+  }
 }
 // ブラウザの言語設定を取得し、'jp' または 'en' を返す関数
 export function getBrowserLanguage() {
-  const languages = navigator.languages || [navigator.language];
-  for (const lang of languages) {
-    // 言語コードが 'ja' で始まる場合は 'jp' を返す
-    if (lang.startsWith('ja')) {
-      return 'jp';
-    }
-    // 言語コードが 'en' で始まる場合は 'en' を返す
-    if (lang.startsWith('en')) {
-      return 'en';
+  let lang = loadLanguage();
+  if (lang) {
+    return lang;
+  } else {
+    const languages = navigator.languages || [navigator.language];
+    for (const lang of languages) {
+      // 言語コードが 'ja' で始まる場合は 'jp' を返す
+      if (lang.startsWith('ja')) {
+        return 'jp';
+      }
+      // 言語コードが 'en' で始まる場合は 'en' を返す
+      if (lang.startsWith('en')) {
+        return 'en';
+      }
     }
   }
-  // 上記の言語に一致しない場合は、デフォルトとして 'en' を返す
   return 'en';
 }
 
@@ -206,8 +227,13 @@ async function init() {
   }
   isInitialized = true;
 
-  const browserLang = getBrowserLanguage();
-  await loadStrings(browserLang);
+  // localStorageから言語設定を読み込む
+  let lang = localStorage.getItem('language');
+  // 言語設定が存在しない場合、または無効な値の場合、ブラウザの言語設定を使用
+  if (!lang || (lang !== 'jp' && lang !== 'en')) {
+    lang = getBrowserLanguage();
+  }
+  await loadStrings(lang);
 
   // キャンバスの初期化
   canvas = document.getElementById('shogiCanvas');

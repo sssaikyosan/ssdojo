@@ -25,38 +25,44 @@ export function setOpponentCharacter(character) {
     opponentCharacter = character;
 }
 
-let endText;
-let winText;
-let loseText;
+let endText = new TextUI({
+    text: () => {
+        return "Game End";
+    },
+    x: 0.0,
+    y: -0.2,
+    size: 0.2,
+    colors: ["#ff6739", "#30140b", "#ffffff"]
+});
+let winText = new TextUI({
+    text: () => {
+        return "Win";
+    },
+    x: 0.0,
+    y: -0.2,
+    size: 0.2,
+    colors: ["#ff6739", "#30140b", "#ffffff"]
+});
+let loseText = new TextUI({
+    text: () => {
+        return "Lose";
+    },
+    x: 0.0,
+    y: -0.2,
+    size: 0.2,
+    colors: ["#b639ff", "#270b36", "#ffffff"]
+});
 
 export function initGameText() {
-    endText = new TextUI({
-        text: () => {
-            return "試合終了";
-        },
-        x: 0.0,
-        y: -0.2,
-        size: 0.2,
-        colors: ["#ff6739", "#30140b", "#ffffff"]
-    });
-    winText = new TextUI({
-        text: () => {
-            return "勝利";
-        },
-        x: 0.0,
-        y: -0.2,
-        size: 0.2,
-        colors: ["#ff6739", "#30140b", "#ffffff"]
-    });
-    loseText = new TextUI({
-        text: () => {
-            return "敗北";
-        },
-        x: 0.0,
-        y: -0.2,
-        size: 0.2,
-        colors: ["#b639ff", "#270b36", "#ffffff"]
-    });
+    endText.text = () => {
+        return strings['game-end'];
+    }
+    winText.text = () => {
+        return strings['win'];
+    }
+    loseText.text = () => {
+        return strings['lose'];
+    }
 }
 
 export const timeText = new TextUI({
@@ -228,7 +234,7 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
         playerRatingUI = new TextUI({
             text: () => {
                 // main.jsで計算された表示用レーティングを使用
-                return `レート: ` + arryRatingtext;
+                return `${strings['rating']}: ` + arryRatingtext;
             },
             x: -0.43,
             y: 0.44, // プレイヤー名の下に表示するためにy座標を調整
