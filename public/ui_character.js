@@ -1,7 +1,7 @@
 import { TextUI } from "./ui_text.js";
 import { characterImages, audioManager } from "./main.js";
 import { OverlayUI, UI } from "./ui.js";
-import { CHARACTER_FOLDER, CHARA_QUOTES } from "./const.js";
+import { CHARACTER_FOLDER, NUM_QUOTES } from "./const.js";
 
 // キャラクター画像を表示するためのUIクラス
 export class CharacterImageUI extends UI {
@@ -46,7 +46,7 @@ export class CharacterImageUI extends UI {
   init() {
     this.videoElement = [];
     if (this.image) {
-      for (let i = 0; i < CHARA_QUOTES[this.image].length; i++) {
+      for (let i = 0; i < NUM_QUOTES; i++) {
         this.videoElement.push(document.createElement('video'));
         this.videoElement[i].src = `${CHARACTER_FOLDER}/${this.image}/click${i + 1}.webm`;
         this.videoElement[i].loop = false; // ループはしない
@@ -88,12 +88,12 @@ export class CharacterImageUI extends UI {
   }
 
   onMouseDown(pos) {
-    let randomIndex = Math.floor(Math.random() * CHARA_QUOTES[this.image].length - 1);
+    let randomIndex = Math.floor(Math.random() * NUM_QUOTES - 1);
     if (randomIndex >= this.lastVideoidx) {
       randomIndex++;
     }
     if (this.playVideo(randomIndex)) {
-      this.spawnVoiceText(randomIndex);
+      // this.spawnVoiceText(randomIndex);
     }
   }
 
@@ -104,7 +104,7 @@ export class CharacterImageUI extends UI {
 
   playVideo(randomIndex) {
     // videoElement が存在し、動画が既に再生中、または再生準備ができていない場合は何もしない
-    if (this.videoElement.length < CHARA_QUOTES[this.image].length || this.isRenderingVideo) {
+    if (this.videoElement.length < NUM_QUOTES || this.isRenderingVideo) {
       console.log('動画の再生準備ができていません、または既に再生中です。');
       return false;
     }
@@ -142,18 +142,18 @@ export class CharacterImageUI extends UI {
     }
   }
 
-  spawnVoiceText(randomIndex) {
-    this.voiceText.text = () => { return `${CHARA_QUOTES[this.image][randomIndex]}` }
-    this.voiceTextOverlay.width = CHARA_QUOTES[this.image][randomIndex].length * this.textsize + 0.02;
-    this.currentVideo.addEventListener('ended', () => {
-      setTimeout(() => {
-        if (this.currentVideo === null) {
-          this.voiceText.text = () => { return `` };
-          this.voiceTextOverlay.width = 0;
-        }
-      }, 700);
-    });
-  }
+  // spawnVoiceText(randomIndex) {
+  //   this.voiceText.text = () => { return `${CHARA_QUOTES[this.image][randomIndex]}` }
+  //   this.voiceTextOverlay.width = CHARA_QUOTES[this.image][randomIndex].length * this.textsize + 0.02;
+  //   this.currentVideo.addEventListener('ended', () => {
+  //     setTimeout(() => {
+  //       if (this.currentVideo === null) {
+  //         this.voiceText.text = () => { return `` };
+  //         this.voiceTextOverlay.width = 0;
+  //       }
+  //     }, 700);
+  //   });
+  // }
 }
 
 export class CharacterInGameUI extends UI {

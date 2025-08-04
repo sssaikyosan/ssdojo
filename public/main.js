@@ -4,8 +4,8 @@ import { Board } from './board.js';
 import { AudioManager } from "./audio_manager.js"; // audio_manager.jsからインポート
 import { createTitleScene, initTitleText, nameInput, playCountText, ratingText, roomIdInput, roomJoinFailed, updateRanking } from "./scene_title.js";
 import { createPlayScene, backToRoom, endGame, endRoomGame, initGameText } from "./scene_game.js";
-import { createRoomScene, roomUpdate } from "./scene_room.js";
-import { CHARA_QUOTES, CHARACTER_FOLDER, MOVETIME } from "./const.js";
+import { createRoomScene, initRoomText, roomUpdate } from "./scene_room.js";
+import { CHARACTER_FOLDER, MOVETIME, NUM_QUOTES } from "./const.js";
 
 // 初期化フラグ
 let isInitialized = false;
@@ -85,7 +85,7 @@ export function setStatus(rating, total_games) {
     }
   } else {
     ratingText.text = () => {
-      return `${strings['rating']}: ${strings['indeterminate']}`
+      return `${strings['rating']}: ${strings['unrated']}`
     }
   }
 
@@ -161,7 +161,7 @@ export async function getTitleInfo() {
 }
 
 async function loadStrings() {
-  const lang = 'jp'
+  const lang = 'en'
   // 言語データの読み込み
   try {
     const response = await fetch(`/lang/${lang}.json`);
@@ -190,6 +190,7 @@ async function init() {
   await loadStrings();
   initTitleText();
   initGameText();
+  initRoomText();
 
   // キャンバスの初期化
   canvas = document.getElementById('shogiCanvas');
@@ -340,7 +341,7 @@ function addEventListeners() {
 
         // selectedCharacterNameがnullでないことを確認
         if (selectedCharacterName) {
-          const randomIndex = Math.floor(Math.random() * CHARA_QUOTES[selectedCharacterName].length);
+          const randomIndex = Math.floor(Math.random() * NUM_QUOTES);
           const randomVoiceFile = `/${CHARACTER_FOLDER}/${selectedCharacterName}/voice${randomIndex + 1}.wav`;
           audioManager.playVoice(randomVoiceFile);
         }

@@ -220,7 +220,7 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
     let opponentRatingUI = null;
 
     if (roomType === 'rating') {
-        let arryRatingtext = `${strings['indeterminate']}`;
+        let arryRatingtext = `${strings['unrated']}`;
         if (arryRating !== -999999) {
             const roundRating = Math.round(arryRating);
             arryRatingtext = `${roundRating}`
@@ -239,7 +239,7 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
             backgroundColor: '#000000cc'
         });
 
-        let opponentRatingtext = `${strings['indeterminate']}`;
+        let opponentRatingtext = `${strings['unrated']}`;
         if (enemyRating !== -999999) {
             const opponentRoundRating = Math.round(enemyRating);
             opponentRatingtext = `${opponentRoundRating}`
@@ -313,8 +313,8 @@ function setRatingText(data, mywin) {
         return
     }
 
-    let oldrateText = `${strings['indeterminate']}`
-    let newrateText = `${strings['indeterminate']}`
+    let oldrateText = `${strings['unrated']}`
+    let newrateText = `${strings['unrated']}`
     let targetoldrate = data.winRating;
     let targetnewrate = data.newWinRating;
     if (mywin === -1) {

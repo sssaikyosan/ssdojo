@@ -376,7 +376,6 @@
       <p id="maxPlayersDisplay"></p>
       <p id="senteMoveTimeDisplay"></p>
       <p id="goteMoveTimeDisplay"></p>
-      <p id="pawnLimit4thRankDisplay"></p>
       <!-- オーナーの場合のみ表示されるボタン -->
       <button id="openRoomSettingsButton" style="display: none;">ルーム設定変更</button>
     </div>
@@ -391,8 +390,6 @@
 
       <label for="goteMoveTimeInput">後手クールダウン (秒):</label>
       <input type="number" id="goteMoveTimeInput" min="0" max="30" value="5">
-      <label for="pawnLimit4thRankInput">歩の4段目制限:</label>
-      <input type="checkbox" id="pawnLimit4thRankInput">
 
       <button id="saveRoomSettingsButton">適用</button>
     </div>
@@ -422,11 +419,11 @@
 
   <div id="volumeOverlay" class="overlay"
     style="display: none;  margin:10px; position: absolute; top: 60px; right: 10px; text-align: left;">
-    <label for="bgmVolumeSlider" class="whiteText">BGM音量:</label>
+    <label for="bgmVolumeSlider" class="whiteText">BGM:</label>
     <input type="range" id="bgmVolumeSlider" min="0" max="100" value="100">
-    <label for="soundVolumeSlider" class="whiteText">効果音量:</label>
+    <label for="soundVolumeSlider" class="whiteText">SE:</label>
     <input type="range" id="soundVolumeSlider" min="0" max="100" value="100">
-    <label for="voiceVolumeSlider" class="whiteText">ボイス音量:</label>
+    <label for="voiceVolumeSlider" class="whiteText">Voice:</label>
     <input type="range" id="voiceVolumeSlider" min="0" max="100" value="100">
   </div>
   <a id="discordButton" href="https://discord.gg/6VYVWnM7Qu" class="discord-button" target="_blank"

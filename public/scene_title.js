@@ -8,7 +8,7 @@ import { BackgroundImageUI } from "./ui_background.js";
 import { CharacterImageUI } from "./ui_character.js";
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
-import { characterInfo, MOVETIME } from "./const.js";
+import { MOVETIME } from "./const.js";
 import { ImageUI } from "./ui_image.js";
 import { ButtonUI } from "./ui_button.js";
 
@@ -16,6 +16,11 @@ export const discordButton = document.getElementById("discordButton");
 
 export const roomIdInput = /** @type {HTMLInputElement} */ (document.getElementById("roomIdInput"));
 export const nameInput = /** @type {HTMLInputElement} */ (document.getElementById("nameInput"));
+export const settingsButton = document.getElementById("settingsButton");
+export const bgmVolumeText = document.querySelector('label[for="bgmVolumeSlider"]');
+export const seVolumeText = document.querySelector('label[for="soundVolumeSlider"]');
+export const voiceVolumeText = document.querySelector('label[for="voiceVolumeSlider"]');
+
 let cpuLevelOverlay;
 export let statusOverlay;
 export let playCountText;
@@ -27,6 +32,15 @@ let matchingText;
 let loading;
 
 export function initTitleText() {
+
+    nameInput.placeholder = strings['name'];
+
+    roomIdInput.placeholder = strings['room-id'];
+    settingsButton.textContent = strings['volume-setting'];
+    bgmVolumeText.textContent = strings['bgm-volume'];
+    seVolumeText.textContent = strings['se-volume'];
+    voiceVolumeText.textContent = strings['voice-volume'];
+
     cpuLevelOverlay = new OverlayUI({
         x: 0.65,
         y: 0.16,
@@ -362,13 +376,6 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     ruleOverlay.add(ruleText);
     ruleOverlay.add(closeRuleButton);
 
-    const ctrlOverlay = new OverlayUI({
-        x: 0,
-        y: 0,
-        height: 0.4,
-        width: 0.4,
-        visible: false
-    });
 
     const ruleButton = new ButtonUI({
         text: `${strings['rule']}`,
@@ -384,8 +391,17 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
             ctrlOverlay.visible = false;
         }
     });
+
     titleScene.add(ruleOverlay);
     titleScene.add(ruleButton);
+
+    const ctrlOverlay = new OverlayUI({
+        x: 0,
+        y: 0,
+        height: 0.4,
+        width: 0.5,
+        visible: false
+    });
 
     const ctrlTitle = new TextUI({
         text: () => `${strings['manual']}`,
@@ -523,7 +539,7 @@ export function createCharacterSelectScene(titleCharacter) {
     });
 
     const characterProfileText = new TextUI({
-        text: () => characterInfo[selectedCharacterName].profile,
+        text: () => strings['characters'][selectedCharacterName]['profile'],
         x: -0.05,
         y: 0.35,
         size: 0.03,
@@ -577,7 +593,7 @@ export function createCharacterSelectScene(titleCharacter) {
         });
 
         const characterNameText = new TextUI({
-            text: () => characterInfo[characterName].name,
+            text: () => strings['characters'][characterName]['name'],
             x: 0,
             y: characterSize / 3 + 0.10,
             size: 0.03,
@@ -611,7 +627,7 @@ export function createCharacterSelectScene(titleCharacter) {
                     titleCharacter.spawnVoiceText(0);
                 }
             });
-            characterProfileText.text = () => characterInfo[characterName].profile;
+            characterProfileText.text = () => strings['characters'][characterName]['profile'];
         };
 
         selectScene.add(faceOverlayUI);

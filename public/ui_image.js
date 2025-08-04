@@ -1,5 +1,4 @@
-import { CHARA_QUOTES, CHARACTER_FOLDER } from "./const.js";
-import { characterImages, audioManager } from "./main.js";
+import { characterImages } from "./main.js";
 import { UI } from "./ui.js";
 
 export class ImageUI extends UI {

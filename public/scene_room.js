@@ -1,6 +1,6 @@
 // ルームUIを定義するファイル
 import { Scene } from "./scene.js";
-import { battle_img, connectToServer, disconnectFromServer, getTitleInfo, setScene, socket } from "./main.js"; // setScene関数をインポート
+import { battle_img, connectToServer, disconnectFromServer, getTitleInfo, setScene, socket, strings } from "./main.js"; // setScene関数をインポート
 import { createTitleScene, discordButton } from "./scene_title.js"; // タイトルシーンに戻るために必要
 import { BackgroundImageUI } from "./ui_background.js";
 
@@ -23,14 +23,16 @@ const roomSettingsDisplay = document.getElementById("roomSettingsDisplay");
 const maxPlayersDisplay = document.getElementById("maxPlayersDisplay");
 const senteMoveTimeDisplay = document.getElementById("senteMoveTimeDisplay");
 const goteMoveTimeDisplay = document.getElementById("goteMoveTimeDisplay");
-const pawnLimit4thRankDisplay = document.getElementById("pawnLimit4thRankDisplay")
 const openRoomSettingsButton = document.getElementById("openRoomSettingsButton");
 const roomSettingsOverlay = document.getElementById("roomSettingsOverlay");
 const maxPlayersInput = /** @type {HTMLInputElement} */ (document.getElementById("maxPlayersInput"));
 const senteMoveTimeInput = /** @type {HTMLInputElement} */ (document.getElementById("senteMoveTimeInput"));
 const goteMoveTimeInput = /** @type {HTMLInputElement} */ (document.getElementById("goteMoveTimeInput"));
-const pawnLimit4thRankInput = /** @type {HTMLInputElement} */ (document.getElementById("pawnLimit4thRankInput"));
 const saveRoomSettingsButton = document.getElementById("saveRoomSettingsButton");
+
+const maxPlayersLabel = document.querySelector('label[for="maxPlayersInput"]');
+const senteMoveTimeLabel = document.querySelector('label[for="senteMoveTimeInput"]');
+const goteMoveTimeLabel = document.querySelector('label[for="goteMoveTimeInput"]');
 
 
 const displayRoomIdButton = document.getElementById("displayRoomIdButton");
@@ -53,22 +55,35 @@ leaveRoomButton.addEventListener("click", () => { leaveRoom(); });
 
 copyIdButton.addEventListener("click", handleCopyIdClick);
 
+
+export function initRoomText() {
+    openRoomSettingsButton.textContent = `${strings['change-setting']}`
+    displayRoomIdButton.textContent = `${strings['display-room-id']}`;
+    copyIdButton.textContent = `${strings['copy']}`;
+    copySuccessMessage.textContent = `${strings['copy-success']}`;
+    readyButton.textContent = strings['ready'];
+    cancelButton.textContent = strings['cancel'];
+    startRoomGameButton.textContent = strings['start-game'];
+    moveToSenteButton.textContent = strings['move-first'];
+    moveToGoteButton.textContent = strings['move-second'];
+    moveToSpectatorsButton.textContent = strings['spectate'];
+    leaveRoomButton.textContent = strings['leave-room'];
+
+    maxPlayersLabel.textContent = `${strings['max-player']}`;
+    senteMoveTimeLabel.textContent = `${strings['cooldown-first']}`;
+    goteMoveTimeLabel.textContent = `${strings['cooldown-second']}`;
+
+    saveRoomSettingsButton.textContent = strings['apply'];
+}
+
 // オーナー用ルーム設定変更ボタンにイベントリスナーを追加
 openRoomSettingsButton.addEventListener("click", () => {
     roomSettingsOverlay.style.display = 'flex';
     // 現在の設定値を入力フィールドにセット
-    maxPlayersInput.value = maxPlayersDisplay.textContent.replace('最大プレイヤー数: ', '');
-    senteMoveTimeInput.value = senteMoveTimeDisplay.textContent.replace('先手クールダウン (秒): ', '');
+    maxPlayersInput.value = maxPlayersDisplay.textContent.replace(`${strings['max-player']}`, '');
+    senteMoveTimeInput.value = senteMoveTimeDisplay.textContent.replace(`${strings['cooldown-first']}`, '');
 
-    goteMoveTimeInput.value = goteMoveTimeDisplay.textContent.replace('後手クールダウン (秒): ', '');
-
-    const pawnLimit4thRank = pawnLimit4thRankDisplay.textContent.replace('歩打ち４段目制限: ', '');
-    if (pawnLimit4thRank === 'あり') {
-        pawnLimit4thRankInput.checked = true;
-    } else {
-        pawnLimit4thRankInput.checked = false;
-    }
-
+    goteMoveTimeInput.value = goteMoveTimeDisplay.textContent.replace(`${strings['cooldown-second']}`, '');
 });
 
 
@@ -80,11 +95,12 @@ saveRoomSettingsButton.addEventListener("click", () => {
             sente: parseInt(senteMoveTimeInput.value, 10),
             gote: parseInt(goteMoveTimeInput.value, 10)
         },
-        pawnLimit4thRank: pawnLimit4thRankInput.checked
+        pawnLimit4thRank: false
     };
     socket.emit("updateRoomSettings", settings);
     roomSettingsOverlay.style.display = 'none'; // 保存後にオーバーレイを非表示
 });
+
 
 
 let currentRoomId = null;
@@ -100,8 +116,8 @@ async function leaveRoom() {
     setScene(createTitleScene());
 
     currentRoomId = null;
-    if (displayRoomIdButton.textContent === "部屋IDを非表示") {
-        displayRoomIdButton.textContent = "部屋IDを表示";
+    if (displayRoomIdButton.textContent === `${strings['display-room-id-off']}`) {
+        displayRoomIdButton.textContent = `${strings['display-room-id']}`;
         roomIdStr.textContent = ``
     }
     roomIdOverlay.style.display = 'none';
@@ -173,7 +189,7 @@ export function roomUpdate(data) {
     for (let i = 0; i < data.sente.length; i++) {
         const pElement = document.createElement('p');
         if (data.readys && data.readys.sente[i]) {
-            pElement.textContent = data.sente[i] + '(準備完了)';
+            pElement.textContent = data.sente[i] + `(${strings['ready']})`;
         } else {
             ready = false;
             pElement.textContent = data.sente[i];
@@ -185,7 +201,7 @@ export function roomUpdate(data) {
     for (let i = 0; i < data.gote.length; i++) {
         const pElement = document.createElement('p');
         if (data.readys && data.readys.gote[i]) {
-            pElement.textContent = data.gote[i] + '(準備完了)';
+            pElement.textContent = data.gote[i] + `(${strings['ready-ok']})`;
         } else {
             ready = false;
             pElement.textContent = data.gote[i];
@@ -233,14 +249,9 @@ export function roomUpdate(data) {
     }
 
     // 部屋設定表示エリアに現在の設定値を表示
-    maxPlayersDisplay.textContent = `最大プレイヤー数: ${data.maxplayers}`;
-    senteMoveTimeDisplay.textContent = `先手クールダウン (秒): ${data.moveTime.sente}`;
-    goteMoveTimeDisplay.textContent = `後手クールダウン (秒): ${data.moveTime.gote}`;
-    if (data.pawnLimit4thRank) {
-        pawnLimit4thRankDisplay.textContent = '歩打ち４段目制限: あり';
-    } else {
-        pawnLimit4thRankDisplay.textContent = '歩打ち４段目制限: なし';
-    }
+    maxPlayersDisplay.textContent = `${strings['max-player']}${data.maxplayers}`;
+    senteMoveTimeDisplay.textContent = `${strings['cooldown-first']}${data.moveTime.sente}`;
+    goteMoveTimeDisplay.textContent = `${strings['cooldown-second']}${data.moveTime.gote}`;
 }
 
 // コピーボタンのイベントハンドラ
@@ -264,7 +275,7 @@ async function handleCopyIdClick() {
             }, 2000);
         }
     } catch (err) {
-        console.error('部屋IDのコピーに失敗しました:', err);
+        console.error(`${strings['failed-copy']}`, err);
         // 必要であれば、コピー失敗のフィードバックをユーザーに表示する処理を追加
     }
 }
@@ -313,11 +324,11 @@ export function createRoomScene(data) {
 
 
 function toggleRoomId() {
-    if (displayRoomIdButton.textContent === "部屋IDを表示") {
-        displayRoomIdButton.textContent = "部屋IDを非表示"
+    if (displayRoomIdButton.textContent === `${strings['display-room-id']}`) {
+        displayRoomIdButton.textContent = `${strings['display-room-id-off']}`
         roomIdStr.textContent = `${currentRoomId}`
     } else {
-        displayRoomIdButton.textContent = "部屋IDを表示";
+        displayRoomIdButton.textContent = `${strings['display-room-id']}`;
         roomIdStr.textContent = ``
     }
 }
