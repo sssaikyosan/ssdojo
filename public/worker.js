@@ -371,7 +371,7 @@ class Board {
         if (x === -1) {
             return this.putPieceLocal(data);
         }
-        const lmp = performance.now();
+        const lmp = servertime;
         let cap = null;
         if (this.map[nx][ny] !== null) {
             cap = this.map[nx][ny].type
@@ -1367,7 +1367,7 @@ onmessage = function (e) {
 
     if (e.data[0] === "move") {
         const move = e.data[1];
-        board.movePieceLocal(move);
+        board.justMove(move);
         if (move.x === cpuKingPos.x && move.y === cpuKingPos.y) {
             cpuKingPos = { x: move.nx, y: move.ny };
         } else if (move.x === playerKingPos.x && move.y === playerKingPos.y) {

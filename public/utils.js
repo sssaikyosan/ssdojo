@@ -59,6 +59,8 @@ export function drawTextWithDoubleOutline(ctx, text, x, y, fontSize, colors, tex
   ctx.font = `${fontSize}px Arial`;
   ctx.textBaseline = textBaseline;
   ctx.textAlign = position;
+
+  ctx.lineJoin = 'round';
   // 外側の縁取りを描画（太め）
   ctx.strokeStyle = colors[2];
   ctx.lineWidth = fontSize * 0.16; // 外側の縁取りの太さ

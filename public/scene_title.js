@@ -1,7 +1,7 @@
 //タイトルシーン要素
 
 import { createPlayScene } from "./scene_game.js";
-import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, player_id, setScene, characterFiles, setSelectedCharacterName, connectToServer, strings, scene, loadStrings, playerStatus } from "./main.js";
+import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, player_id, setScene, characterFiles, setSelectedCharacterName, connectToServer, strings, scene, loadStrings, playerStatus, setStatus } from "./main.js";
 import { Scene } from "./scene.js";
 import { OverlayUI } from "./ui.js";
 import { BackgroundImageUI } from "./ui_background.js";
@@ -190,13 +190,7 @@ export function initTitleText() {
     seVolumeText.textContent = strings['se-volume'];
     voiceVolumeText.textContent = strings['voice-volume'];
 
-
-    playCountText.text = () => {
-        return `${strings['game-count']}:${playerStatus.total_games}`
-    }
-    ratingText.text = () => {
-        return `${strings['rating']}:${playerStatus.rating}`
-    }
+    setStatus(playerStatus.rating, playerStatus.total_games);
     cancelMatchButton.text.text = () => {
         return `${strings['cancel']}`
     }
@@ -247,6 +241,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         titleScene.remove(languageOverlay);
         titleScene.remove(charaSelectButton);
         titleScene.remove(playButton);
+        titleScene.remove(langButton);
         titleScene.add(matchingText);
         titleScene.add(loading);
         titleScene.add(cancelMatchButton);
