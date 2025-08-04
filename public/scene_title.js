@@ -1,7 +1,7 @@
 //タイトルシーン要素
 
 import { createPlayScene } from "./scene_game.js";
-import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, player_id, setScene, characterFiles, setSelectedCharacterName, connectToServer, strings, scene } from "./main.js";
+import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, player_id, setScene, characterFiles, setSelectedCharacterName, connectToServer, strings, scene, loadStrings, playerStatus } from "./main.js";
 import { Scene } from "./scene.js";
 import { OverlayUI } from "./ui.js";
 import { BackgroundImageUI } from "./ui_background.js";
@@ -21,18 +21,167 @@ export const bgmVolumeText = document.querySelector('label[for="bgmVolumeSlider"
 export const seVolumeText = document.querySelector('label[for="soundVolumeSlider"]');
 export const voiceVolumeText = document.querySelector('label[for="voiceVolumeSlider"]');
 
-let cpuLevelOverlay;
-export let statusOverlay;
-export let playCountText;
-export let ratingText;
-export let cancelMatchButton;
-let rankingOverlay;
-let rankingTitle;
-let matchingText;
-let loading;
+const languageOverlay = new OverlayUI({
+    x: -0.78,
+    y: -0.37,
+    height: 0.11,
+    width: 0.11,
+    visible: false
+});
+
+const enButton = new ButtonUI({
+    text: `English`,
+    x: 0.0,
+    y: -0.024,
+    height: 0.04,
+    width: 0.1,
+    color: '#3241c9',
+    textSize: 0.02,
+    textColors: ['#ffffffff', '#00000000', '#00000000'],
+    onClick: async () => {
+        await loadStrings('en');
+        setScene(createTitleScene());
+    }
+});
+languageOverlay.add(enButton);
+
+const jpButton = new ButtonUI({
+    text: `日本語`,
+    x: 0.0,
+    y: 0.026,
+    height: 0.04,
+    width: 0.1,
+    color: '#3241c9',
+    textSize: 0.02,
+    textColors: ['#ffffffff', '#00000000', '#00000000'],
+    onClick: async () => {
+        await loadStrings('jp');
+        setScene(createTitleScene());
+    }
+});
+languageOverlay.add(jpButton);
+
+const cpuLevelOverlay = new OverlayUI({
+    x: 0.65,
+    y: 0.16,
+    height: 0.19,
+    width: 0.11,
+    visible: false
+});
+
+for (let i = 0; i < 4; i++) {
+    const cpulevelButton = new ButtonUI({
+        text: `level${i}`,
+        x: 0.0,
+        y: 0.067 - i * 0.045,
+        height: 0.04,
+        width: 0.1,
+        color: '#3241c9',
+        textSize: 0.025,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            cpuLevelSubmit(i.toString());
+        }
+    });
+    cpuLevelOverlay.add(cpulevelButton);
+}
+
+export const statusOverlay = new OverlayUI({
+    x: -0.78,
+    y: 0.43,
+    width: 0.2,
+    height: 0.1,
+    color: '#111122bb'
+});
+
+export const playCountText = new TextUI({
+    text: () => ``,
+    x: 0,
+    y: -0.015,
+    size: 0.025,
+    colors: ["#ffffff", "#00000000", "#00000000"],
+    position: 'center'
+});
+
+export const ratingText = new TextUI({
+    text: () => ``,
+    x: 0,
+    y: 0.025,
+    size: 0.025,
+    colors: ["#ffffff", "#00000000", "#00000000"],
+    position: 'center'
+});
+
+export const cancelMatchButton = new ButtonUI({
+    text: ``,
+    x: 0.65,
+    y: 0.4,
+    height: 0.08,
+    width: 0.24,
+    color: '#df398c',
+    textSize: 0.04,
+    textColors: ['#ffffffff', '#00000000', '#00000000'],
+    onClick: () => {
+        if (socket) {
+            socket.emit('cancelMatch');
+        }
+    }
+});
+
+const rankingOverlay = new OverlayUI({
+    x: 0.72,
+    y: -0.22,
+    width: 0.3,
+    height: 0.36
+});
+
+const rankingTitle = new TextUI({
+    text: () => {
+        return ``
+    },
+    x: 0,
+    y: -0.15,
+    size: 0.03,
+    colors: ["#ffffffff", "#00000000", "#00000000"]
+});
+
+for (let i = 0; i < 10; i++) {
+    const rankingText = new TextUI({
+        text: () => {
+            return ``
+        },
+        x: -0.13,
+        y: -0.11 + i * 0.03,
+        size: 0.022,
+        colors: ["#ffffffff", "#00000000", "#00000000"],
+        position: 'left'
+    });
+    rankingOverlay.add(rankingText);
+}
+
+const matchingText = new TextUI({
+    text: () => {
+        return ``;
+    },
+    x: 0.0,
+    y: 0.4,
+    size: 0.05,
+    colors: ["#ffffff", "#00000000", "#00000000"],
+    position: 'center'
+});
+
+const loading = new LoadingUI({
+    x: 0.2,
+    y: 0.4,
+    radius: 0.03,
+});
+
+rankingOverlay.add(rankingTitle);
+statusOverlay.add(playCountText);
+statusOverlay.add(ratingText);
 
 export function initTitleText() {
-
+    console.log("initTitleText");
     nameInput.placeholder = strings['name'];
 
     roomIdInput.placeholder = strings['room-id'];
@@ -41,124 +190,22 @@ export function initTitleText() {
     seVolumeText.textContent = strings['se-volume'];
     voiceVolumeText.textContent = strings['voice-volume'];
 
-    cpuLevelOverlay = new OverlayUI({
-        x: 0.65,
-        y: 0.16,
-        height: 0.19,
-        width: 0.11,
-        visible: false
-    });
 
-    for (let i = 0; i < 4; i++) {
-        const cpulevelButton = new ButtonUI({
-            text: `${strings['level']}${i}`,
-            x: 0.0,
-            y: 0.067 - i * 0.045,
-            height: 0.04,
-            width: 0.1,
-            color: '#3241c9',
-            textSize: 0.025,
-            textColors: ['#ffffffff', '#00000000', '#00000000'],
-            onClick: () => {
-                cpuLevelSubmit(i.toString());
-            }
-        });
-        cpuLevelOverlay.add(cpulevelButton);
+    playCountText.text = () => {
+        return `${strings['game-count']}:${playerStatus.total_games}`
     }
-
-    statusOverlay = new OverlayUI({
-        x: -0.78,
-        y: 0.43,
-        width: 0.2,
-        height: 0.1,
-        color: '#111122bb'
-    });
-
-    playCountText = new TextUI({
-        text: () => `${strings['game-count']}: -`,
-        x: 0,
-        y: -0.015,
-        size: 0.025,
-        colors: ["#ffffff", "#00000000", "#00000000"],
-        position: 'center'
-    });
-
-    ratingText = new TextUI({
-        text: () => `${strings['rating']}: -`,
-        x: 0,
-        y: 0.025,
-        size: 0.025,
-        colors: ["#ffffff", "#00000000", "#00000000"],
-        position: 'center'
-    });
-
-    cancelMatchButton = new ButtonUI({
-        text: `${strings['cancel']}`,
-        x: 0.65,
-        y: 0.4,
-        height: 0.08,
-        width: 0.24,
-        color: '#df398c',
-        textSize: 0.04,
-        textColors: ['#ffffffff', '#00000000', '#00000000'],
-        onClick: () => {
-            if (socket) {
-                socket.emit('cancelMatch');
-            }
-        }
-    });
-
-    rankingOverlay = new OverlayUI({
-        x: 0.72,
-        y: -0.22,
-        width: 0.3,
-        height: 0.36
-    });
-
-    rankingTitle = new TextUI({
-        text: () => {
-            return `${strings['ranking']}`
-        },
-        x: 0,
-        y: -0.15,
-        size: 0.03,
-        colors: ["#ffffffff", "#00000000", "#00000000"]
-    });
-
-    for (let i = 0; i < 10; i++) {
-        const rankingText = new TextUI({
-            text: () => {
-                return ``
-            },
-            x: -0.13,
-            y: -0.11 + i * 0.03,
-            size: 0.022,
-            colors: ["#ffffffff", "#00000000", "#00000000"],
-            position: 'left'
-        });
-        rankingOverlay.add(rankingText);
+    ratingText.text = () => {
+        return `${strings['rating']}:${playerStatus.rating}`
     }
-
-    rankingOverlay.add(rankingTitle);
-    statusOverlay.add(playCountText);
-    statusOverlay.add(ratingText);
-
-    matchingText = new TextUI({
-        text: () => {
-            return `${strings['matching']}`;
-        },
-        x: 0.0,
-        y: 0.4,
-        size: 0.05,
-        colors: ["#ffffff", "#00000000", "#00000000"],
-        position: 'center'
-    });
-
-    loading = new LoadingUI({
-        x: 0.2,
-        y: 0.4,
-        radius: 0.03,
-    });
+    cancelMatchButton.text = () => {
+        return `${strings['cancel']}`
+    }
+    rankingTitle.text = () => {
+        return `${strings['ranking']}`
+    }
+    matchingText.text = () => {
+        return `${strings['matching']}`
+    }
 }
 
 
@@ -177,6 +224,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     const backgroundImageUI = new BackgroundImageUI({ image: title_img });
     titleScene.add(backgroundImageUI);
     cpuLevelOverlay.visible = false;
+    languageOverlay.visible = false;
 
     const playBGMOnce = () => {
         if (audioManager.currentBGM === null) {
@@ -196,11 +244,14 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         titleScene.remove(makeRoomButton);
         titleScene.remove(cpuButton);
         titleScene.remove(cpuLevelOverlay);
+        titleScene.remove(languageOverlay);
         titleScene.remove(charaSelectButton);
         titleScene.remove(playButton);
         titleScene.add(matchingText);
         titleScene.add(loading);
         titleScene.add(cancelMatchButton);
+
+
 
         connectToServer().then(socket => {
             socket.emit("requestMatch", { name: playerName, characterName: selectedCharacterName, player_id: player_id });
@@ -334,6 +385,21 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         onClick: cpuButtonSubmit
     });
     titleScene.add(cpuButton);
+
+    const langButton = new ButtonUI({
+        text: `${strings['language']}`,
+        x: -0.8,
+        y: -0.46,
+        height: 0.05,
+        width: 0.12,
+        color: '#3241c9',
+        textSize: 0.025,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            languageOverlay.visible = !languageOverlay.visible;
+        }
+    });
+    titleScene.add(langButton);
 
     const ruleOverlay = new OverlayUI({
         x: 0,
@@ -479,6 +545,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     titleScene.add(charaSelectButton);
     titleScene.add(statusOverlay);
     titleScene.add(cpuLevelOverlay);
+    titleScene.add(languageOverlay);
 
     if (loadNameInput) {
         const savedName = localStorage.getItem("playerName");
@@ -624,7 +691,7 @@ export function createCharacterSelectScene(titleCharacter) {
             titleCharacter.init();
             titleCharacter.videoElement[0].addEventListener('canplaythrough', () => {
                 if (titleCharacter.playVideo(0)) {
-                    titleCharacter.spawnVoiceText(0);
+                    // titleCharacter.spawnVoiceText(0);
                 }
             });
             characterProfileText.text = () => strings['characters'][characterName]['profile'];

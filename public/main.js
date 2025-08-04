@@ -23,6 +23,7 @@ export let scene = null; // scene変数はmain.jsで管理
 export let playerName = "";
 export let player_id = null; // 永続的なプレイヤーID
 export let serverStatus = { topPlayers: [], announcement: "" };
+export let playerStatus = { total_games: -1, rating: -1 };
 
 export let playerRatingElement = null;
 export let gamesPlayedElement = null;
@@ -76,6 +77,8 @@ export function setPlayerName(name) {
 }
 
 export function setStatus(rating, total_games) {
+  playerStatus.total_games = total_games;
+  playerStatus.rating = Math.round(rating);
   playCountText.text = () => {
     return `${strings['game-count']}:${total_games}`
   }
@@ -88,7 +91,6 @@ export function setStatus(rating, total_games) {
       return `${strings['rating']}: ${strings['unrated']}`
     }
   }
-
 }
 
 export const matchingServerUrl = window.location.hostname === 'localhost' ?
@@ -160,8 +162,7 @@ export async function getTitleInfo() {
   }
 }
 
-async function loadStrings() {
-  const lang = 'en'
+export async function loadStrings(lang) {
   // 言語データの読み込み
   try {
     const response = await fetch(`/lang/${lang}.json`);
@@ -175,7 +176,25 @@ async function loadStrings() {
     // エラー時は空オブジェクトを設定
     strings = {};
   }
-  console.log(strings);
+  initTitleText();
+  initGameText();
+  initRoomText();
+}
+// ブラウザの言語設定を取得し、'jp' または 'en' を返す関数
+export function getBrowserLanguage() {
+  const languages = navigator.languages || [navigator.language];
+  for (const lang of languages) {
+    // 言語コードが 'ja' で始まる場合は 'jp' を返す
+    if (lang.startsWith('ja')) {
+      return 'jp';
+    }
+    // 言語コードが 'en' で始まる場合は 'en' を返す
+    if (lang.startsWith('en')) {
+      return 'en';
+    }
+  }
+  // 上記の言語に一致しない場合は、デフォルトとして 'en' を返す
+  return 'en';
 }
 
 // 初期化関数
@@ -187,10 +206,8 @@ async function init() {
   }
   isInitialized = true;
 
-  await loadStrings();
-  initTitleText();
-  initGameText();
-  initRoomText();
+  const browserLang = getBrowserLanguage();
+  await loadStrings(browserLang);
 
   // キャンバスの初期化
   canvas = document.getElementById('shogiCanvas');
