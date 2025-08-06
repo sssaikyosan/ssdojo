@@ -181,7 +181,6 @@ statusOverlay.add(playCountText);
 statusOverlay.add(ratingText);
 
 export function initTitleText() {
-    console.log("initTitleText");
     nameInput.placeholder = strings['name'];
 
     roomIdInput.placeholder = strings['room-id'];

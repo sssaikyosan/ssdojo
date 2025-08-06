@@ -130,6 +130,7 @@ const PIECE_MOVES = {
 };
 
 const UNPROMODED_TYPES = ['pawn', 'lance', 'knight', 'silver', 'bishop', 'rook'];
+const KOMADAI_TYPES = ['pawn', 'lance', 'knight', 'silver', 'gold', 'bishop', 'rook', 'king', 'king2'];
 const BOARD_SIZE = 9;
 const MOVETIME = 5;
 
@@ -189,7 +190,7 @@ class Board {
         this.serverstarttime = servertime - MOVETIME * 1000 + 5 * 1000;
         // this.komadaiServerTime = { sente: servertime, gote: servertime };
         // this.komadaipTime = { sente: time, gote: time };
-        this.starttime = time - MOVETIME * 1000 + 5 * 1000;
+        this.starttime = performance.now() - MOVETIME * 1000 + 5 * 1000;
         this.time = time;
         this.matched = true;
         this.komadaiPieces = {
@@ -290,14 +291,16 @@ class Board {
     canPut(x, y, type, teban, servertime) {
         // if (servertime - (teban === 1 ? this.komadaiServerTime.sente : this.komadaiServerTime.gote) < MOVETIME) return false;
         if (this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type] <= 0) return false
-        if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE || this.map[x][y]) return false;
+        if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) return false;
+        if (this.map[x][y] !== null) return false;
         if (this.isTopCell(x, y, type, teban)) return false;
         if (this.isNihu(x, y, type, teban)) return false;
         return true;
     }
 
     canPutPlace(x, y, type, teban) {
-        if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE || this.map[x][y]) return false;
+        if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) return false;
+        if (this.map[x][y] !== null) return false;
         if (this.isTopCell(x, y, type, teban)) return false;
         if (this.isNihu(x, y, type, teban)) return false;
         return true;
@@ -343,7 +346,7 @@ class Board {
         if (!this.canPut(nx, ny, type, teban, servertime)) return { res: false, capture: null };
         this.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type]--;
 
-        this.map[nx][ny] = { type: type, teban: teban, lastmovetime: servertime, lastmoveptime: lmp };
+        this.map[nx][ny] = { type: type, teban: teban, lastmovetime: servertime, lastmoveptime: performance.now() };
         this.kifu.push({ x: -1, y: -1, nx: nx, ny: ny, nari: false, type: type });
         return { res: true, capture: null };
     }
@@ -365,7 +368,7 @@ class Board {
         return result;
     }
 
-    justMove(data) {
+    justMove(data, settime) {
         const { x, y, nx, ny, type, nari, teban, roomId, servertime } = data;
 
         if (x === -1) {
@@ -398,7 +401,7 @@ class Board {
         }
         const oldtime = this.map[x][y].lastmovetime;
 
-        this.map[nx][ny] = { type: pieceType, teban: this.map[x][y].teban, lastmovetime: this.map[x][y].lastmovetime, lastmoveptime: this.map[x][y].lastmoveptime };
+        this.map[nx][ny] = { type: pieceType, teban: this.map[x][y].teban, lastmovetime: lmp, lastmoveptime: performance.now() };
         this.map[x][y] = null;
 
         //棋譜更新
@@ -475,7 +478,7 @@ class Board {
         }
         const oldtime = this.map[x][y].lastmovetime;
 
-        this.map[nx][ny] = { type: pieceType, teban: this.map[x][y].teban, lastmovetime: servertime, lastmoveptime: lmp };
+        this.map[nx][ny] = { type: pieceType, teban: this.map[x][y].teban, lastmovetime: servertime, lastmoveptime: performance.now() };
         this.map[x][y] = null;
 
         //棋譜更新
@@ -757,7 +760,7 @@ function copyBoard() {
             };
         }
     }
-    for (const type of UNPROMODED_TYPES) {
+    for (const type of KOMADAI_TYPES) {
         boardcopy.komadaiPieces['sente'][type] = board.komadaiPieces['sente'][type];
         boardcopy.komadaiPieces['gote'][type] = board.komadaiPieces['gote'][type];
     }
@@ -1111,7 +1114,7 @@ function randomMoveNoBigDanger(currentBoard, servertime) {
 
 function getPosLegalPuts(currentBoard, x, y, teban) {
     let legalPuts = [];
-    for (const type of UNPROMODED_TYPES) {
+    for (const type of KOMADAI_TYPES) {
         if (currentBoard.isNihu(x, y, type, teban)) continue;
         if (currentBoard.isTopCell(x, y, type, teban)) continue;
         if (currentBoard.komadaiPieces[teban === 1 ? 'sente' : 'gote'][type] > 0) {
@@ -1170,12 +1173,12 @@ function evaluateBoard(teban) {
     }
 
     // 先手の持ち駒
-    for (const type of UNPROMODED_TYPES) {
+    for (const type of KOMADAI_TYPES) {
         score += PIECE_PRICES[type] * board.komadaiPieces['sente'][type];
     }
     score += board.komadaiPieces['sente']['king2'] * PIECE_PRICES['king2']
     // 後手の持ち駒
-    for (const type of UNPROMODED_TYPES) {
+    for (const type of KOMADAI_TYPES) {
         score -= PIECE_PRICES[type] * board.komadaiPieces['gote'][type];
     }
     score -= board.komadaiPieces['gote']['king'] * PIECE_PRICES['king']
@@ -1361,7 +1364,7 @@ onmessage = function (e) {
         const data = e.data[1];
         board = new Board();
         startTime = data.servertime;
-        board.init(data.servertime, data.time);
+        board.init(data.servertime, performance.now());
         setcpu(data.level);
     }
 
