@@ -5,7 +5,7 @@ import { AudioManager } from "./audio_manager.js"; // audio_manager.jsからイ�
 import { createTitleScene, initTitleText, nameInput, playCountText, ratingText, roomIdInput, roomJoinFailed, updateRanking } from "./scene_title.js";
 import { createPlayScene, backToRoom, endGame, endRoomGame, initGameText } from "./scene_game.js";
 import { createRoomScene, initRoomText, roomUpdate } from "./scene_room.js";
-import { CHARACTER_FOLDER, MOVETIME, NUM_QUOTES } from "./const.js";
+import { CHARACTER_FOLDER, LANGUAGE_FOLDER, MOVETIME, NUM_QUOTES } from "./const.js";
 
 // 初期化フラグ
 let isInitialized = false;
@@ -164,7 +164,7 @@ export async function getTitleInfo() {
 export async function loadStrings(lang) {
   // 言語データの読み込み
   try {
-    const response = await fetch(`/lang/${lang}.json`);
+    const response = await fetch(`/${LANGUAGE_FOLDER}/${lang}.json`);
     if (!response.ok) {
       throw new Error(`Failed to load language file: ${response.status}`);
     }
