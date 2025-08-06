@@ -201,7 +201,7 @@ export function roomUpdate(data) {
     for (let i = 0; i < data.gote.length; i++) {
         const pElement = document.createElement('p');
         if (data.readys && data.readys.gote[i]) {
-            pElement.textContent = data.gote[i] + `(${strings['ready-ok']})`;
+            pElement.textContent = data.gote[i] + `(${strings['ready']})`;
         } else {
             ready = false;
             pElement.textContent = data.gote[i];
