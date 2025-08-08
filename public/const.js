@@ -148,5 +148,5 @@ export const PIECE_MOVES = {
 };
 
 export const CHARACTER_FOLDER = "characters25071801"
-export const LANGUAGE_FOLDER = "lang25080701"
+export const LANGUAGE_FOLDER = "lang25080901"
 export const NUM_QUOTES = 5
