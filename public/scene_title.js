@@ -8,9 +8,10 @@ import { BackgroundImageUI } from "./ui_background.js";
 import { CharacterImageUI } from "./ui_character.js";
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
-import { MOVETIME } from "./const.js";
+import { KOMADAI_TYPES, MOVETIME, PROMOTE_TYPES } from "./const.js";
 import { ImageUI } from "./ui_image.js";
 import { ButtonUI } from "./ui_button.js";
+import { PieceHelpUI } from "./piece_help.js";
 
 export const discordButton = document.getElementById("discordButton");
 
@@ -395,32 +396,29 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     });
     titleScene.add(langButton);
 
-    const ruleOverlay = new OverlayUI({
+    const winConditionOverlay = new OverlayUI({
         x: 0,
         y: 0,
-        height: 0.4,
-        width: 0.8,
+        height: 0.42,
+        width: 1,
         visible: false
     });
-
-    const ruleTitle = new TextUI({
-        text: () => `${strings['rule']}`,
+    const winConditionTitle = new TextUI({
+        text: () => `${strings['win-condition']}`,
         x: 0,
         y: -0.14,
         size: 0.06,
         colors: ['#ffffffff', '#000000ff', '#00000000'],
     });
-
-    const ruleText = new TextUI({
+    const winConditionText = new TextUI({
         text: () => `${strings['rule-text']}`,
-        x: -0.35,
+        x: -0.26,
         y: -0.06,
         size: 0.025,
         colors: ['#ffffffff', '#00000000', '#00000000'],
         position: 'left'
     });
-
-    const closeRuleButton = new ButtonUI({
+    const closeWinConditionButton = new ButtonUI({
         text: `${strings['close']}`,
         x: 0,
         y: 0.16,
@@ -429,37 +427,46 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         color: '#3241c9',
         textSize: 0.032,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
-        onClick: () => { ruleOverlay.visible = false; }
+        onClick: () => { winConditionOverlay.visible = false; }
     });
 
-    ruleOverlay.add(ruleTitle);
-    ruleOverlay.add(ruleText);
-    ruleOverlay.add(closeRuleButton);
+    const pieceHelpOverlay = new OverlayUI({
+        x: 0,
+        y: 0,
+        height: 0.42,
+        width: 1,
+        visible: false
+    });
+
+    const pieceListTitle = new TextUI({
+        text: () => `${strings['piece-list']}`,
+        x: 0,
+        y: -0.14,
+        size: 0.06,
+        colors: ['#ffffffff', '#000000ff', '#00000000'],
+    });
 
 
-    const ruleButton = new ButtonUI({
-        text: `${strings['rule']}`,
-        x: 0.78,
-        y: 0.02,
+
+    const closePieceHelpButton = new ButtonUI({
+        text: `${strings['close']}`,
+        x: 0,
+        y: 0.16,
+        width: 0.15,
         height: 0.05,
-        width: 0.12,
         color: '#3241c9',
-        textSize: 0.025,
+        textSize: 0.032,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
-        onClick: () => {
-            ruleOverlay.visible = true;
-            ctrlOverlay.visible = false;
-        }
+        onClick: () => { pieceHelpOverlay.visible = false; }
     });
 
-    titleScene.add(ruleOverlay);
-    titleScene.add(ruleButton);
+
 
     const ctrlOverlay = new OverlayUI({
         x: 0,
         y: 0,
-        height: 0.4,
-        width: 0.5,
+        height: 0.42,
+        width: 1,
         visible: false
     });
 
@@ -492,13 +499,108 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         onClick: () => { ctrlOverlay.visible = false; }
     });
 
-    ctrlOverlay.add(ctrlTitle);
-    ctrlOverlay.add(ctrlText);
-    ctrlOverlay.add(closeCtrlButton);
+    const pieceListButton = new ButtonUI({
+        text: `${strings['piece-list']}`,
+        x: -0.4,
+        y: -0.15,
+        width: 0.15,
+        height: 0.05,
+        color: '#3241c9',
+        textSize: 0.032,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            pieceHelpOverlay.visible = true;
+            ctrlOverlay.visible = false;
+            winConditionOverlay.visible = false;
+        }
+    });
 
     const ctrlButton = new ButtonUI({
         text: `${strings['manual']}`,
-        x: 0.64,
+        x: -0.4,
+        y: -0.09,
+        height: 0.05,
+        width: 0.15,
+        color: '#3241c9',
+        textSize: 0.032,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            pieceHelpOverlay.visible = false;
+            ctrlOverlay.visible = true;
+            winConditionOverlay.visible = false;
+        }
+    });
+
+    const winConditionButton = new ButtonUI({
+        text: `${strings['win-condition']}`,
+        x: -0.4,
+        y: -0.03,
+        width: 0.15,
+        height: 0.05,
+        color: '#3241c9',
+        textSize: 0.032,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            pieceHelpOverlay.visible = false;
+            ctrlOverlay.visible = false;
+            winConditionOverlay.visible = true;
+        }
+    });
+
+    pieceHelpOverlay.add(pieceListButton);
+    ctrlOverlay.add(pieceListButton);
+    winConditionOverlay.add(pieceListButton);
+
+    pieceHelpOverlay.add(ctrlButton);
+    ctrlOverlay.add(ctrlButton);
+    winConditionOverlay.add(ctrlButton);
+
+    pieceHelpOverlay.add(winConditionButton);
+    ctrlOverlay.add(winConditionButton);
+    winConditionOverlay.add(winConditionButton);
+
+    pieceHelpOverlay.add(pieceListTitle);
+    pieceHelpOverlay.add(closePieceHelpButton);
+
+    ctrlOverlay.add(closeCtrlButton);
+    ctrlOverlay.add(ctrlTitle);
+    ctrlOverlay.add(ctrlText);
+
+    winConditionOverlay.add(winConditionTitle);
+    winConditionOverlay.add(winConditionText);
+    winConditionOverlay.add(closeWinConditionButton);
+
+    let typeX = 0;
+    for (const type of KOMADAI_TYPES) {
+        const pieceHelp = new PieceHelpUI({
+            pieceType: type,
+            x: -0.24 + typeX,
+            y: -0.04,
+            width: 0.08,
+            height: 0.08
+        });
+        typeX += 0.08;
+        pieceHelpOverlay.add(pieceHelp);
+    }
+    typeX = 0;
+    for (const type of PROMOTE_TYPES) {
+        if (type !== '') {
+            const pieceHelp = new PieceHelpUI({
+                pieceType: type,
+                x: -0.24 + typeX,
+                y: 0.06,
+                width: 0.08,
+                height: 0.08
+            });
+
+            pieceHelpOverlay.add(pieceHelp);
+        }
+        typeX += 0.08;
+    }
+
+    const ruleButton = new ButtonUI({
+        text: `${strings['rule']}`,
+        x: 0.78,
         y: 0.02,
         height: 0.05,
         width: 0.12,
@@ -506,12 +608,13 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         textSize: 0.025,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
         onClick: () => {
-            ctrlOverlay.visible = true;
-            ruleOverlay.visible = false;
+            ctrlOverlay.visible = false;
+            winConditionOverlay.visible = false;
+            pieceHelpOverlay.visible = true;
         }
     });
-    titleScene.add(ctrlOverlay);
-    titleScene.add(ctrlButton);
+
+    titleScene.add(ruleButton);
 
     const charaSelectButton = new ButtonUI({
         text: `${strings['change-character']}`,
@@ -540,6 +643,10 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
     titleScene.add(statusOverlay);
     titleScene.add(cpuLevelOverlay);
     titleScene.add(languageOverlay);
+
+    titleScene.add(pieceHelpOverlay);
+    titleScene.add(ctrlOverlay);
+    titleScene.add(winConditionOverlay);
 
     if (loadNameInput) {
         const savedName = localStorage.getItem("playerName");

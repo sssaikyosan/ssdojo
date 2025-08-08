@@ -35,6 +35,8 @@ export let audioManager = new AudioManager();
 export let gameManager = null;
 export let characterProfiles = null;
 
+export let onClick = false;
+
 // キャラクター画像フォルダ名のリスト (prof.jsonから抽出)
 export const characterFiles = [ // exportを追加
   "rei", "aoi", "akira"
@@ -74,6 +76,10 @@ export function setScene(s) {
 
 export function setPlayerName(name) {
   playerName = name;
+}
+
+export function setOnclick(s) {
+  onClick = s;
 }
 
 export function setStatus(rating, total_games) {

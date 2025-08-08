@@ -32,6 +32,9 @@ export const ARROW_COLOR = 'rgba(31, 63, 221, 0.4)'
 
 export const MOVE_COLOR = '#cf8b1e'
 export const UNPROMODED_TYPES = ['pawn', 'lance', 'knight', 'silver', 'bishop', 'rook'];
+export const KOMADAI_TYPES = ['pawn', 'lance', 'knight', 'silver', 'gold', 'bishop', 'rook', 'king', 'king2'];
+
+export const PROMOTE_TYPES = ['prom_pawn', 'prom_lance', 'prom_knight', 'prom_silver', '', 'horse', 'dragon', '', ''];
 export const PIECE_MOVES = {
   pawn: [
     { dx: 0, dy: -1 } // 先手の場合、1マス前

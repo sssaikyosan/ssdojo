@@ -1,6 +1,7 @@
 import { darkenColor, drawText } from "./utils.js";
 import { UI } from "./ui.js";
 import { TextUI } from "./ui_text.js";
+import { setOnclick } from "./main.js";
 
 export class ButtonUI extends UI {
     text;
@@ -69,6 +70,7 @@ export class ButtonUI extends UI {
     onSearchMouseDown(pos) {
         if (this.isTouched(pos) && this.onClick) {
             this.onClick();
+            setOnclick(true);
         }
     }
 

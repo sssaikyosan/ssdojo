@@ -1,4 +1,4 @@
-import { canvas } from "./main.js";
+import { canvas, setOnclick } from "./main.js";
 
 export class Scene {
   scale = 0;
@@ -16,6 +16,7 @@ export class Scene {
   }
 
   draw(ctx) {
+    setOnclick(false);
     this.resize();
     ctx.fillStyle = '#101010';
     ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);

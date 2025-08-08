@@ -1,5 +1,5 @@
 import { TextUI } from "./ui_text.js";
-import { characterImages, audioManager } from "./main.js";
+import { characterImages, audioManager, onClick } from "./main.js";
 import { OverlayUI, UI } from "./ui.js";
 import { CHARACTER_FOLDER, NUM_QUOTES } from "./const.js";
 
@@ -88,6 +88,7 @@ export class CharacterImageUI extends UI {
   }
 
   onMouseDown(pos) {
+    if (onClick) return;
     let randomIndex = Math.floor(Math.random() * NUM_QUOTES - 1);
     if (randomIndex >= this.lastVideoidx) {
       randomIndex++;
