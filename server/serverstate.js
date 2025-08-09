@@ -121,7 +121,7 @@ export class ServerState {
             // 待ち時間に基づく動的パラメータ調整
             const waitTime = currentTime - playerA.queueEntryTime;
 
-            let threshold = waitTime / 10 + 300;   // マッチングスコアの閾値
+            let threshold = waitTime / 5 + 300;   // マッチングスコアの閾値
             let playsWeight = 50;  // 経験値重み
 
 
