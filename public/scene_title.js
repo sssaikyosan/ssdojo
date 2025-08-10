@@ -1,7 +1,7 @@
 //タイトルシーン要素
 
 import { createPlayScene } from "./scene_game.js";
-import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, player_id, setScene, characterFiles, setSelectedCharacterName, connectToServer, strings, scene, loadStrings, playerStatus, setStatus } from "./main.js";
+import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, player_id, setScene, characterFiles, setSelectedCharacterName, connectToServer, strings, playerStatus, setStatus, setStrings } from "./main.js";
 import { Scene } from "./scene.js";
 import { OverlayUI } from "./ui.js";
 import { BackgroundImageUI } from "./ui_background.js";
@@ -39,8 +39,8 @@ const enButton = new ButtonUI({
     color: '#3241c9',
     textSize: 0.02,
     textColors: ['#ffffffff', '#00000000', '#00000000'],
-    onClick: async () => {
-        await loadStrings('en');
+    onClick: () => {
+        setStrings('en');
         setScene(createTitleScene());
     }
 });
@@ -55,8 +55,8 @@ const jpButton = new ButtonUI({
     color: '#3241c9',
     textSize: 0.02,
     textColors: ['#ffffffff', '#00000000', '#00000000'],
-    onClick: async () => {
-        await loadStrings('jp');
+    onClick: () => {
+        setStrings('jp');
         setScene(createTitleScene());
     }
 });

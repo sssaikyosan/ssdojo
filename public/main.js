@@ -5,11 +5,12 @@ import { AudioManager } from "./audio_manager.js"; // audio_manager.jsからイ�
 import { createTitleScene, initTitleText, nameInput, playCountText, ratingText, roomIdInput, roomJoinFailed, updateRanking } from "./scene_title.js";
 import { createPlayScene, backToRoom, endGame, endRoomGame, initGameText } from "./scene_game.js";
 import { createRoomScene, initRoomText, roomUpdate } from "./scene_room.js";
-import { CHARACTER_FOLDER, LANGUAGE_FOLDER, MOVETIME, NUM_QUOTES } from "./const.js";
+import { CHARACTER_FOLDER, LANGUAGE_FOLDER, LANGUAGES, MOVETIME, NUM_QUOTES } from "./const.js";
 
 // 初期化フラグ
 let isInitialized = false;
 
+export let all_strings = {};
 export let strings = {}; // 言語データを保持する変数
 
 export let pieceImages = {};
@@ -167,26 +168,36 @@ export async function getTitleInfo() {
   }
 }
 
-export async function loadStrings(lang) {
-  // 言語データの読み込み
-  try {
-    const response = await fetch(`/${LANGUAGE_FOLDER}/${lang}.json`);
-    if (!response.ok) {
-      throw new Error(`Failed to load language file: ${response.status}`);
+export async function loadStrings() {
+
+  for (const lang of LANGUAGES) {
+    // 言語データの読み込み
+    try {
+      const response = await fetch(`/${LANGUAGE_FOLDER}/${lang}.json`);
+      if (!response.ok) {
+        throw new Error(`Failed to load language file: ${response.status}`);
+      }
+      all_strings[lang] = await response.json();
+      console.log('Language data loaded:', strings);
+    } catch (error) {
+      console.error('Failed to load language data:', error);
+      // エラー時は空オブジェクトを設定
+      all_strings = {};
     }
-    strings = await response.json();
-    console.log('Language data loaded:', strings);
-    // 言語設定をlocalStorageに保存
-    localStorage.setItem('language', lang);
-  } catch (error) {
-    console.error('Failed to load language data:', error);
-    // エラー時は空オブジェクトを設定
-    strings = {};
   }
-  initTitleText();
-  initGameText();
-  initRoomText();
-  localStorage.setItem('Language', lang);
+}
+
+export function setStrings(lang) {
+  if (LANGUAGES.includes(lang)) {
+    strings = all_strings[lang];
+    initTitleText();
+    initGameText();
+    initRoomText();
+    localStorage.setItem('language', lang);
+    return
+  }
+  console.log("no language file", lang);
+  return
 }
 
 function loadLanguage() {
@@ -238,7 +249,8 @@ async function init() {
   if (!lang || (lang !== 'jp' && lang !== 'en')) {
     lang = getBrowserLanguage();
   }
-  await loadStrings(lang);
+  await loadStrings();
+  setStrings(lang);
 
   // キャンバスの初期化
   canvas = document.getElementById('shogiCanvas');
