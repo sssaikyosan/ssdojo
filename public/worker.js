@@ -132,7 +132,7 @@ const PIECE_MOVES = {
 const UNPROMODED_TYPES = ['pawn', 'lance', 'knight', 'silver', 'bishop', 'rook'];
 const KOMADAI_TYPES = ['pawn', 'lance', 'knight', 'silver', 'gold', 'bishop', 'rook', 'king', 'king2'];
 const BOARD_SIZE = 9;
-const MOVETIME = 8;
+const MOVETIME = 7;
 
 
 function getUnPromotedType(type) {
