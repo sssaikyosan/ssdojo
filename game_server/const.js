@@ -1,5 +1,5 @@
-export const SERVER_MOVETYME = 5;
-export const MOVETIME = 5;
+export const SERVER_MOVETYME = 8;
+export const MOVETIME = 8;
 
 export const BOARD_SIZE = 9;
 export const LINEWIDTH = 2;
