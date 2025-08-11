@@ -65,16 +65,16 @@ languageOverlay.add(jpButton);
 const cpuLevelOverlay = new OverlayUI({
     x: 0.65,
     y: 0.16,
-    height: 0.15,
+    height: 0.19,
     width: 0.11,
     visible: false
 });
 
-for (let i = 0; i < 3; i++) {
+for (let i = 0; i < 4; i++) {
     const cpulevelButton = new ButtonUI({
         text: `level${i}`,
         x: 0.0,
-        y: 0.047 - i * 0.045,
+        y: 0.068 - i * 0.045,
         height: 0.04,
         width: 0.1,
         color: '#3241c9',
