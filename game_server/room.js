@@ -532,6 +532,25 @@ export class Room {
         }
     }
 
+    cleanup() {
+        const initialPlayerCount = this.sente.length + this.gote.length + this.spectators.length;
+
+        this.sente = this.sente.filter(id => serverState.players[id]);
+        this.gote = this.gote.filter(id => serverState.players[id]);
+        this.spectators = this.spectators.filter(id => serverState.players[id]);
+
+        const finalPlayerCount = this.sente.length + this.gote.length + this.spectators.length;
+
+        if (finalPlayerCount === 0 && initialPlayerCount > 0) {
+            serverState.deleteRoom(this.roomId);
+            return;
+        }
+
+        if (initialPlayerCount !== finalPlayerCount) {
+            this.roomUpdate();
+        }
+    }
+
     changeMode(id, roomType) {
         if (serverState.players[id].player_id !== this.ownerId) return false; // ownerをownerIdに修正
         if (roomType === 'private' || roomType === 'kento') {

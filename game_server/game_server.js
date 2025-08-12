@@ -106,3 +106,14 @@ app.post('/createroom', (req, res) => {
         return res.status(500).send('Failed to create game room');
     }
 });
+
+// 定期的に部屋をクリーンアップ
+setInterval(() => {
+    for (const roomId in serverState.rooms) {
+        const room = serverState.rooms[roomId];
+        // gameFinishedで部屋が削除されている可能性があるので再チェック
+        if (serverState.rooms[roomId]) {
+            room.cleanup();
+        }
+    }
+}, 10000); // 10秒に1回実行
