@@ -2,7 +2,6 @@
 import { Board } from './board.js';
 import { MOVETIME } from './const.js';
 import { io, serverState } from './game_server.js';
-import http from 'http';
 
 export class Room {
     constructor(roomId, roomType, ownerId = null) { // ownerIdをコンストラクタに追加
@@ -552,6 +551,14 @@ export class Room {
             return true;
         } else {
             return false;
+        }
+    }
+
+    resign(id) {
+        if (this.sente.includes(id) && this.gameState === "playing") {
+            this.gameFinished(-1, "resign");
+        } else if (this.gote.includes(id) && this.gameState === "playing") {
+            this.gameFinished(1, "resign");
         }
     }
 }

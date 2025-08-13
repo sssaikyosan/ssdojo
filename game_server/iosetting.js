@@ -101,6 +101,13 @@ export function ioSetup() {
             }
         });
 
+        // 切断時の処理
+        socket.on("resign", () => {
+            const roomId = serverState.players[socket.id]?.roomId;
+            if (roomId && serverState.rooms[roomId]) {
+                serverState.rooms[roomId].resign(socket.id);
+            }
+        });
 
         // 切断時の処理
         socket.on("disconnect", () => {

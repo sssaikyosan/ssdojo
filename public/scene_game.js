@@ -6,6 +6,7 @@ import { createTitleScene } from "./scene_title.js";
 import { BackgroundImageUI } from "./ui_background.js";
 import { CharacterInGameUI } from "./ui_character.js";
 import { TextUI } from "./ui_text.js";
+import { ButtonUI } from "./ui_button.js";
 
 export const changeRating = document.getElementById("changeRating");
 
@@ -135,6 +136,21 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
     if (roomteban === 'gote') teban = -1;
 
     gameManager.setRoom(roomId, teban, servertime, moveTime, pawnLimit4thRank, cpulevel);
+
+    const resignButton = new ButtonUI({
+        text: `${strings['resign']}`,
+        x: -0.8,
+        y: -0.46,
+        height: 0.05,
+        width: 0.12,
+        color: '#3241c9',
+        textSize: 0.025,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            socket.emit("resign", {});
+        }
+    });
+    playScene.add(resignButton);
 
     let arryNames = null;
     let enemyNames = null;

@@ -157,7 +157,7 @@ export class ServerState {
         // ペア成立処理
         for (const pair of matchedPairs) {
             this.matchMake(pair.player1, pair.player2);
-            console.log(new Date(), `Matched players: ${this.players[pair.player1].name}(Elo:${pair.score}) vs ${this.players[pair.player2].name}`);
+            console.log(new Date(), `Matched players: ${this.players[pair.player1].name}vs ${this.players[pair.player2].name} (Score:${pair.score})`);
 
             // キューから削除
             this.removeFromMatchingQueue(pair.player1);

@@ -849,7 +849,7 @@ export function updateRanking() {
         for (let i = 0; i < 10; i++) {
             if (serverStatus.topPlayers[i]) {
                 rankingOverlay.childs[i].text = () => {
-                    return `${i + 1}.${Math.round(serverStatus.topPlayers[i].rating)} ${serverStatus.topPlayers[i].name}`;
+                    return `${Math.round(serverStatus.topPlayers[i].rating)} ${serverStatus.topPlayers[i].name}`;
                 }
             } else {
                 rankingOverlay.childs[i].text = () => ``;
