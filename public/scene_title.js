@@ -306,9 +306,9 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
 
     const announce = new TextUI({
         text: () => `${serverStatus.announcement}`,
-        x: -0.86,
+        x: -0.7,
         y: -0.48,
-        size: 0.02,
+        size: 0.025,
         colors: ["#ffffff", "#000000", "#00000000"],
         position: "left",
         textBaseline: "top"
