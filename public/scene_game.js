@@ -147,7 +147,11 @@ export function createPlayScene(senteName, senteRating, senteCharacter, goteName
         textSize: 0.025,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
         onClick: () => {
-            socket.emit("resign", {});
+            if (gameManager.cpu !== null) {
+                endGame({ winPlayer: -1, text: "resig" });
+            } else {
+                socket.emit("resign", {});
+            }
         }
     });
     playScene.add(resignButton);
