@@ -37,7 +37,10 @@ app.use(express.json());
 
 const postgure = new Postgure();
 
-
+app.get('/health', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store'); // キャッシュ防止
+  res.status(200).json({ status: "ok" });
+});
 
 app.post('/roomdeleted', (req, res) => {
   console.log('Received roomdeleted request:', req.body);
