@@ -37,12 +37,12 @@ app.use(express.json());
 
 const postgure = new Postgure();
 
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.setHeader('Cache-Control', 'no-store'); // キャッシュ防止
   res.status(200).json({ status: "ok" });
 });
 
-app.post('/roomdeleted', (req, res) => {
+app.post('/api/roomdeleted', (req, res) => {
   console.log('Received roomdeleted request:', req.body);
   // TODO: ゲームサーバーから受け取ったゲーム結果を処理するロジックを実装
   const { roomId } = req.body;
@@ -152,7 +152,7 @@ if (process.env.NODE_ENV === 'development') {
 
 const socketOptions = {
   cors: {
-    origin: ['https://ssdojo.net', 'https://localhost:5000'], // 許可するオリジンを具体的に指定
+    origin: ['https://ssdojo.net', 'https://localhost:5000', '*'], // 許可するオリジンを具体的に指定
     credentials: true
   }
 };

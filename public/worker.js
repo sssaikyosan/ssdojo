@@ -1355,7 +1355,7 @@ function level3cpu() {
             // count++;
             // if (count >= 3) count = 0;
         }, rand);
-    }, 400);
+    }, 600);
 }
 
 // メインスレッドからのメッセージを受信
@@ -1370,12 +1370,15 @@ onmessage = function (e) {
 
     if (e.data[0] === "move") {
         const move = e.data[1];
-        board.justMove(move);
-        if (move.x === cpuKingPos.x && move.y === cpuKingPos.y) {
-            cpuKingPos = { x: move.nx, y: move.ny };
-        } else if (move.x === playerKingPos.x && move.y === playerKingPos.y) {
-            playerKingPos = { x: move.nx, y: move.ny };
-        }
+        setTimeout(() => {
+            board.justMove(move);
+            if (move.x === cpuKingPos.x && move.y === cpuKingPos.y) {
+                cpuKingPos = { x: move.nx, y: move.ny };
+            } else if (move.x === playerKingPos.x && move.y === playerKingPos.y) {
+                playerKingPos = { x: move.nx, y: move.ny };
+            }
+        }, 300);
+
     }
 };
 

@@ -96,7 +96,7 @@ export class ServerState {
         };
 
         // ゲームサーバーへのリクエスト送信と応答処理
-        const req = https.request(serverAddress + '/roomdeleted', options, (res) => {
+        const req = https.request(serverAddress + '/api/roomdeleted', options, (res) => {
             console.log(`Game server response status: ${res.statusCode}`);
             res.on('end', () => {
                 if (res.statusCode === 200) {
