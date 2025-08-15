@@ -125,6 +125,8 @@ export class Room {
                     this.emitToRoom("newMove", { ...data, servertime });
                     let endGame = this.board.checkGameEnd(data);
                     if (endGame.player !== 0) {
+                        this.gameState = 'finished';
+                        console.log('gameend', this.roomType);
                         this.gameFinished(endGame.player, endGame.text);
                     }
                 } else {
@@ -154,8 +156,6 @@ export class Room {
     }
 
     async gameFinished(win, text, playerId = null) {
-        this.gameState = 'finished';
-        console.log('gameend', this.roomType);
         if (this.roomType === 'rating') {
             if (this.sente.length !== 1 || this.gote.length !== 1) {
                 console.log('プレイ人数に不正');
