@@ -26,7 +26,7 @@ export class KomadaiUI {
   drawKomadai(ctx, scale, teban, draggingPiece, viewteban) {
     const x = BOARD_SIZE * CELL_SIZE * scale / 2 + CELL_SIZE * KOMADAI_OFFSET_RATIO * scale;
     const y = BOARD_SIZE * CELL_SIZE * scale / 2 - KOMADAI_HEIGHT * scale;
-    const myteban = viewteban === 1 ? 'sente' : 'gote';
+    const myteban = viewteban === -1 ? 'gote' : 'sente';
     ctx.fillStyle = BOARD_COLOR; // 駒台の色
     ctx.save();
     if (teban !== myteban) ctx.rotate(Math.PI);

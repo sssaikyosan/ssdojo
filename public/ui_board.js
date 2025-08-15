@@ -146,7 +146,7 @@ export class BoardUI extends UI {
       for (let j = 0; j < 4; j++) {
         const type = this.komadai.types[i][j];
         if (!type) continue;
-        if (this.board.komadaiPieces[this.teban === 1 ? 'sente' : 'gote'][type] <= 0) continue;
+        if (this.board.komadaiPieces[this.teban === -1 ? 'gote' : 'sente'][type] <= 0) continue;
         if (
           pos.x >= komadaiX + j * CELL_SIZE &&
           pos.x <= komadaiX + j * CELL_SIZE + CELL_SIZE &&
@@ -195,7 +195,7 @@ export class BoardUI extends UI {
       if (komadaiPiece) {
         this.draggingPiecePos = pos;
         this.draggingPiece = { x: -1, y: -1, type: komadaiPiece, teban: this.teban, lastmoveptime: -5000 };
-        // this.board.komadaiPieces[this.board.teban === 1 ? 'sente' : 'gote'][komadaiPiece]--;
+        // this.board.komadaiPieces[this.board.teban === -1 ? 'gote' : 'sente'][komadaiPiece]--;
       }
     } else if (this.board.map[x][y]) {
       if (this.board.map[x][y].teban == this.teban) {
@@ -214,7 +214,7 @@ export class BoardUI extends UI {
       if (komadaiPiece) {
         this.draggingPiecePos = pos;
         this.draggingPiece = { x: -1, y: -1, type: komadaiPiece, teban: this.teban, lastmoveptime: -5000 };
-        // this.board.komadaiPieces[this.board.teban === 1 ? 'sente' : 'gote'][komadaiPiece]--;
+        // this.board.komadaiPieces[this.board.teban === -1 ? 'gote' : 'sente'][komadaiPiece]--;
       }
     } else if (this.board.map[x][y]) {
       if (this.board.map[x][y].teban == this.teban) {
