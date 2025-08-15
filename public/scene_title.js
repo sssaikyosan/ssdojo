@@ -1,7 +1,7 @@
 //タイトルシーン要素
 
 import { createPlayScene } from "./scene_game.js";
-import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, player_id, setScene, characterFiles, setSelectedCharacterName, connectToServer, strings, playerStatus, setStatus, setStrings } from "./main.js";
+import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, player_id, setScene, characterFiles, setSelectedCharacterName, connectToServer, strings, playerStatus, setStatus, setStrings, setSceneType } from "./main.js";
 import { Scene } from "./scene.js";
 import { OverlayUI } from "./ui.js";
 import { BackgroundImageUI } from "./ui_background.js";
@@ -214,6 +214,7 @@ function clearTitleHTML() {
 export function createTitleScene(savedTitleCharacter = null, loadNameInput = true) {
     clearTitleHTML();
 
+    setSceneType('title');
     let titleScene = new Scene();
     const backgroundImageUI = new BackgroundImageUI({ image: title_img });
     titleScene.add(backgroundImageUI);

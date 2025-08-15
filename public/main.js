@@ -4,7 +4,7 @@ import { Board } from './board.js';
 import { AudioManager } from "./audio_manager.js"; // audio_manager.jsからインポート
 import { createTitleScene, initTitleText, nameInput, playCountText, ratingText, roomIdInput, roomJoinFailed, updateRanking } from "./scene_title.js";
 import { createPlayScene, backToRoom, endGame, endRoomGame, initGameText } from "./scene_game.js";
-import { createRoomScene, initRoomText, roomUpdate } from "./scene_room.js";
+import { createRoomScene, initRoomText, setRoomData, roomUpdate, roomdata } from "./scene_room.js";
 import { CHARACTER_FOLDER, LANGUAGE_FOLDER, LANGUAGES, MOVETIME, NUM_QUOTES } from "./const.js";
 
 // 初期化フラグ
@@ -21,6 +21,7 @@ export let ctx = null;
 export let emitter = null;
 export let socket = null; // Socket.IO 接続オブジェクト
 export let scene = null; // scene変数はmain.jsで管理
+export let sceneType = null;
 export let playerName = "";
 export let player_id = null; // 永続的なプレイヤーID
 export let serverStatus = { topPlayers: [], announcement: "" };
@@ -81,6 +82,10 @@ export function setPlayerName(name) {
 
 export function setOnclick(s) {
   onClick = s;
+}
+
+export function setSceneType(str) {
+  sceneType = str;
 }
 
 export function setStatus(rating, total_games) {
@@ -601,7 +606,10 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
   });
 
   socket.on("roomUpdate", (data) => {
-    roomUpdate(data);
+    setRoomData(data);
+    if (sceneType === "room") {
+      roomUpdate();
+    }
   });
 
   socket.on("roomJoined", (data) => {

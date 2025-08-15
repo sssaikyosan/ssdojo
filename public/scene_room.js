@@ -1,6 +1,6 @@
 // ルームUIを定義するファイル
 import { Scene } from "./scene.js";
-import { battle_img, connectToServer, disconnectFromServer, getTitleInfo, setScene, socket, strings } from "./main.js"; // setScene関数をインポート
+import { battle_img, connectToServer, disconnectFromServer, getTitleInfo, setScene, setSceneType, socket, strings } from "./main.js"; // setScene関数をインポート
 import { createTitleScene, discordButton } from "./scene_title.js"; // タイトルシーンに戻るために必要
 import { BackgroundImageUI } from "./ui_background.js";
 
@@ -55,6 +55,10 @@ leaveRoomButton.addEventListener("click", () => { leaveRoom(); });
 
 copyIdButton.addEventListener("click", handleCopyIdClick);
 
+export let roomdata;
+export function setRoomData(data) {
+    roomdata = data;
+}
 
 export function initRoomText() {
     openRoomSettingsButton.textContent = `${strings['change-setting']}`
@@ -182,53 +186,53 @@ function cleanOverlay() {
     }
 }
 
-export function roomUpdate(data) {
+export function roomUpdate() {
     cleanOverlay();
     let ready = true;
 
-    for (let i = 0; i < data.sente.length; i++) {
+    for (let i = 0; i < roomdata.sente.length; i++) {
         const pElement = document.createElement('p');
-        if (data.readys && data.readys.sente[i]) {
-            pElement.textContent = data.sente[i] + `(${strings['ready']})`;
+        if (roomdata.readys && roomdata.readys.sente[i]) {
+            pElement.textContent = roomdata.sente[i] + `(${strings['ready']})`;
         } else {
             ready = false;
-            pElement.textContent = data.sente[i];
+            pElement.textContent = roomdata.sente[i];
         }
         pElement.style.color = '#FFFFFF'; // テキスト色を白に設定
         senteOverlay.appendChild(pElement);
     }
 
-    for (let i = 0; i < data.gote.length; i++) {
+    for (let i = 0; i < roomdata.gote.length; i++) {
         const pElement = document.createElement('p');
-        if (data.readys && data.readys.gote[i]) {
-            pElement.textContent = data.gote[i] + `(${strings['ready']})`;
+        if (roomdata.readys && roomdata.readys.gote[i]) {
+            pElement.textContent = roomdata.gote[i] + `(${strings['ready']})`;
         } else {
             ready = false;
-            pElement.textContent = data.gote[i];
+            pElement.textContent = roomdata.gote[i];
         }
         pElement.style.color = '#FFFFFF'; // テキスト色を白に設定
         goteOverlay.appendChild(pElement);
     }
-    for (let i = 0; i < data.spectators.length; i++) {
+    for (let i = 0; i < roomdata.spectators.length; i++) {
         const pElement = document.createElement('p');
-        pElement.textContent = data.spectators[i];
+        pElement.textContent = roomdata.spectators[i];
         pElement.style.color = '#FFFFFF'; // テキスト色を白に設定
         spectatorsOverlay.appendChild(pElement);
     }
 
-    if (data.state !== 'playing') {
+    if (roomdata.state !== 'playing') {
         playingText.style.display = 'none';
 
         startOverlay.style.display = 'none';
         readyOverlay.style.display = 'block';
         cancelOverlay.style.display = 'none';
-        if (data.roomteban === 'sente') {
-            if (data.readys && data.readys.sente[data.idx]) {
+        if (roomdata.roomteban === 'sente') {
+            if (roomdata.readys && roomdata.readys.sente[roomdata.idx]) {
                 readyOverlay.style.display = 'none';
                 cancelOverlay.style.display = 'block';
             }
-        } else if (data.roomteban === 'gote') {
-            if (data.readys && data.readys.gote[data.idx]) {
+        } else if (roomdata.roomteban === 'gote') {
+            if (roomdata.readys && roomdata.readys.gote[roomdata.idx]) {
                 readyOverlay.style.display = 'none';
                 cancelOverlay.style.display = 'block';
             }
@@ -236,12 +240,12 @@ export function roomUpdate(data) {
             readyOverlay.style.display = 'none';
             cancelOverlay.style.display = 'none';
         }
-        if (data.isOwner) {
+        if (roomdata.isOwner) {
             openRoomSettingsButton.style.display = 'block';
         } else {
             openRoomSettingsButton.style.display = 'none';
         }
-        if (data.isOwner && ready && data.sente.length > 0 && data.gote.length > 0) {
+        if (roomdata.isOwner && ready && roomdata.sente.length > 0 && roomdata.gote.length > 0) {
             startOverlay.style.display = 'block';
         } else {
             startOverlay.style.display = 'none';
@@ -249,9 +253,9 @@ export function roomUpdate(data) {
     }
 
     // 部屋設定表示エリアに現在の設定値を表示
-    maxPlayersDisplay.textContent = `${strings['max-player']}${data.maxplayers}`;
-    senteMoveTimeDisplay.textContent = `${strings['cooldown-first']}${data.moveTime.sente}`;
-    goteMoveTimeDisplay.textContent = `${strings['cooldown-second']}${data.moveTime.gote}`;
+    maxPlayersDisplay.textContent = `${strings['max-player']}${roomdata.maxplayers}`;
+    senteMoveTimeDisplay.textContent = `${strings['cooldown-first']}${roomdata.moveTime.sente}`;
+    goteMoveTimeDisplay.textContent = `${strings['cooldown-second']}${roomdata.moveTime.gote}`;
 }
 
 // コピーボタンのイベントハンドラ
@@ -282,12 +286,13 @@ async function handleCopyIdClick() {
 
 
 export function createRoomScene(data) {
+    setSceneType('room');
     let roomScene = new Scene();
     const backgroundImageUI = new BackgroundImageUI({ image: battle_img });
 
     roomScene.add(backgroundImageUI);
 
-    roomUpdate(data);
+    roomUpdate();
 
     if (data.state === 'playing') {
         playingText.style.display = 'block';
