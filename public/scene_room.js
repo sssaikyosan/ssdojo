@@ -286,6 +286,7 @@ async function handleCopyIdClick() {
 
 
 export function createRoomScene(data) {
+    roomdata = data;
     setSceneType('room');
     let roomScene = new Scene();
     const backgroundImageUI = new BackgroundImageUI({ image: battle_img });

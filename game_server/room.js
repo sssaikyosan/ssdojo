@@ -480,6 +480,7 @@ export class Room {
             }
         }
         const names = this.getPlayerNames();
+        const readys = this.getReadys();
         // 部屋設定情報も含めて返す
         const data = {
             roomId: this.roomId,
@@ -487,6 +488,7 @@ export class Room {
             gote: names.gote,
             spectators: names.spectators,
             state: this.gameState,
+            readys: readys,
             maxplayers: this.maxplayers,
             moveTime: this.moveTime,
             roomteban: roomTeban,
