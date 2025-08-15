@@ -1336,7 +1336,7 @@ function level3cpu() {
         normalAlgolysm(board, servertime);
     }, 100);
     setInterval(() => {
-        const rand = 200 * Math.random();
+        const rand = 300 * Math.random();
         setTimeout(() => {
             const servertime = startTime + performance.now();
             // if (count === 2) {
@@ -1355,7 +1355,7 @@ function level3cpu() {
             // count++;
             // if (count >= 3) count = 0;
         }, rand);
-    }, 600);
+    }, 500);
 }
 
 // メインスレッドからのメッセージを受信
