@@ -53,6 +53,9 @@
     "win": "勝利",
     "lose": "敗北",
     "game-end": "試合終了",
+    "resign-win": "対戦相手が投了しました",
+    "resign-lose": "投了しました",
+    "try-rule": "王(玉)が目標地点に到達しました",
     "characters": {
         "rei": {
             "name": "緋月 零",

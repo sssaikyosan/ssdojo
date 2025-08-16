@@ -286,13 +286,16 @@ export class Board {
   checkGameEnd(data) {
     const { x, y, nx, ny, type, nari, teban, roomId, servertime } = data;
 
-    if (this.komadaiPieces["sente"]["king2"] > 0 || this.komadaiPieces["gote"]["king"] > 0) {
-      return { player: teban, text: "勝利" };
+    if (this.komadaiPieces["sente"]["king2"] > 0) {
+      return { player: 1, text: "game-end" };
+    }
+    if (this.komadaiPieces["gote"]["king"] > 0) {
+      return { player: -1, text: "game-end" };
     }
     if (this.map[nx][ny].type === "king" && teban === 1 && nx === 4 && ny === 0) {
-      return { player: teban, text: "トライ勝ち" };
+      return { player: teban, text: "try" };
     } else if (this.map[nx][ny].type === "king2" && teban === -1 && nx === 4 && ny === 8) {
-      return { player: teban, text: "トライ勝ち" };
+      return { player: teban, text: "try" };
     }
     return { player: 0, text: "" };
   }

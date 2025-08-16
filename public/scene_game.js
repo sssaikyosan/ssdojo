@@ -8,6 +8,8 @@ import { CharacterInGameUI } from "./ui_character.js";
 import { TextUI } from "./ui_text.js";
 import { ButtonUI } from "./ui_button.js";
 
+export const winCon = document.getElementById("winCon");
+export const roomWinCon = document.getElementById("roomWinCon");
 export const changeRating = document.getElementById("changeRating");
 
 const resultOverlay = document.getElementById("resultOverlay");
@@ -317,6 +319,7 @@ export async function backToTitle() {
 
 export function endGame(data) {
     const mywin = data.winPlayer * gameManager.teban;
+    setWinCon(winCon, data, mywin);
     setRatingText(data, mywin);
     setResultText(mywin);
     characterWinMove(mywin, resultOverlay);
@@ -327,6 +330,7 @@ export function endGame(data) {
 
 export function endRoomGame(data) {
     const mywin = data.winPlayer * gameManager.teban;
+    setWinCon(roomWinCon, data, mywin);
     setResultText(mywin);
     characterWinMove(mywin, roomResultOverlay);
 
@@ -355,6 +359,20 @@ function setRatingText(data, mywin) {
         newrateText = `${Math.round(targetnewrate)}`
     }
     changeRating.textContent = `${strings['rating-change']} ` + oldrateText + " → " + newrateText;
+}
+
+function setWinCon(winConText, data, mywin) {
+    console.log(data.text);
+    winConText.textContent = `${strings['game-end']}`;
+    if (data.text === "try") {
+        winConText.textContent = `${strings['try-rule']}`;
+    } else if (data.text === "resign") {
+        if (mywin === 1) {
+            winConText.textContent = `${strings['resign-win']}`;
+        } else {
+            winConText.textContent = `${strings['resign-lose']}`;
+        }
+    }
 }
 
 function setResultText(mywin) {
