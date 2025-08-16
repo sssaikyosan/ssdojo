@@ -66,6 +66,8 @@ export function initGameText() {
     loseText.text = () => {
         return strings['lose'];
     }
+    toRoomButton.textContent = strings['back'];
+    toTitleButton.textContent = strings['back'];
 }
 
 export const timeText = new TextUI({

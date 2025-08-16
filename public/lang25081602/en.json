@@ -56,6 +56,7 @@
     "resign-win": "Opponent resigned",
     "resign-lose": "Resigned",
     "try-rule": "The king has reached the target point",
+    "back": "Back",
     "characters": {
         "rei": {
             "name": "Rei Hizuki",
