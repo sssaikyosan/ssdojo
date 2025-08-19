@@ -2,7 +2,7 @@ import { cancelOverlay, createRoomScene, leaveRoomOverlay, readyOverlay, roomIdO
 import { MOVETIME } from "./const.js";
 import { gameManager, battle_img, audioManager, selectedCharacterName, setScene, scene, setStatus, setupSocket, connectToServer, socket, disconnectFromServer, getTitleInfo, strings, setSceneType } from "./main.js";
 import { Scene } from "./scene.js";
-import { createTitleScene } from "./scene_title.js";
+import { clearTitleHTML, createTitleScene } from "./scene_title.js";
 import { BackgroundImageUI } from "./ui_background.js";
 import { CharacterInGameUI } from "./ui_character.js";
 import { TextUI } from "./ui_text.js";

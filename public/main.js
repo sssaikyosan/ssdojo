@@ -2,7 +2,7 @@ import { Keyboard } from "./keyboard.js";
 import { GameManager } from "./game_manager.js";
 import { Board } from './board.js';
 import { AudioManager } from "./audio_manager.js"; // audio_manager.jsからインポート
-import { createTitleScene, initTitleText, nameInput, playCountText, ratingText, roomIdInput, roomJoinFailed, updateRanking } from "./scene_title.js";
+import { clearTitleHTML, createTitleScene, initTitleText, nameInput, playCountText, ratingText, roomIdInput, roomJoinFailed, updateRanking } from "./scene_title.js";
 import { createPlayScene, backToRoom, endGame, endRoomGame, initGameText } from "./scene_game.js";
 import { createRoomScene, initRoomText, setRoomData, roomUpdate, roomdata } from "./scene_room.js";
 import { CHARACTER_FOLDER, LANGUAGE_FOLDER, LANGUAGES, MOVETIME, NUM_QUOTES } from "./const.js";

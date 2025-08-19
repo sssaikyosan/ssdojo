@@ -1,7 +1,7 @@
 // ルームUIを定義するファイル
 import { Scene } from "./scene.js";
 import { battle_img, connectToServer, disconnectFromServer, getTitleInfo, setScene, setSceneType, socket, strings } from "./main.js"; // setScene関数をインポート
-import { createTitleScene, discordButton } from "./scene_title.js"; // タイトルシーンに戻るために必要
+import { clearTitleHTML, createTitleScene, discordButton } from "./scene_title.js"; // タイトルシーンに戻るために必要
 import { BackgroundImageUI } from "./ui_background.js";
 
 export const roomIdOverlay = document.getElementById("roomIdOverlay");
@@ -286,6 +286,7 @@ async function handleCopyIdClick() {
 
 
 export function createRoomScene(data) {
+    clearTitleHTML();
     roomdata = data;
     setSceneType('room');
     let roomScene = new Scene();

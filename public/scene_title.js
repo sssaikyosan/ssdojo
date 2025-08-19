@@ -204,7 +204,7 @@ export function initTitleText() {
 
 
 
-function clearTitleHTML() {
+export function clearTitleHTML() {
     discordButton.style.display = "none";
     roomIdInput.style.display = "none";
     nameInput.style.display = "none";
@@ -262,7 +262,6 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         setPlayerName(nameInput.value.trim());
         localStorage.setItem("playerName", playerName);
         if (playerName == "") setPlayerName(`${strings['anonymous']}`);
-        clearTitleHTML();
 
         connectToServer().then(socket => {
             socket.emit("createRoom", { name: playerName, characterName: selectedCharacterName, player_id: player_id });
@@ -279,7 +278,6 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         if (playerName == "") setPlayerName(`${strings['anonymous']}`);
         const roomId = roomIdInput.value.trim();
         if (roomId) {
-            clearTitleHTML();
             connectToServer().then(socket => {
                 socket.emit("joinRoom", { roomId: roomId, name: playerName, characterName: selectedCharacterName, player_id: player_id });
             }).catch(err => {
