@@ -147,7 +147,7 @@ export const PIECE_MOVES = {
   ]
 };
 
-export const CHARACTER_FOLDER = "characters25081901"
+export const CHARACTER_FOLDER = "characters25082001"
 export const LANGUAGE_FOLDER = "lang25081602"
 export const NUM_QUOTES = 5
 export const LANGUAGES = ['en', 'jp'];
