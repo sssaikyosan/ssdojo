@@ -62,11 +62,11 @@
             "name": "Rei Hizuki",
             "profile": "A freelance 'problem solver' agent based in the night city, shrouded \nin mystery. Rumored to perfectly fulfill any difficult request, regardless \nof legality, in exchange for a high reward.",
             "quotes": [
-                "...It's time for work.",
-                "...I've confirmed the request details.",
+                "It's time for work.",
+                "I've confirmed the request details.",
                 "You know too much.",
                 "Hesitation is the first step toward defeat.",
-                "...I hate wasted time."
+                "I hate wasted time."
             ],
             "start_quotes": [
                 "Calculating the shortest route to checkmate."
@@ -79,14 +79,14 @@
             "name": "Aoi Minase",
             "profile": "A very ordinary and unremarkable high school girl attending a school \nin the city. However, at night, she transforms into the legendary \ngenius gamer and white hacker 'Cyber Serene'.",
             "quotes": [
-                "...Okay, let's go.",
-                "...There, the line of sight is clear.",
+                "Okay, let's go.",
+                "There, the line of sight is clear.",
                 "I've analyzed the enemy's composition.",
                 "Yes, thank you for your hard work.",
-                "...Login complete."
+                "Login complete."
             ],
             "start_quotes": [
-                "Warm-up complete. ...I'm ready anytime."
+                "Warm-up complete. I'm ready anytime."
             ],
             "win_quotes": [
                 "I could see all of your moves."
@@ -99,7 +99,7 @@
                 "Is the deal sealed, I wonder?",
                 "Please be quiet in my shop.",
                 "Everyone is a pawn of something.",
-                "...That's an interesting story. Tell me a bit more.",
+                "That's an interesting story. Tell me a bit more.",
                 "Information has value."
             ],
             "start_quotes": [
