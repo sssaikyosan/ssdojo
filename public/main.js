@@ -205,7 +205,7 @@ export async function getTitleInfo() {
 
 export async function loadStrings() {
 
-  for (const lang of LANGUAGES) {
+  for (const lang of Object.keys(LANGUAGES)) {
     // 言語データの読み込み
     try {
       const response = await fetch(`/${LANGUAGE_FOLDER}/${lang}.json`);
@@ -223,7 +223,7 @@ export async function loadStrings() {
 }
 
 export function setStrings(lang) {
-  if (LANGUAGES.includes(lang)) {
+  if (Object.keys(LANGUAGES).includes(lang)) {
     strings = all_strings[lang];
     initTitleText();
     initGameText();

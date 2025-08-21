@@ -8,7 +8,7 @@ import { BackgroundImageUI } from "./ui_background.js";
 import { CharacterImageUI } from "./ui_character.js";
 import { LoadingUI } from "./ui_loading.js";
 import { TextUI } from "./ui_text.js";
-import { KOMADAI_TYPES, MOVETIME, PROMOTE_TYPES } from "./const.js";
+import { KOMADAI_TYPES, LANGUAGES, MOVETIME, PROMOTE_TYPES } from "./const.js";
 import { ImageUI } from "./ui_image.js";
 import { ButtonUI } from "./ui_button.js";
 import { PieceHelpUI } from "./piece_help.js";
@@ -24,43 +24,31 @@ export const voiceVolumeText = document.querySelector('label[for="voiceVolumeSli
 
 const languageOverlay = new OverlayUI({
     x: -0.78,
-    y: -0.37,
-    height: 0.11,
+    y: -0.26,
+    height: 0.34,
     width: 0.11,
     visible: false
 });
 
-const enButton = new ButtonUI({
-    text: `English`,
-    x: 0.0,
-    y: -0.024,
-    height: 0.04,
-    width: 0.1,
-    color: '#3241c9',
-    textSize: 0.02,
-    textColors: ['#ffffffff', '#00000000', '#00000000'],
-    onClick: () => {
-        setStrings('en');
-        setScene(createTitleScene());
-    }
-});
-languageOverlay.add(enButton);
-
-const jpButton = new ButtonUI({
-    text: `日本語`,
-    x: 0.0,
-    y: 0.026,
-    height: 0.04,
-    width: 0.1,
-    color: '#3241c9',
-    textSize: 0.02,
-    textColors: ['#ffffffff', '#00000000', '#00000000'],
-    onClick: () => {
-        setStrings('jp');
-        setScene(createTitleScene());
-    }
-});
-languageOverlay.add(jpButton);
+let langY = 0.0;
+for (const lang in LANGUAGES) {
+    const langButton = new ButtonUI({
+        text: LANGUAGES[lang],
+        x: 0.0,
+        y: -0.15 + langY,
+        height: 0.024,
+        width: 0.1,
+        color: '#3241c9',
+        textSize: 0.014,
+        textColors: ['#ffffffff', '#00000000', '#00000000'],
+        onClick: () => {
+            setStrings(lang);
+            setScene(createTitleScene());
+        }
+    });
+    languageOverlay.add(langButton);
+    langY += 0.03;
+}
 
 const cpuLevelOverlay = new OverlayUI({
     x: 0.65,
