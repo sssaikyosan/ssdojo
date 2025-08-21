@@ -204,7 +204,6 @@ export async function getTitleInfo() {
 }
 
 export async function loadStrings() {
-
   for (const lang of Object.keys(LANGUAGES)) {
     // 言語データの読み込み
     try {
@@ -213,7 +212,6 @@ export async function loadStrings() {
         throw new Error(`Failed to load language file: ${response.status}`);
       }
       all_strings[lang] = await response.json();
-      console.log('Language data loaded:', strings);
     } catch (error) {
       console.error('Failed to load language data:', error);
       // エラー時は空オブジェクトを設定
@@ -301,7 +299,6 @@ async function init() {
 
   // ユーザーIDの読み込みまたは生成
   player_id = localStorage.getItem('shogiUserId');
-  console.log(player_id);
   if (!player_id) {
     // プレイヤーIDがない場合は、サーバーに新規作成を要求する
     player_id = 'create';
