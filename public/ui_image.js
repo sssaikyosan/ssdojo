@@ -10,7 +10,6 @@ export class ImageUI extends UI {
   isRenderingVideo = false; // 動画を描画中かどうかのフラグ
   voiceTextOverlay;
   voiceText;
-  textfade = 0;
   lastVideoidx = 0;
 
   constructor(params) {

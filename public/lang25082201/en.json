@@ -67,6 +67,12 @@
                 "You know too much.",
                 "Hesitation is the first step toward defeat.",
                 "...I hate wasted time."
+            ],
+            "start_quotes": [
+                "Calculating the shortest route to checkmate."
+            ],
+            "win_quotes": [
+                "An expected result. The calculations are flawless."
             ]
         },
         "aoi": {
@@ -78,6 +84,12 @@
                 "I've analyzed the enemy's composition.",
                 "Yes, thank you for your hard work.",
                 "...Login complete."
+            ],
+            "start_quotes": [
+                "Warm-up complete. ...I'm ready anytime."
+            ],
+            "win_quotes": [
+                "I could see all of your moves."
             ]
         },
         "akira": {
@@ -89,6 +101,12 @@
                 "Everyone is a pawn of something.",
                 "...That's an interesting story. Tell me a bit more.",
                 "Information has value."
+            ],
+            "start_quotes": [
+                "Show me all the cards you're holding."
+            ],
+            "win_quotes": [
+                "I've received my due compensation. Thank you for the meal."
             ]
         }
     }

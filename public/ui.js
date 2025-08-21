@@ -1,3 +1,4 @@
+import { OVERLAY_COLOR } from "./const.js";
 import { characterImages, gameManager, scene, title_img, audioManager, canvas } from "./main.js";
 export class UI {
   globalX;
@@ -183,7 +184,7 @@ export class OverlayUI extends UI {
 
   constructor(params) {
     super(params);
-    this.color = params.color ?? '#111122bb';
+    this.color = params.color ?? OVERLAY_COLOR;
     this.width = params.width;
     this.height = params.height;
     this.borderRadius = params.borderRadius ?? 0.02;

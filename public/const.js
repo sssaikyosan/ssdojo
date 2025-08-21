@@ -30,6 +30,7 @@ export const TIMER_RESERVE_COLOR = 'rgb(155, 155, 155)';
 
 export const ARROW_COLOR = 'rgba(31, 63, 221, 0.4)'
 
+export const OVERLAY_COLOR = '#111122dd'
 export const MOVE_COLOR = '#cf8b1e'
 export const UNPROMODED_TYPES = ['pawn', 'lance', 'knight', 'silver', 'bishop', 'rook'];
 export const KOMADAI_TYPES = ['pawn', 'lance', 'knight', 'silver', 'gold', 'bishop', 'rook', 'king', 'king2'];

@@ -779,7 +779,7 @@ export function createCharacterSelectScene(titleCharacter) {
             titleCharacter.init();
             titleCharacter.videoElement[0].addEventListener('canplaythrough', () => {
                 if (titleCharacter.playVideo(0)) {
-                    // titleCharacter.spawnVoiceText(0);
+                    titleCharacter.spawnVoiceText(0);
                 }
             });
             characterProfileText.text = () => strings['characters'][characterName]['profile'];

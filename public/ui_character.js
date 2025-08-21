@@ -1,7 +1,7 @@
 import { TextUI } from "./ui_text.js";
-import { characterImages, audioManager, onClick, characterVideos } from "./main.js";
+import { characterImages, audioManager, onClick, characterVideos, strings } from "./main.js";
 import { OverlayUI, UI } from "./ui.js";
-import { CHARACTER_FOLDER, NUM_QUOTES } from "./const.js";
+import { CHARACTER_FOLDER, NUM_QUOTES, OVERLAY_COLOR } from "./const.js";
 
 // キャラクター画像を表示するためのUIクラス
 export class CharacterImageUI extends UI {
@@ -13,7 +13,6 @@ export class CharacterImageUI extends UI {
   isRenderingVideo = false; // 動画を描画中かどうかのフラグ
   voiceTextOverlay;
   voiceText;
-  textfade = 0;
   lastVideoidx = 0;
 
   constructor(params) {
@@ -24,7 +23,7 @@ export class CharacterImageUI extends UI {
 
     this.textsize = 0.035;
     this.voiceTextOverlay = new OverlayUI({
-      color: 'rgba(15,63,31,0.8)',
+      color: OVERLAY_COLOR,
       x: 0.2,
       y: 0.15,
       width: 0,
@@ -98,7 +97,7 @@ export class CharacterImageUI extends UI {
       randomIndex++;
     }
     if (this.playVideo(randomIndex)) {
-      // this.spawnVoiceText(randomIndex);
+      this.spawnVoiceText(randomIndex);
     }
   }
 
@@ -145,18 +144,57 @@ export class CharacterImageUI extends UI {
     }
   }
 
-  // spawnVoiceText(randomIndex) {
-  //   this.voiceText.text = () => { return `${CHARA_QUOTES[this.image][randomIndex]}` }
-  //   this.voiceTextOverlay.width = CHARA_QUOTES[this.image][randomIndex].length * this.textsize + 0.02;
-  //   this.currentVideo.addEventListener('ended', () => {
-  //     setTimeout(() => {
-  //       if (this.currentVideo === null) {
-  //         this.voiceText.text = () => { return `` };
-  //         this.voiceTextOverlay.width = 0;
-  //       }
-  //     }, 700);
-  //   });
-  // }
+  spawnVoiceText(randomIndex) {
+    // 参照で読み取ることで言語変更時に自動的に更新されるようにする
+    const currentStrings = strings;
+
+    // テキストの長さを正しく取得して幅を設定
+    this.voiceText.text = () => {
+      const quotes = currentStrings["characters"][this.image]["quotes"];
+      return quotes[randomIndex] || "";
+    };
+
+    // 実際に描画されるテキストの長さを計算するために、一度テキストを更新してから取得
+    const quoteText = currentStrings["characters"][this.image]["quotes"][randomIndex] || "";
+
+    // Canvasを使用して実際の文字幅を測定
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      // テキストスタイルを設定（UIと同じように）
+      ctx.font = `${this.textsize * 100}px Arial, sans-serif`; // 100倍のサイズで測定
+      ctx.textAlign = 'center';
+
+      // 実際のテキスト幅を取得
+      const textMetrics = ctx.measureText(quoteText);
+      const actualPixelWidth = textMetrics.width;
+
+      // Canvas全体に対する相対的な幅に変換（100倍して測定したので戻す）
+      const relativeWidth = (actualPixelWidth / 100) + 0.02; // 少し余白を追加
+
+      // 最小幅と最大幅の制限を設ける
+      const minWidth = 0.15; // 最小幅
+      const maxWidth = 1;  // 最大幅
+      this.voiceTextOverlay.width = Math.max(minWidth, Math.min(maxWidth, relativeWidth));
+    }
+
+    // 既存のイベントリスナーが重複しないように一度削除してから追加
+    const existingEndedListener = this.currentVideo._endedHandler;
+    if (existingEndedListener) {
+      this.currentVideo.removeEventListener('ended', existingEndedListener);
+    }
+
+    this.currentVideo._endedHandler = () => {
+      setTimeout(() => {
+        if (this.currentVideo === null) {
+          this.voiceText.text = () => { return `` };
+          this.voiceTextOverlay.width = 0;
+        }
+      }, 700);
+    };
+
+    this.currentVideo.addEventListener('ended', this.currentVideo._endedHandler);
+  }
 }
 
 export class CharacterInGameUI extends UI {
@@ -166,12 +204,34 @@ export class CharacterInGameUI extends UI {
   winVideoElement = [];
   currentVideo = null;
   isRenderingVideo = false; // 動画を描画中かどうかのフラグ
+  voiceTextOverlay;
+  voiceText;
 
   constructor(params) {
     super(params);
     this.image = params.image;
     this.width = params.width;
     this.height = params.height;
+    this.textsize = 0.018;
+    this.voiceTextOverlay = new OverlayUI({
+      color: OVERLAY_COLOR,
+      x: 0.0,
+      y: 0.12,
+      width: 0,
+      height: 0.018 + 0.02
+    });
+    this.voiceText = new TextUI({
+      text: () => {
+        return "";
+      },
+      x: 0.0,
+      y: 0.0,
+      size: 0.018,
+      colors: ["#ffffff", "#00000000", "#00000000"],
+      position: 'center'
+    });
+    this.voiceTextOverlay.add(this.voiceText);
+    this.add(this.voiceTextOverlay);
     this.init();
   }
 
@@ -261,6 +321,7 @@ export class CharacterInGameUI extends UI {
       this.currentVideo = null;
       this.isRenderingVideo = false; // 再生開始に失敗したらフラグをオフ
     });
+    this.spawnVoiceText("start_quotes", idx);
   }
 
   playWinVideo(idx) {
@@ -286,7 +347,60 @@ export class CharacterInGameUI extends UI {
       this.currentVideo = null;
       this.isRenderingVideo = false; // 再生開始に失敗したらフラグをオフ
     });
+    this.spawnVoiceText("win_quotes", idx);
     return true; // 動画の再生が成功
+  }
+
+  spawnVoiceText(type, randomIndex) {
+    // 参照で読み取ることで言語変更時に自動的に更新されるようにする
+    const currentStrings = strings;
+
+    // テキストの長さを正しく取得して幅を設定
+    this.voiceText.text = () => {
+      const quotes = currentStrings["characters"][this.image][type];
+      return quotes[randomIndex] || "";
+    };
+
+    // 実際に描画されるテキストの長さを計算するために、一度テキストを更新してから取得
+    const quoteText = currentStrings["characters"][this.image][type][randomIndex] || "";
+
+    // Canvasを使用して実際の文字幅を測定
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      // テキストスタイルを設定（UIと同じように）
+      ctx.font = `${this.textsize * 100}px Arial, sans-serif`; // 100倍のサイズで測定
+      ctx.textAlign = 'center';
+
+      // 実際のテキスト幅を取得
+      const textMetrics = ctx.measureText(quoteText);
+      const actualPixelWidth = textMetrics.width;
+
+      // Canvas全体に対する相対的な幅に変換（100倍して測定したので戻す）
+      const relativeWidth = (actualPixelWidth / 100) + 0.02; // 少し余白を追加
+
+      // 最小幅と最大幅の制限を設ける
+      const minWidth = 0.15; // 最小幅
+      const maxWidth = 1.5;  // 最大幅
+      this.voiceTextOverlay.width = Math.max(minWidth, Math.min(maxWidth, relativeWidth));
+    }
+
+    // 既存のイベントリスナーが重複しないように一度削除してから追加
+    const existingEndedListener = this.currentVideo._endedHandler;
+    if (existingEndedListener) {
+      this.currentVideo.removeEventListener('ended', existingEndedListener);
+    }
+
+    this.currentVideo._endedHandler = () => {
+      setTimeout(() => {
+        if (this.currentVideo === null) {
+          this.voiceText.text = () => { return `` };
+          this.voiceTextOverlay.width = 0;
+        }
+      }, 700);
+    };
+
+    this.currentVideo.addEventListener('ended', this.currentVideo._endedHandler);
   }
 }
 
