@@ -237,12 +237,9 @@ export function setStrings(lang) {
 
 function loadLanguage() {
   try {
-    let lang = localStorage.getItem('Language');
+    let lang = localStorage.getItem('language');
+    console.log(lang);
     if (lang) {
-      if (lang === 'jp') {
-        localStorage.setItem('language', 'ja');
-        return 'ja';
-      }
       return lang;
     } else {
       return null;
@@ -252,29 +249,24 @@ function loadLanguage() {
     return null;
   }
 }
+
 // ブラウザの言語設定を取得し、'ja' または 'en' を返す関数
 export function getBrowserLanguage() {
-  let lang = loadLanguage();
-  if (lang) {
-    return lang;
-  } else {
-    const languages = navigator.languages || [navigator.language];
-    for (const lang of languages) {
-      // 言語コードが 'ja' で始まる場合は 'ja' を返す
-      if (lang.startsWith('ja')) {
-        return 'ja';
-      }
-      // 言語コードが 'en' で始まる場合は 'en' を返す
-      if (lang.startsWith('en')) {
-        return 'en';
-      }
-
-      if (lang.startsWith('zh')) {
-        return 'zh';
-      }
-      if (lang.startsWith('ko')) {
-        return 'ko';
-      }
+  const languages = navigator.languages || [navigator.language];
+  for (const lang of languages) {
+    // 言語コードが 'ja' で始まる場合は 'ja' を返す
+    if (lang.startsWith('ja')) {
+      return 'ja';
+    }
+    // 言語コードが 'en' で始まる場合は 'en' を返す
+    if (lang.startsWith('en')) {
+      return 'en';
+    }
+    if (lang.startsWith('zh')) {
+      return 'zh';
+    }
+    if (lang.startsWith('ko')) {
+      return 'ko';
     }
   }
   return 'en';
@@ -291,8 +283,7 @@ async function init() {
 
   // localStorageから言語設定を読み込む
   let lang = localStorage.getItem('language');
-  // 言語設定が存在しない場合、または無効な値の場合、ブラウザの言語設定を使用
-  if (!lang || (lang !== 'jp' && lang !== 'en')) {
+  if (!lang || lang === 'jp') {
     lang = getBrowserLanguage();
   }
   await loadStrings();
