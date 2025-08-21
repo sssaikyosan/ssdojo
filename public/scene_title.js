@@ -24,8 +24,8 @@ export const voiceVolumeText = document.querySelector('label[for="voiceVolumeSli
 
 const languageOverlay = new OverlayUI({
     x: -0.78,
-    y: -0.26,
-    height: 0.34,
+    y: -0.36,
+    height: 0.13,
     width: 0.11,
     visible: false
 });
@@ -35,7 +35,7 @@ for (const lang in LANGUAGES) {
     const langButton = new ButtonUI({
         text: LANGUAGES[lang],
         x: 0.0,
-        y: -0.15 + langY,
+        y: -0.046 + langY,
         height: 0.024,
         width: 0.1,
         color: '#3241c9',
@@ -481,7 +481,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         width: 0.15,
         height: 0.05,
         color: '#3241c9',
-        textSize: 0.032,
+        textSize: 0.026,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
         onClick: () => { ctrlOverlay.visible = false; }
     });
@@ -493,7 +493,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         width: 0.15,
         height: 0.05,
         color: '#3241c9',
-        textSize: 0.032,
+        textSize: 0.026,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
         onClick: () => {
             pieceHelpOverlay.visible = true;
@@ -509,7 +509,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         height: 0.05,
         width: 0.15,
         color: '#3241c9',
-        textSize: 0.032,
+        textSize: 0.026,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
         onClick: () => {
             pieceHelpOverlay.visible = false;
@@ -525,7 +525,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         width: 0.15,
         height: 0.05,
         color: '#3241c9',
-        textSize: 0.032,
+        textSize: 0.026,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
         onClick: () => {
             pieceHelpOverlay.visible = false;

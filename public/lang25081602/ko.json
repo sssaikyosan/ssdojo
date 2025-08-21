@@ -10,7 +10,7 @@
     "piece-list": "말 목록",
     "close": "닫기",
     "manual": "조작 설명서",
-    "manual-text": "마우스 드래그 - 말 이동\n오른쪽 드래그 - 승급하지 않음\n\n<단축키>\nSpace - 졸　Q - 상　W - 마　E - 상\nA - 상　S - 사　D - 차",
+    "manual-text": "마우스 드래그 - 말 이동\n오른쪽 드래그 - 승급하지 않음\n\n<단축키>\nSpace - 보병\nQ - 향차　W - 계마　E - 각행\nA - 은장　S - 금장　D - 비차",
     "win-condition": "승리 조건",
     "online-match": "온라인 대전",
     "matching": "매칭 중",
@@ -55,7 +55,7 @@
     "game-end": "게임 종료",
     "resign-win": "상대방이 항복했습니다",
     "resign-lose": "항복했습니다",
-    "try-rule": "왕(옥)이 목표 지점에 도달했습니다",
+    "try-rule": "왕이 목표 지점에 도달했습니다",
     "back": "뒤로",
     "characters": {
         "rei": {

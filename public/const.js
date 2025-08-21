@@ -155,11 +155,4 @@ export const LANGUAGES = {
   "ja": "日本語",
   "zh": "中文",
   "ko": "한국어",
-  "vi": "Tiếng Việt",
-  "id": "Bhs. Indo.",
-  "fr": "Français",
-  "de": "Deutsch",
-  "es": "Español",
-  "pt": "Português",
-  "ru": "Русский",
 };
