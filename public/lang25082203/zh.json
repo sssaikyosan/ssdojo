@@ -16,7 +16,7 @@
     "matching": "匹配中",
     "cancel": "取消",
     "name": "名字",
-    "resign": "投子认负",
+    "resign": "投降",
     "anonymous": "无名棋士",
     "change-character": "更换角色",
     "make-room": "创建房间",
@@ -27,14 +27,14 @@
     "level": "等级",
     "game-count": "对局数",
     "rating": "积分",
-    "unrated": "未评级",
+    "unrated": "未定级",
     "rating-change": "积分变化",
     "ranking": "排行榜",
     "select-character": "选择角色",
     "submit": "确定",
     "start-game": "开始游戏",
-    "move-first": "移动为先手",
-    "move-second": "移动为后手",
+    "move-first": "移至先手",
+    "move-second": "移至后手",
     "spectate": "观战",
     "display-room-id": "显示房间ID",
     "display-room-id-off": "隐藏房间ID",
@@ -46,10 +46,10 @@
     "max-player": "最大玩家数: ",
     "cooldown-first": "先手冷却时间 (秒): ",
     "cooldown-second": "后手冷却时间 (秒): ",
-    "check": "是",
-    "uncheck": "否",
+    "check": "启用",
+    "uncheck": "禁用",
     "leave-room": "离开房间",
-    "apply": "应用",
+    "apply": "确定",
     "win": "胜利",
     "lose": "失败",
     "game-end": "对局结束",
@@ -106,7 +106,7 @@
                 "把你所有的牌都给我看看。"
             ],
             "win_quotes": [
-                "我收到了应有的报酬。承蒙款待。"
+                "我收到了应有的报酬。多谢款待。"
             ]
         }
     }
