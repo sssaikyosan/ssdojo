@@ -317,6 +317,12 @@ async function init() {
   // タイトル画面に必要な情報をAPIから取得
   await getTitleInfo();
 
+  // 初期化完了後にロード中テキストを非表示にする
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  if (loadingOverlay) {
+    loadingOverlay.style.display = 'none';
+  }
+
   // 最初にタイトルシーンを表示
   setScene(createTitleScene());
   resizeHTML();

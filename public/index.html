@@ -312,6 +312,12 @@
 </head>
 
 <body>
+  <!-- ロード中テキスト表示用の要素 -->
+  <div id="loadingOverlay" class="overlay"
+    style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; justify-content: center; align-items: center;">
+    <p id="loadingText" style="color: white; font-size: 48px;">Loading...</p>
+  </div>
+
   <canvas id="shogiCanvas" tabindex="0"></canvas>
 
   <input type="text" id="nameInput" autocomplete="off" placeholder="名前" maxlength="12"
