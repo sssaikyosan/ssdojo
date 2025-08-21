@@ -56,6 +56,36 @@ title_img.src = '/images/title.png';
 export const battle_img = new Image(1920, 1080);
 battle_img.src = '/images/battle.png';
 
+// 動画の事前読み込み（画像と同様な静的方式）
+export let characterVideos = {};
+
+function initializeCharacterVideos() {
+  for (const charName of characterFiles) {
+    characterVideos[charName] = {};
+
+    // クリック動画
+    for (let i = 1; i <= NUM_QUOTES; i++) {
+      const videoKey = `click${i}`;
+      characterVideos[charName][videoKey] = document.createElement('video');
+      characterVideos[charName][videoKey].preload = 'auto';
+      characterVideos[charName][videoKey].src = `/${CHARACTER_FOLDER}/${charName}/click${i}.webm`;
+    }
+
+    // 開始動画
+    characterVideos[charName]['start'] = document.createElement('video');
+    characterVideos[charName]['start'].preload = 'auto';
+    characterVideos[charName]['start'].src = `/${CHARACTER_FOLDER}/${charName}/start1.webm`;
+
+    // 勝利動画
+    characterVideos[charName]['win'] = document.createElement('video');
+    characterVideos[charName]['win'].preload = 'auto';
+    characterVideos[charName]['win'].src = `/${CHARACTER_FOLDER}/${charName}/win1.webm`;
+  }
+}
+
+// 初期化関数を呼び出す
+initializeCharacterVideos();
+
 // ストレージからキャラクターを読み込む関数
 function loadOrSelectCharacter() {
   const storedCharacter = localStorage.getItem('selectedCharacter');

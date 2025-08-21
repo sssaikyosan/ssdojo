@@ -1,5 +1,5 @@
 import { TextUI } from "./ui_text.js";
-import { characterImages, audioManager, onClick } from "./main.js";
+import { characterImages, audioManager, onClick, characterVideos } from "./main.js";
 import { OverlayUI, UI } from "./ui.js";
 import { CHARACTER_FOLDER, NUM_QUOTES } from "./const.js";
 
@@ -45,11 +45,15 @@ export class CharacterImageUI extends UI {
   }
   init() {
     this.videoElement = [];
-    if (this.image) {
+
+    if (this.image && characterImages[this.image]) {
       for (let i = 0; i < NUM_QUOTES; i++) {
-        this.videoElement.push(document.createElement('video'));
-        this.videoElement[i].src = `${CHARACTER_FOLDER}/${this.image}/click${i + 1}.webm`;
-        this.videoElement[i].loop = false; // ループはしない
+        const videoKey = `click${i + 1}`;
+
+        // 事前読み込んだ動画を複製して使用
+        this.videoElement.push(characterVideos[this.image][videoKey].cloneNode());
+
+        this.videoElement[i].loop = false;
         this.videoElement[i].addEventListener('ended', () => {
           this.currentVideo = null;
           this.isRenderingVideo = false; // 動画描画フラグをオフ
@@ -104,16 +108,14 @@ export class CharacterImageUI extends UI {
   }
 
   playVideo(randomIndex) {
-    // videoElement が存在し、動画が既に再生中、または再生準備ができていない場合は何もしない
+    // videoElement が存在し、動画が既に再生中の場合は何もしない
     if (this.videoElement.length < NUM_QUOTES || this.isRenderingVideo) {
       console.log('動画の再生準備ができていません、または既に再生中です。');
       return false;
     }
+
+    // readyStateのチェックを削除（事前読み込み済みのため）
     if (!this.videoElement[randomIndex]) {
-      console.log('動画の再生準備ができていません、または既に再生中です。');
-      return false;
-    }
-    if (this.videoElement[randomIndex].readyState < 4) { // HTMLMediaElement.HAVE_ENOUGH_DATA は 4
       console.log('動画の再生準備ができていません、または既に再生中です。');
       return false;
     }
@@ -174,41 +176,38 @@ export class CharacterInGameUI extends UI {
   }
 
   init() {
-    if (this.image) {
-      for (let i = 0; i < 1; i++) {
-        this.startVideoElement.push(document.createElement('video'));
-        this.startVideoElement[i].src = `${CHARACTER_FOLDER}/${this.image}/start${i + 1}.webm`;
-        this.startVideoElement[i].loop = false; // ループはしない
+    if (this.image && characterImages[this.image]) {
+      // 開始動画の設定
+      this.startVideoElement.push(characterVideos[this.image]['start'].cloneNode());
 
-        this.startVideoElement[i].addEventListener('ended', () => {
-          this.currentVideo = null;
-          this.isRenderingVideo = false; // 動画描画フラグをオフ
-        });
+      this.startVideoElement[0].loop = false;
+      this.startVideoElement[0].addEventListener('ended', () => {
+        this.currentVideo = null;
+        this.isRenderingVideo = false; // 動画描画フラグをオフ
+      });
 
-        // エラーハンドリング
-        this.startVideoElement[i].addEventListener('error', (e) => {
-          console.error('動画の読み込みまたは再生に失敗しました:', e);
-          this.currentVideo = null;
-          this.isRenderingVideo = false; // 動画描画フラグをオフ
-        });
-      }
+      // エラーハンドリング
+      this.startVideoElement[0].addEventListener('error', (e) => {
+        console.error('動画の読み込みまたは再生に失敗しました:', e);
+        this.currentVideo = null;
+        this.isRenderingVideo = false; // 動画描画フラグをオフ
+      });
 
-      for (let i = 0; i < 1; i++) {
-        this.winVideoElement.push(document.createElement('video'));
-        this.winVideoElement[i].src = `${CHARACTER_FOLDER}/${this.image}/win${i + 1}.webm`;
-        this.winVideoElement[i].loop = false; // ループはしない
-        this.winVideoElement[i].addEventListener('ended', () => {
-          this.currentVideo = null;
-          this.isRenderingVideo = false; // 動画描画フラグをオフ
-        });
+      // 勝利動画の設定
+      this.winVideoElement.push(characterVideos[this.image]['win'].cloneNode());
 
-        // エラーハンドリング
-        this.winVideoElement[i].addEventListener('error', (e) => {
-          console.error('動画の読み込みまたは再生に失敗しました:', e);
-          this.currentVideo = null;
-          this.isRenderingVideo = false; // 動画描画フラグをオフ
-        });
-      }
+      this.winVideoElement[0].loop = false;
+      this.winVideoElement[0].addEventListener('ended', () => {
+        this.currentVideo = null;
+        this.isRenderingVideo = false; // 動画描画フラグをオフ
+      });
+
+      // エラーハンドリング
+      this.winVideoElement[0].addEventListener('error', (e) => {
+        console.error('動画の読み込みまたは再生に失敗しました:', e);
+        this.currentVideo = null;
+        this.isRenderingVideo = false; // 動画描画フラグをオフ
+      });
     }
   }
 
@@ -240,16 +239,14 @@ export class CharacterInGameUI extends UI {
   }
 
   playStartVideo(idx) {
-    // videoElement が存在し、動画が既に再生中、または再生準備ができていない場合は何もしない
+    // videoElement が存在し、動画が既に再生中の場合は何もしない
     if (this.startVideoElement.length === 0 || this.isRenderingVideo) {
       console.log('動画の再生準備ができていません、または既に再生中です。');
-      return
+      return;
     }
+
+    // readyStateのチェックを削除（事前読み込み済みのため）
     if (!this.startVideoElement[idx]) {
-      console.log('動画の再生準備ができていません、または既に再生中です。');
-      return
-    }
-    if (this.startVideoElement[idx].readyState < 4) { // HTMLMediaElement.HAVE_ENOUGH_DATA は 4
       console.log('動画の再生準備ができていません、または既に再生中です。');
       return;
     }
@@ -267,16 +264,14 @@ export class CharacterInGameUI extends UI {
   }
 
   playWinVideo(idx) {
-    // videoElement が存在し、動画が既に再生中、または再生準備ができていない場合は何もしない
+    // videoElement が存在し、動画が既に再生中の場合は何もしない
     if (this.winVideoElement.length === 0 || this.isRenderingVideo) {
       console.log('動画の再生準備ができていません、または既に再生中です。');
       return false;
     }
+
+    // readyStateのチェックを削除（事前読み込み済みのため）
     if (!this.winVideoElement[idx]) {
-      console.log('動画の再生準備ができていません、または既に再生中です。');
-      return false;
-    }
-    if (this.winVideoElement[idx].readyState < 4) { // HTMLMediaElement.HAVE_ENOUGH_DATA は 4
       console.log('動画の再生準備ができていません、または既に再生中です。');
       return false;
     }
