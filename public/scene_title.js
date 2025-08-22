@@ -1,7 +1,7 @@
 //タイトルシーン要素
 
 import { createPlayScene } from "./scene_game.js";
-import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, player_id, setScene, characterFiles, setSelectedCharacterName, connectToServer, strings, playerStatus, setStatus, setStrings, setSceneType } from "./main.js";
+import { serverStatus, title_img, audioManager, setPlayerName, playerName, socket, selectedCharacterName, player_id, setScene, characterFiles, setSelectedCharacterName, connectToServer, strings, playerStatus, setStatus, setStrings, setSceneType, scene } from "./main.js";
 import { Scene } from "./scene.js";
 import { OverlayUI } from "./ui.js";
 import { BackgroundImageUI } from "./ui_background.js";
@@ -271,8 +271,9 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
             }).catch(err => {
                 console.error("Failed to connect for joining room:", err);
                 alert("failed to connect server");
-                setScene(createTitleScene());
             });
+        } else {
+            roomJoinFailed();
         }
     }
 
@@ -796,7 +797,8 @@ export function createCharacterSelectScene(titleCharacter) {
     return selectScene;
 }
 
-export function roomJoinFailed(scene) {
+export function roomJoinFailed() {
+    console.log("roomJoinFailed");
     const roomJoinFailedOverlay = new OverlayUI({
         x: 0.5,
         y: 0.24,
@@ -812,7 +814,9 @@ export function roomJoinFailed(scene) {
         colors: ['#ffffff', '#00000000', '#00000000']
     });
     roomJoinFailedOverlay.add(roomJoinFailedtext);
-    scene.add(roomJoinFailedOverlay);
+    setTimeout(() => {
+        scene.add(roomJoinFailedOverlay);
+    }, 100);
     setTimeout(() => {
         scene.remove(roomJoinFailedOverlay);
     }, 2500);

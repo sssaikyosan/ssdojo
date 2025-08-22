@@ -509,7 +509,7 @@ export function setupSocket() {
 
   socket.on("roomJoinFailed", (data) => {
     setScene(createTitleScene());
-    roomJoinFailed(scene);
+    roomJoinFailed();
   });
 }
 
@@ -634,7 +634,7 @@ function setupGameSocketHandlers(roomFoundData, privateroom = false) {
 
   socket.on("roomJoinFailed", (data) => {
     setScene(createTitleScene());
-    roomJoinFailed(scene);
+    roomJoinFailed();
   });
 }
 
