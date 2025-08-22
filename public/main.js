@@ -352,6 +352,27 @@ function resizeHTML() {
 
 // イベントリスナーを追加
 function addEventListeners() {
+  // 全体でカーソルと文字選択を無効化するイベントリスナーを追加
+  document.addEventListener('selectstart', (e) => e.preventDefault());
+  document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+  // テキスト選択を防ぐためのグローバルスタイル設定
+  const style = document.createElement('style');
+  style.textContent = `
+    * {
+      -webkit-user-select: none !important;
+      -moz-user-select: none !important;
+      -ms-user-select: none !important;
+      user-select: none !important;
+      cursor: default !important;
+    }
+    
+    button, input[type="text"], input[type="number"] {
+      cursor: pointer !important;
+    }
+  `;
+  document.head.appendChild(style);
+
   // ウィンドウサイズ変更時のリスナーを追加
   window.addEventListener('resize', () => {
     resizeCanvas();
@@ -384,10 +405,6 @@ function addEventListeners() {
     }
   })
 
-  // 右クリックのデフォルト動作を無効にする
-  canvas.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-  });
 
   // 音量スライダーのイベントリスナーを追加
   const bgmVolumeSlider = document.getElementById('bgmVolumeSlider');

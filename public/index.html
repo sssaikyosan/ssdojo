@@ -7,6 +7,32 @@
   <title>リアルタイム将棋</title>
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
+    /* 全体でカーソルと文字選択を無効化 */
+    * {
+      user-select: none;
+      /* 文字選択を禁止 */
+      -webkit-user-select: none;
+      /* Webkitブラウザ用 */
+      -moz-user-select: none;
+      /* Firefox用 */
+      -ms-user-select: none;
+      /* IE/Edge用 */
+      cursor: default;
+      /* デフォルトカーソルに設定 */
+    }
+
+    /* ボタンなどはカーソルを指の形にする */
+    button,
+    input[type="text"],
+    input[type="number"] {
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      cursor: pointer;
+      /* ボタンは指カーソルを許可 */
+    }
+
     /* スクロールを防ぐためのスタイル */
     html,
     body {
