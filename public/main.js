@@ -232,22 +232,6 @@ export function setStrings(lang) {
   console.log("no language file", lang);
   return
 }
-
-function loadLanguage() {
-  try {
-    let lang = localStorage.getItem('language');
-    console.log(lang);
-    if (lang) {
-      return lang;
-    } else {
-      return null;
-    }
-  } catch (e) {
-    console.error('ローカルストレージからの読み込みに失敗しました:', e);
-    return null;
-  }
-}
-
 // ブラウザの言語設定を取得し、'ja' または 'en' を返す関数
 export function getBrowserLanguage() {
   const languages = navigator.languages || [navigator.language];
@@ -352,26 +336,6 @@ function resizeHTML() {
 
 // イベントリスナーを追加
 function addEventListeners() {
-  // 全体でカーソルと文字選択を無効化するイベントリスナーを追加
-  document.addEventListener('selectstart', (e) => e.preventDefault());
-  document.addEventListener('contextmenu', (e) => e.preventDefault());
-
-  // テキスト選択を防ぐためのグローバルスタイル設定
-  const style = document.createElement('style');
-  style.textContent = `
-    * {
-      -webkit-user-select: none !important;
-      -moz-user-select: none !important;
-      -ms-user-select: none !important;
-      user-select: none !important;
-      cursor: default !important;
-    }
-    
-    button, input[type="text"], input[type="number"] {
-      cursor: pointer !important;
-    }
-  `;
-  document.head.appendChild(style);
 
   // ウィンドウサイズ変更時のリスナーを追加
   window.addEventListener('resize', () => {

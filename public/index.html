@@ -22,15 +22,24 @@
     }
 
     /* ボタンなどはカーソルを指の形にする */
-    button,
-    input[type="text"],
-    input[type="number"] {
+    button {
       user-select: none;
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
       cursor: pointer;
       /* ボタンは指カーソルを許可 */
+    }
+
+    /* 入力フィールドでは縦棒カーソルにする */
+    input[type="text"],
+    input[type="number"] {
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      cursor: text;
+      /* 入力フィールドは縦棒カーソルにする */
     }
 
     /* スクロールを防ぐためのスタイル */
