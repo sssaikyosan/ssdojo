@@ -304,7 +304,7 @@ export function createRoomScene(data) {
 
     currentRoomId = data.roomId;
 
-    discordButton.style.display = "none";
+    discordButton.style.display = "block";
     roomIdOverlay.style.display = 'flex';
     tebanOverlay.style.display = 'flex';
     spectatorsOverlay.style.display = 'block';

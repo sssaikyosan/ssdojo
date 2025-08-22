@@ -129,6 +129,7 @@ let enemyCharacterUI;
 //ゲームシーン
 export function createPlayScene(senteName, senteRating, senteCharacter, goteName, goteRating, goteCharacter, roomId, roomType, servertime, roomteban, moveTime, pawnLimit4thRank, cpulevel = null) {
     setSceneType('game');
+    clearTitleHTML();
     let playScene = new Scene();
 
     // 背景画像UIを追加 (他のUIより前に描画されるように最初に追加)
