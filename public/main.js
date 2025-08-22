@@ -354,12 +354,13 @@ function addEventListeners() {
     } else {
       scene.touchCheck(event, 'mousedown');
     }
+  });
 
-  })
   canvas.addEventListener('mousemove', (event) => {
     if (!scene) return;
     scene.touchCheck(event, 'mousemove');
-  })
+  });
+
   canvas.addEventListener('mouseup', (event) => {
     if (!scene) return;
     if (event.button == 2) {
@@ -367,8 +368,12 @@ function addEventListeners() {
     } else {
       scene.touchCheck(event, 'mouseup');
     }
-  })
+  });
 
+  // 右クリックのデフォルト動作を無効にする
+  canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+  });
 
   // 音量スライダーのイベントリスナーを追加
   const bgmVolumeSlider = document.getElementById('bgmVolumeSlider');
