@@ -10,7 +10,7 @@
     "piece-list": "Piece List",
     "close": "Close",
     "manual": "Manual",
-    "manual-text": "Mouse Drag - Move Piece\nRight Drag - Do not promote\n\n<Shortcut-Key>\nSpace - Pawn\nQ - Lance  W - Knight  E - Bishop\nA - Silver   S - Gold      D - Rook",
+    "manual-text": "Mouse Drag - Move Piece\nRight Drag - Do not promote\n\n<Shortcut-Key>\nSpace - Pawn\nQ - Lance  W - Knight  E - Bishop\nA - Silver    S - Gold     D - Rook",
     "win-condition": "Win con",
     "online-match": "Online Match",
     "matching": "Matching",
