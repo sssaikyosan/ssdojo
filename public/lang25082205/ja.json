@@ -10,7 +10,7 @@
     "piece-list": "駒一覧",
     "close": "閉じる",
     "manual": "操作方法",
-    "manual-text": "マウスドラッグ - 駒の移動\n右ドラッグ - 成らず\n\n<ショートカット>\nスペース - 歩\nQ - 香　W - 桂　E - 角\nA - 銀　S - 金　D - 飛",
+    "manual-text": "マウスドラッグ - 駒の移動\n右ドラッグ - 成らず\n\n<ショートカット>\nスペース - 歩\nQ - 香　W - 桂　E - 角\nA - 銀　S - 金　 D - 飛",
     "win-condition": "勝利条件",
     "online-match": "オンライン対戦",
     "matching": "マッチング中",

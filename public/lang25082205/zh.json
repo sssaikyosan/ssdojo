@@ -10,7 +10,7 @@
     "piece-list": "棋子列表",
     "close": "关闭",
     "manual": "操作说明",
-    "manual-text": "鼠标拖拽 - 移动棋子\n右键拖拽 - 不升级\n\n<快捷键>\n空格 - 步兵\nQ - 香车　W - 桂马　E - 角行\nA - 银将　S - 金将　D - 飞车",
+    "manual-text": "鼠标拖拽 - 移动棋子\n右键拖拽 - 不升级\n\n<快捷键>\n空格 - 步兵\nQ - 香车　W - 桂马　E - 角行\nA - 银将　S - 金将　 D - 飞车",
     "win-condition": "胜利条件",
     "online-match": "在线对战",
     "matching": "匹配中",
