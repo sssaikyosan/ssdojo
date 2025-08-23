@@ -557,11 +557,14 @@ export class Room {
     }
 
     resign(id) {
-        this.gameState = 'finished';
-        console.log('gameend', this.roomType);
+
         if (this.sente.includes(id) && this.gameState === "playing") {
+            this.gameState = 'finished';
+            console.log('gameend', this.roomType);
             this.gameFinished(-1, "resign");
         } else if (this.gote.includes(id) && this.gameState === "playing") {
+            this.gameState = 'finished';
+            console.log('gameend', this.roomType);
             this.gameFinished(1, "resign");
         }
     }
