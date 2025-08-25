@@ -413,7 +413,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         width: 0.15,
         height: 0.05,
         color: '#3241c9',
-        textSize: 0.032,
+        textSize: 0.026,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
         onClick: () => { winConditionOverlay.visible = false; }
     });
@@ -443,7 +443,7 @@ export function createTitleScene(savedTitleCharacter = null, loadNameInput = tru
         width: 0.15,
         height: 0.05,
         color: '#3241c9',
-        textSize: 0.032,
+        textSize: 0.026,
         textColors: ['#ffffffff', '#00000000', '#00000000'],
         onClick: () => { pieceHelpOverlay.visible = false; }
     });
