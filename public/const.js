@@ -148,8 +148,8 @@ export const PIECE_MOVES = {
   ]
 };
 
-export const CHARACTER_FOLDER = "characters25082001"
-export const LANGUAGE_FOLDER = "lang25082501"
+export const CHARACTER_FOLDER = "characters25082701"
+export const LANGUAGE_FOLDER = "lang25082701"
 export const NUM_QUOTES = 5
 export const LANGUAGES = {
   "en": "English",
