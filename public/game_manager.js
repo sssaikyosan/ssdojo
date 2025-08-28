@@ -155,7 +155,6 @@ export class GameManager {
         }
         if (this.board.matched && !this.board.started && !this.board.finished && this.board.time - this.board.starttime > 5000) {
             this.board.started = true;
-            audioManager.playSound('match');
         }
     }
 }
