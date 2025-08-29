@@ -170,7 +170,7 @@ export class ServerState {
             await this.savePlayerInfo(newLoseRatingData);
 
             // トッププレイヤーリストを取得
-            let currentTopPlayers = await this.postgureDb.readTopPlayers();
+            let currentTopPlayers = await this.postgureDb.getTopPlayers();
 
             // 勝利プレイヤーの新しい表示レーティングがトップ30に入るか判定
             const minTopRating = currentTopPlayers.length < 30 ? -Infinity : currentTopPlayers[currentTopPlayers.length - 1].rating;

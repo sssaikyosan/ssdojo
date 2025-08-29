@@ -85,12 +85,30 @@ export class Postgure {
         }
     }
 
-    async readTopPlayers() {
+    async getTopPlayers() {
         const client = await this.connect();
         try {
             // レーティングの高い順にトップ10を取得
             const sql = `
                 SELECT rank, player_id, total_games, rating, last_login, name
+                FROM topplayers
+                `;
+            const result = await client.query(sql);
+            return result.rows;
+        } catch (err) {
+            console.error(`Error reading top players:`, err); // エラーメッセージを修正
+            throw err;
+        } finally {
+            client.release();
+        }
+    }
+
+    async readTopPlayers() {
+        const client = await this.connect();
+        try {
+            // レーティングの高い順にトップ10を取得
+            const sql = `
+                SELECT rank, rating, name
                 FROM topplayers
                 `;
             const result = await client.query(sql);

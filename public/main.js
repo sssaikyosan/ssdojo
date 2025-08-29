@@ -180,6 +180,7 @@ export async function getTitleInfo() {
       throw new Error(`API request failed with status ${response.status}`);
     }
     const data = await response.json();
+    console.log(data);
 
     // サーバーから受け取った情報でステータスとランキングを更新
     if (data.player) {

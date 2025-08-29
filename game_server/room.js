@@ -106,8 +106,11 @@ export class Room {
         if (result && result.res) {
             this.emitToRoom("newMove", { ...data, servertime });
             let endGame = this.board.checkGameEnd(data);
-            if (endGame.player !== 0) {
-                this.gameFinished(endGame.player, endGame.text);
+            if (this.gameState === 'playing') {
+                if (endGame.player !== 0) {
+                    this.gameState = 'finished';
+                    this.gameFinished(endGame.player, endGame.text);
+                }
             }
         } else if (result && result.reserve) {
             const now = performance.now();
@@ -124,10 +127,12 @@ export class Room {
                 if (reserveResult && reserveResult.res) {
                     this.emitToRoom("newMove", { ...data, servertime });
                     let endGame = this.board.checkGameEnd(data);
-                    if (endGame.player !== 0) {
-                        this.gameState = 'finished';
-                        console.log('gameend', this.roomType);
-                        this.gameFinished(endGame.player, endGame.text);
+                    if (this.gameState === 'playing') {
+                        if (endGame.player !== 0) {
+                            this.gameState = 'finished';
+                            console.log('gameend', this.roomType);
+                            this.gameFinished(endGame.player, endGame.text);
+                        }
                     }
                 } else {
                     io.to(id).emit("reservedMoveFailed", { ...data, servertime });
