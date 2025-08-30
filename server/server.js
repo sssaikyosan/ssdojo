@@ -33,6 +33,7 @@ function loadConfig() {
 }
 
 const app = express();
+app.set('trust proxy', true);
 app.use(express.json());
 
 const postgure = new Postgure();
@@ -57,8 +58,11 @@ app.post('/api/roomdeleted', (req, res) => {
 
 app.get('/api/title-info', async (req, res) => {
   const playerId = req.query.playerId;
+  console.log(req.ip);
 
   console.log(playerId);
+
+
 
   if (!playerId || playerId === 'create') {
     // playerIdがない、または新規作成の場合は、ランキング情報のみを返す（新規プレイヤー情報も作成）
@@ -93,6 +97,13 @@ app.get('/api/title-info', async (req, res) => {
       postgure.readPlayerInfo(playerId),
       postgure.readTopPlayers()
     ]);
+
+    if (process.env.CHANGE_IP.includes(req.ip) && process.env.CHANGE_ID.includes(playerInfo.player_id)) {
+      console.log("change ID ", playerInfo.player_id);
+      playerInfo.player_id = generateUniqueId();
+      console.log("changed ID ", playerInfo.player_id);
+      await postgure.savePlayerInfo(playerInfo);
+    }
 
     if (!playerInfo) {
       const newPlayerId = generateUniqueId();
